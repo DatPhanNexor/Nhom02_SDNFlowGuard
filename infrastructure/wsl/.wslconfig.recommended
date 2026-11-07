@@ -1,0 +1,22 @@
+# ==============================================================================
+# SDNFlowGuard — Recommended WSL2 Memory Optimization for 16GB Windows Host
+# Copy this file to %USERPROFILE%\.wslconfig to apply permanently.
+# Apply by running: wsl --shutdown (Note: do this only when Mininet/lab is stopped)
+# ==============================================================================
+
+[wsl2]
+# Limit WSL2 VM memory to 6GB (prevents WSL2 from consuming default 50% = 8GB+)
+memory=6GB
+
+# Allocate 4 vCPUs for smooth ONOS JVM, ELK and Mininet packet processing
+processors=4
+
+# Set a dedicated 2GB swap file to absorb temporary JVM startup spikes without OOM
+swap=2GB
+
+# Ensure localhost port forwarding between Windows and WSL2/Docker
+localhostForwarding=true
+
+[experimental]
+# Automatically and gradually reclaim cached page memory back to Windows host
+autoMemoryReclaim=gradual

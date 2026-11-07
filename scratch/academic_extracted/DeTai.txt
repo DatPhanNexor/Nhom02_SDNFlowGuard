@@ -1,0 +1,152 @@
+
+--- PAGE 1 ---
+ĐỀ TÀI AN NINH MẠNG  
+NHÓM 1: TẤN CÔNG VÀ THỬ NGHIỆM XÂM NHẬP 
+(ETHICAL HACKING) 
+Trọng tâm: Kỹ thuật tấn công theo giáo trình CEH v13. 
+1. Phân tích và mô phỏng tấn công Ransomware trong mạng nội bộ:
+Tìm hiểu cơ chế mã hóa, demo cách ransomware lây lan qua SMB và xây
+dựng kịch bản ứng phó.
+2. Đánh giá an ninh hệ thống Wi-Fi doanh nghiệp (WPA2/WPA3
+Enterprise): Thực hiện tấn công Rogue AP, Evil Twin và đề xuất giải
+pháp xác thực qua Radius Server.
+3. Khai thác lỗ hổng Web (OWASP Top 10) và giải pháp khắc phục:
+Tập trung vào SQL Injection và XSS trên một ứng dụng TMĐT giả lập.
+4. Tấn công bẻ khóa mật khẩu và đánh cắp thông tin định danh
+(Credential Stuffing): Sử dụng các công cụ như Hashcat, John the
+Ripper và demo kỹ thuật Phishing qua email.
+5. Kỹ thuật leo thang đặc quyền (Privilege Escalation) trên
+Windows/Linux: Tìm hiểu các lỗi cấu hình hệ thống, dịch vụ chạy quyền
+Root/System để chiếm quyền điều khiển cao nhất.
+6. Tấn công và phòng thủ lớp 2 (Layer 2 Attacks): Demo các kiểu tấn
+công MAC Flooding, ARP Spoofing, DHCP Starvation và cấu hình Port
+Security trên Switch Cisco.
+7. Xây dựng kịch bản tấn công Social Engineering qua môi trường số:
+Sử dụng SET (Social Engineering Toolkit) để tạo trang đăng nhập giả
+mạo và đính kèm mã độc vào tài liệu văn phòng.
+8. Phân tích kỹ thuật quét lỗ hổng và đánh giá an ninh (Vulnerability
+Assessment): Sử dụng Nessus hoặc OpenVAS để quét hệ thống doa nh
+nghiệp giả lập và lập báo cáo khắc phục.
+9. Tấn công chiếm quyền điều khiển phiên (Session Hijacking):  Demo
+cách đánh cắp Cookie và chiếm phiên làm việc của người dùng trên các
+giao thức không bảo mật.
+10. Khai thác lỗi tràn bộ đệm (Buffer Overflow) cơ bản:  Phân tích bộ nhớ,
+viết mã khai thác đơn giản để thực thi lệnh từ xa trên một ứng dụng C ++
+lỗi.
+NHÓM 2: PHÒNG THỦ VÀ GIÁM SÁT HỆ THỐNG (NETWORK 
+DEFENSE) 
+Trọng tâm: Các kỹ năng bảo vệ mạng theo giáo trình CND.  
+--- PAGE 2 ---
+11. Triển khai hệ thống phát hiện và ngăn ngừa xâm nhập (IDS/IPS) 
+Snort: Xây dựng tập luật (rules) để chặn các kiểu tấn công phổ biến như 
+DoS và Port Scanning. 
+12. Xây dựng hệ thống giám sát an ninh tập trung (SIEM) với ELK 
+Stack: Thu thập và phân tích Log từ Firewall, Windows Server để phát 
+hiện dấu hiệu bất thường. 
+13. Triển khai và cấu hình Firewall thế hệ mới (NGFW): Sử dụng pfSense 
+hoặc Fortigate-VM để thiết lập phân vùng DMZ, lọc ứng dụng và kiểm 
+soát băng thông. 
+14. Thiết lập mạng ảo riêng (VPN) Site-to-Site và Client-to-Site: Sử dụng 
+OpenVPN hoặc IPsec để bảo mật kết nối cho nhân viên làm việc từ xa. 
+15. Xây dựng hệ thống Honeypot để dẫn dụ và nghiên cứu kẻ tấn công: 
+Triển khai Cowrie hoặc Dionaea để thu thập thông tin về các kỹ thuật tấn 
+công đang diễn ra. 
+16. Triển khai kiến trúc Zero Trust cho mạng LAN doanh nghiệp: Sử 
+dụng giải pháp xác thực đa nhân tố (MFA) và phân quyền truy cập tối 
+thiểu. 
+17. Bảo mật hạ tầng máy chủ Web (Web Server Hardening): Cấu hình 
+bảo mật cho Apache/Nginx, cài đặt chứng chỉ SSL/TLS và chống tấn 
+công DDOS cơ bản. 
+18. Quản lý và phân tích Log hệ thống tập trung (Centralized Logging): 
+Xây dựng quy trình lưu trữ log tập trung phục vụ công tác điều tra số 
+(Forensics). 
+19. Triển khai hệ thống kiểm soát truy cập mạng (NAC): Đảm bảo chỉ 
+những thiết bị hợp lệ, đủ điều kiện an toàn mới được kết nối vào mạng 
+nội bộ. 
+20. Xây dựng quy trình sao lưu và phục hồi sau thảm họa (Backup & 
+Disaster Recovery): Thiết lập chiến lược 3-2-1 và demo phục hồi dữ liệu 
+khi bị tấn công xóa sạch. 
+ 
+NHÓM 3: AN TOÀN MẠNG LAN/WAN VÀ HẠ TẦNG CLOUD 
+Trọng tâm: An toàn hạ tầng kết nối. 
+21. Thiết kế và cấu hình phân đoạn mạng (Network Segmentation) với 
+VLAN và ACL: Ngăn chặn lây nhiễm chéo giữa các phòng ban (Kế 
+toán, Nhân sự, Khách), kết hợp dùng ACL để ngăn chặn, sử dụng nền 
+tảng CISCO. 
+22. Bảo mật giao thức định tuyến (Routing Security): Triển khai xác thực 
+trong OSPF/BGP để chống lại các cuộc tấn công Router Advertisement 
+giả mạo. 
+--- PAGE 3 ---
+23. Xây dựng giải pháp ngăn chặn thất thoát dữ liệu (DLP) mức mạng: 
+Giám sát và ngăn chặn việc gửi dữ liệu nhạy cảm ra ngoài qua 
+Email/HTTP. 
+24. Đánh giá an ninh và bảo mật cho hệ thống Docker Container: Quét lỗ 
+hổng Image và thiết lập chính sách Network Policy cho các ứng dụng 
+chạy Container. 
+25. Triển khai giải pháp giám sát hiệu năng và an ninh mạng (Network 
+Monitoring): Sử dụng Zabbix hoặc PRTG kết hợp với cảnh báo qua 
+Telegram khi có sự cố. 
+26. Phân tích và phòng chống tấn công từ chối dịch vụ (DoS/DDoS): 
+Thực hiện tấn công SYN Flood, UDP Flood và cấu hình Rate Limiting 
+trên Firewall. 
+27. Bảo mật hệ thống thư điện tử (Email Security): Triển khai SPF, 
+DKIM, DMARC để chống giả mạo email và cấu hình bộ lọc 
+Spam/Malware. 
+28. Xây dựng hệ thống lọc nội dung Web (Web Filtering): Ngăn chặn 
+nhân viên truy cập các trang web độc hại, cờ bạc hoặc không phù hợp với 
+chính sách doanh nghiệp. 
+29. An ninh cho hệ thống lưu trữ mạng (NAS Security): Cấu hình phân 
+quyền, mã hóa dữ liệu và chống Ransomware trực tiếp trên thiết bị lưu 
+trữ. 
+30. Nghiên cứu và triển khai bảo mật cho Hybrid Cloud: Kết nối an toàn 
+giữa hạ tầng On-premise và Cloud (AWS/Azure) qua VPN Tunnel. 
+NHÓM 4: ĐIỀU TRA SỐ, ỨNG CỨU SỰ CỐ VÀ CÔNG NGHỆ MỚI 
+Trọng tâm: Phản ứng nhanh và phân tích chuyên sâu. 
+31. Điều tra dấu vết kỹ thuật số (Digital Forensics) trên máy tính 
+Windows: Tìm kiếm bằng chứng trong Registry, RAM và các file đã bị 
+xóa sau một cuộc tấn công. 
+32. Phân tích mã độc (Malware Analysis) cơ bản: Sử dụng môi trường 
+Sandbox để phân tích hành vi của một mẫu virus (kết nối IP, tạo file, sửa 
+registry). 
+33. Xây dựng quy trình ứng cứu sự cố (Incident Response) cho doanh 
+nghiệp: Lập kế hoạch 6 bước của SANS và demo diễn tập một tình 
+huống mất dữ liệu. 
+34. Ứng dụng AI/Machine Learning trong phát hiện xâm nhập: Sử dụng 
+Python để huấn luyện mô hình phân loại lưu lượng mạng sạch và lưu 
+lượng tấn công. 
+35. Đánh giá an ninh thiết bị IoT trong môi trường văn phòng: Quét lỗ 
+hổng và tấn công thử nghiệm vào các thiết bị như Camera IP, máy in Wi-
+Fi. 
+--- PAGE 4 ---
+36. Xây dựng hệ thống quản lý mật khẩu tập trung cho doanh nghiệp: 
+Triển khai Vault (HashiCorp) hoặc Bitwarden Self-hosted để quản lý tài 
+khoản đặc quyền. 
+37. Kiểm thử xâm nhập thiết bị di động (Mobile Pentesting): Phân tích 
+các lỗ hổng trên ứng dụng Android (APK) và cách phòng chống. 
+38. Bảo mật hạ tầng Active Directory (AD Security): Demo tấn công 
+Kerberoasting, Golden Ticket và cách củng cố cấu hình (Hardening) AD. 
+39. Xây dựng giải pháp quét mã nguồn mở (SCA) trong quy trình 
+DevSecOps: Tự động phát hiện các thư viện có lỗ hổng trong quá trình 
+phát triển phần mềm. 
+40. Nghiên cứu về lừa đảo bằng Deepfake và giải pháp phòng ngừa: Phân 
+tích các hình thức lừa đảo qua video/audio AI và đề xuất quy trình xác 
+thực cho doanh nghiệp. 
+Cấu trúc nội dung sinh viên cần thực hiện (Yêu cầu chung): 
+Mỗi nhóm sinh viên khi chọn đề tài cần hoàn thành 4 phần chính: 
+1. Lý thuyết: Tổng quan về công nghệ, giao thức và các rủi ro an ninh liên quan. 
+2. Mô hình triển khai: Sơ đồ mạng (sử dụng EVE-NG, PNETLab, Vmware, UTM, 
+VirtualBox, Hyper-V, UTM, Parallels) hoặc Docker để tạo môi trường Lab an 
+toàn. 
+3. Kịch bản Demo: 
+o Bước 1: Thiết lập môi trường (Lab setup). 
+o Bước 2: Thực hiện tấn công/Kiểm thử (Exploitation). 
+o Bước 3: Triển khai giải pháp phòng thủ/Giám sát (Defense & Mitigation). 
+o Bước 4: Kiểm tra lại hiệu quả sau khi phòng thủ. 
+4. Kết luận: Đánh giá tính khả thi và bài học kinh nghiệm cho doanh nghiệp. 
+• Báo cáo: Cần làm rõ: (1) Mục tiêu, (2) Cơ sở lý thuyết, (3) Kịch bản thực 
+nghiệm, (4) Kết quả đạt được và (5) Biện pháp phòng chống. 
+• Slide báo cáo: từ 25-40 slide chưa bao gồm phần giới thiệu, nội dung 
+dùng slide mẫu của UTH, size chữ tiêu đề 32, nội dung size 26. 
+ 
+ 
+ 

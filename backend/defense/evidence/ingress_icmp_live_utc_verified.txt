@@ -1,0 +1,7 @@
+﻿06:22:31.045140 s1-eth1 P   ifindex 5 00:00:00:00:00:01 ethertype IPv4 (0x0800), length 104: 10.0.0.1 > 10.0.0.2: ICMP echo request, id 1432, seq 1, length 64
+06:22:31.049221 s1-eth2 P   ifindex 6 00:00:00:00:00:02 ethertype IPv4 (0x0800), length 104: 10.0.0.2 > 10.0.0.1: ICMP echo reply, id 1432, seq 1, length 64
+06:22:31.246151 s1-eth1 P   ifindex 5 00:00:00:00:00:01 ethertype IPv4 (0x0800), length 104: 10.0.0.1 > 10.0.0.2: ICMP echo request, id 1432, seq 2, length 64
+06:22:31.246655 s1-eth2 P   ifindex 6 00:00:00:00:00:02 ethertype IPv4 (0x0800), length 104: 10.0.0.2 > 10.0.0.1: ICMP echo reply, id 1432, seq 2, length 64
+06:22:31.446474 s1-eth1 P   ifindex 5 00:00:00:00:00:01 ethertype IPv4 (0x0800), length 104: 10.0.0.1 > 10.0.0.2: ICMP echo request, id 1432, seq 3, length 64
+06:22:31.446510 s1-eth2 P   ifindex 6 00:00:00:00:00:02 ethertype IPv4 (0x0800), length 104: 10.0.0.2 > 10.0.0.1: ICMP echo reply, id 1432, seq 3, length 64
+

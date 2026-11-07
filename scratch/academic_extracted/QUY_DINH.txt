@@ -1,0 +1,121 @@
+
+--- PAGE 1 ---
+ 
+QUY ĐỊNH VỀ HÌNH THỨC TRÌNH BÀY 
+ BÁO CÁO BÀI TẬP LỚN 
+ 
+ 
+1. Qui định về nộp BTL dạng file nén: 
+Các SV sẽ phải nộp một file nén chứa các tài liệu và chương trình thi hành liên quan đến 
+báo cáo trước khi báo cáo. Nội dung và cấu trúc của file nộp được qui định như sau: 
+ Tên file gồm: Mã nhóm_ Tên đề tài 
+ Tổ chức tập tin trong file theo hướng dẫn cây thư mục sau: 
+o Thư mục gốc: Mã nhóm_Tên đề tài gồm bốn thư mục: 
+ SETUP: chứa các tập tin dùng để cài đặt (chạy) chương trình demo. 
+ SOURCE: chứa các tập tin nguồn, các tập tin dữ liệu thử. 
+ THESIS: chứa các tập tin tài liệu văn bản  của báo cáo.( file .DOC X, .PDF, 
+.PPTX, .AVI……) 
+ SOFT: chứa các phần mềm liên quan trong quá trình thực hiện báo cáo. Nếu 
+dung lượng lớn có thể nạp dưới dạng Link shared hoặc download. 
+ File HUONGDAN.PDF với nội dung hướng dẫn sử dụng. 
+2. Cấu trúc báo cáo: 
+2.1. Sắp xếp hình thức trình bày các thành phần file word: 
+i. Bìa: Nội dung trình bày như Mẫu 01-BCBTL 
+ii. Lời cảm ơn. 
+iii. Danh mục các bảng biểu, danh mục các từ viết tắt.  
+iv. Mục lục (Mục lục động dạng cơ bản, tối đa đề  mục cấp 3, không đánh số các 
+phần trên). 
+v. Nội dung gồm: phần mở đầu, các chương và phần kết luận. 
+vi. Phụ lục. 
+vii. Tài liệu tham khảo. 
+2.2. Cách trình bày nội dung ( mục 2.1.v): 
+i. Đánh máy và in một mặt trên khổ giấy A4 không xén lề. 
+ii. Nội dung: Tiếng Việt chữ thường, sử dụng bảng mã Unicode, font Times New 
+Roman, cỡ chữ 13, dãn cách dòng là 1,3 hoặc 1,5 lines. Các tiêu đề, đề mục có thể sử 
+dụng chữ in, kiểu chữ in đậm, nghiêng, cỡ chữ thống nhất như chữ thường. 
+iii. Các bảng biểu có thể tăng giảm cỡ chữ để phù hợp với  khổ giấy. Các bảng 
+biểu đặt theo chiều ngang thì đầu bảng đặt ở lề trái. 
+iv. Số thứ tự trang đặt ở lề dưới. 
+v. Định dạng khoảng cách lề trên là 2  cm, lề dưới là 2 cm, lề trái là 3  cm, lề phải 
+là 2 cm. 
+vi. Trình bày chương mục như sau, tối đa đề mục cấp 4: 
+CHƯƠNG 1 
+1.1. 
+1.1.1. 
+--- PAGE 2 ---
+1.1.2. 
+1.2. 
+. . . . . . . . 
+vii. Số trang tối thiểu là 20 
+2.3. Yêu cầu thực hiện Powerpoint: 
+Tối thiểu 04 slide với các nội dung chính: 
+Slide 1: Thông tin Đề tài, người thực hiện … Tương tự trang bìa báo cáo. 
+Slide 2: Tóm tắt nội dung báo cáo (tối đa 2 cấp). 
+Slide 3 đến kế cuối: nội dung báo cáo (có thể trình bày bằng video, chạy demo) 
+Slide cuối: Cảm ơn. 
+3. MỘT SỐ LƯU Ý: 
+ Trao đổi làm bài qua Forum trực tuyến của môn học. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+--- PAGE 3 ---
+TRƯỜNG ĐẠI HỌC GIAO THÔNG VẬN TẢI TP.HỒ CHÍ 
+MINH 
+KHOA CÔNG NGHỆ THÔNG TIN 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+BÁO CÁO BÀI TẬP LỚN MÔN AN TOÀN THÔNG TIN 
+ 
+ 
+ 
+Tên đề tài: (CHỮ IN HOA, SIZE 20) 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+NGÀNH         :  
+CHUYÊN NGÀNH :  
+SV thực hiện :  MSSV: 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Địa điểm, tháng … năm 2020        
+Mẫu 01-BCBTL 

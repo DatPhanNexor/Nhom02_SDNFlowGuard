@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "evidence_type": "switch_ingress_packet_observation",
+  "total_packets": 24,
+  "first_packet_clock": "18:46:47.909111",
+  "last_packet_clock": "18:46:50.146161",
+  "capture_clock_has_date": false,
+  "capture_clock_has_timezone": false,
+  "observations": [
+    {
+      "switch_id": "of:0000000000000001",
+      "ingress_port": "1",
+      "interface": "s1-eth1",
+      "observed_source_mac": "00:00:00:00:00:01",
+      "observed_source_ip": "10.0.0.1",
+      "observed_destination_ip": "10.0.0.2",
+      "protocol": "ICMP",
+      "icmp_type": "request",
+      "packet_count": 12
+    },
+    {
+      "switch_id": "of:0000000000000001",
+      "ingress_port": "2",
+      "interface": "s1-eth2",
+      "observed_source_mac": "00:00:00:00:00:02",
+      "observed_source_ip": "10.0.0.2",
+      "observed_destination_ip": "10.0.0.1",
+      "protocol": "ICMP",
+      "icmp_type": "reply",
+      "packet_count": 12
+    }
+  ],
+  "security_assessment": {
+    "source_ip_observed": true,
+    "attacker_confirmed": false,
+    "historical_alert_correlation_verified": false,
+    "decision": "OBSERVE",
+    "automatic_block_allowed": false
+  }
+}

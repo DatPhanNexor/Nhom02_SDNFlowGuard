@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "threshold_pps": 4.0,
+  "consecutive": 2,
+  "window_minutes": 10,
+  "watermark": "2026-10-31T18:03:34.704439+00:00",
+  "seen_ids": {
+    "sdnflowguard-events-2026.10.31:OYIYk6EBoaNkWx97lk3J": "2026-10-31T17:53:44.530800032Z",
+    "sdnflowguard-events-2026.10.31:OoIYk6EBoaNkWx97lk3J": "2026-10-31T17:53:44.538285559Z",
+    "sdnflowguard-events-2026.10.31:O4IYk6EBoaNkWx97vk0G": "2026-10-31T17:53:54.574486254Z",
+    "sdnflowguard-events-2026.10.31:PIIYk6EBoaNkWx97vk0G": "2026-10-31T17:53:54.583123058Z",
+    "sdnflowguard-events-2026.10.31:PYIYk6EBoaNkWx975U1B": "2026-10-31T17:54:04.620963163Z",
+    "sdnflowguard-events-2026.10.31:PoIYk6EBoaNkWx975U1B": "2026-10-31T17:54:04.627912122Z",
+    "sdnflowguard-events-2026.10.31:P4IZk6EBoaNkWx97DE2X": "2026-10-31T17:54:14.682813345Z",
+    "sdnflowguard-events-2026.10.31:QIIZk6EBoaNkWx97DE2X": "2026-10-31T17:54:14.692250657Z",
+    "sdnflowguard-events-2026.10.31:QYIgk6EBoaNkWx97XU3W": "2026-10-31T18:02:14.225355551Z",
+    "sdnflowguard-events-2026.10.31:QoIgk6EBoaNkWx97XU3W": "2026-10-31T18:02:14.244970454Z",
+    "sdnflowguard-events-2026.10.31:Q4Igk6EBoaNkWx97hU0l": "2026-10-31T18:02:24.291240164Z",
+    "sdnflowguard-events-2026.10.31:RIIgk6EBoaNkWx97hU0l": "2026-10-31T18:02:24.313068329Z",
+    "sdnflowguard-events-2026.10.31:RYIgk6EBoaNkWx97rE1i": "2026-10-31T18:02:34.330113185Z",
+    "sdnflowguard-events-2026.10.31:RoIgk6EBoaNkWx97rE1i": "2026-10-31T18:02:34.356251994Z",
+    "sdnflowguard-events-2026.10.31:R4Igk6EBoaNkWx97002Z": "2026-10-31T18:02:44.388070508Z",
+    "sdnflowguard-events-2026.10.31:SIIgk6EBoaNkWx97002Z": "2026-10-31T18:02:44.395574979Z",
+    "sdnflowguard-events-2026.10.31:SYIgk6EBoaNkWx97-00D": "2026-10-31T18:02:54.440759676Z",
+    "sdnflowguard-events-2026.10.31:SoIgk6EBoaNkWx97-00D": "2026-10-31T18:02:54.463380273Z",
+    "sdnflowguard-events-2026.10.31:S4Ihk6EBoaNkWx97Ik04": "2026-10-31T18:03:04.512523745Z",
+    "sdnflowguard-events-2026.10.31:TIIhk6EBoaNkWx97Ik04": "2026-10-31T18:03:04.522038176Z",
+    "sdnflowguard-events-2026.10.31:TYIhk6EBoaNkWx97SU2H": "2026-10-31T18:03:14.570004485Z",
+    "sdnflowguard-events-2026.10.31:ToIhk6EBoaNkWx97SU2H": "2026-10-31T18:03:14.582077751Z",
+    "sdnflowguard-events-2026.10.31:T4Ihk6EBoaNkWx97cE3n": "2026-10-31T18:03:24.646419813Z",
+    "sdnflowguard-events-2026.10.31:UIIhk6EBoaNkWx97cE3n": "2026-10-31T18:03:24.660529123Z",
+    "sdnflowguard-events-2026.10.31:UYIhk6EBoaNkWx97mE0o": "2026-10-31T18:03:34.695661044Z",
+    "sdnflowguard-events-2026.10.31:UoIhk6EBoaNkWx97mE0o": "2026-10-31T18:03:34.704439151Z"
+  },
+  "notified": {
+    "26a7d4698e5c1969ee1b11e87e09661f7ec5f771d405725c95de4afa300008bb": "2026-10-31T18:02:34.330113185Z",
+    "a917b54d84fad6a9fabae6f1a7dee1ce315a5dd4b63e9c91230eb196ec88f84a": "2026-10-31T18:02:34.356251994Z"
+  },
+  "updated_at_utc": "2026-10-31T18:23:36.395622+00:00"
+}

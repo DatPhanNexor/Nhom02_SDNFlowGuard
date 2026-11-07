@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "evidence_type": "switch_ingress_packet_observation",
+  "total_packets": 6,
+  "first_packet_clock": "06:22:31.045140",
+  "last_packet_clock": "06:22:31.446510",
+  "capture_clock_has_date": true,
+  "capture_clock_has_timezone": true,
+  "observations": [
+    {
+      "switch_id": "of:0000000000000001",
+      "ingress_port": "1",
+      "interface": "s1-eth1",
+      "observed_source_mac": "00:00:00:00:00:01",
+      "observed_source_ip": "10.0.0.1",
+      "observed_destination_ip": "10.0.0.2",
+      "protocol": "ICMP",
+      "icmp_type": "request",
+      "packet_count": 3
+    },
+    {
+      "switch_id": "of:0000000000000001",
+      "ingress_port": "2",
+      "interface": "s1-eth2",
+      "observed_source_mac": "00:00:00:00:00:02",
+      "observed_source_ip": "10.0.0.2",
+      "observed_destination_ip": "10.0.0.1",
+      "protocol": "ICMP",
+      "icmp_type": "reply",
+      "packet_count": 3
+    }
+  ],
+  "security_assessment": {
+    "source_ip_observed": true,
+    "attacker_confirmed": false,
+    "historical_alert_correlation_verified": false,
+    "decision": "OBSERVE",
+    "automatic_block_allowed": false
+  },
+  "capture_metadata": {
+    "capture_started_utc": "2026-11-05T06:22:30Z",
+    "capture_finished_utc": "2026-11-05T06:22:32Z",
+    "capture_sha256": "bef49f603007d7f0fd154b691d8de9b8945a7e89055bf6f4c9fa7ff7d71c8cf8",
+    "switch_id": "of:0000000000000001",
+    "interfaces": [
+      "s1-eth1",
+      "s1-eth2"
+    ]
+  }
+}

@@ -1,0 +1,1305 @@
+
+--- PAGE 1 ---
+TRƯỜNG ĐH GIAO THÔNG VẬN TẢI TP. HỒ CHÍ MINH 
+ĐỀ CƯƠNG CHI TIẾT HỌC PHẦN 
+(COURSE SYLLABUS) 
+ 
+1. Tổng quát về học phần (General course information) 
+Tên học phần 
+Tiếng Việt: CHUYÊN ĐỀ HỆ THỐNG MẠNG VÀ BẢO MẬT 
+Tiếng Anh: TOPIC: NETWORK SYSTEMS AND SECURITY 
+Mã HP:  
+123046 
+Số tín chỉ1                 4 (3,1,4) 
+Phân b ổ thời 
+gian 
+Lý thuyết/Bài tập/Dự án 
+Thực hành/Thí 
+nghiệm/Thảo luận 
+Tổng Tự học 
+45 30 75 125 
+Thang điểm 10 
+HP học trước   
+HP tiên quyết  Tất cả các học phần bắt buộc và tự chọn tối thiểu cần phải tích lũy trong chương 
+trình. 
+HP song hành   
+Loại học phần ☐ Bắt buộc         ☑ Tự chọn bắt buộc        ☐ Tự chọn tự do 
+Thuộc thành 
+phần  
+ 
+ 
+2. Mô tả tóm tắt học phần (Course description) 
+Học phần Chuyên đề Hệ thống mạng và bảo mật thuộc khối kiến thức chuyên ngành của chương trình 
+đào tạo ngành Mạng máy tính và Truyền thông dữ liệu, Công nghệ Thông tin. Học phần cung cấp những 
+kiến thức về hệ thống mạng và bảo mật hệ thống mạng trong môi trường mạng cục bộ LAN, mạng diện 
+rộng WAN, môi trư ờng mạng đa hợp và Internet. Nội dung học phần giới thiệu các nguyên lý cơ b ản 
+của an toàn và bảo mật mạng, trong đó tập trung vào các công nghệ và giao thức chuẩn đã được sử dụng 
+rộng rãi để đảm bảo an toàn cho các d ữ liệu truyền qua mạng.  Sinh viên sẽ thành thạo việc phân tích, 
+                                              
+ 
+ 
+--- PAGE 2 ---
+đề xuất giải pháp và hư ớng tiếp cận để thực hiện bảo mật hệ thống mạng cho tổ chức, các kiến thức 
+liên quan đến quản trị, vận hành và thi ết kế hệ thống bảo mật; các kiến thức tổng quan về bảo 
+mật hệ thống và các tài nguyên mạng nội bộ, truyền dữ liệu trong mạng đa hợp, bảo mật các giá 
+trị vật lý. Sinh viên sau khi đã h ọc những kiến thức trong học phần tiến hành làm dự án cụ thể 
+gắn với doanh nghiệp trong việc nâng cao bảo mật hệ thống mạng. Sinh viên sẽ ý thức được tầm 
+quan trọng của an toàn, b ảo mật mạng thông tin và b ảo mật hệ thống mạng cho doanh nghi ệp, có khả 
+năng tự học và cập nhật công nghệ mới. 
+3. Mục tiêu học phần (Course Objectives) 
+Học phần này trang bị cho sinh viên: 
+CO1:  Nắm vững kiến thức cơ sở về An toàn, bảo mật hệ thống mạng. 
+CO2: Áp dụng kiến thức nền tảng về an ninh hệ thống trong xây dựng, đánh giá và bảo mật hệ 
+thống mạng doanh nghi ệp, phân tích, đề xuất giải pháp và hư ớng tiếp cận để thực hiện đảm bảo an 
+toàn bảo mật hệ thống mạng cho tổ chức. 
+CO3: Ý thức tầm quan trọng của an toàn hệ thống mạng thông tin và bảo mật hệ thống mạng dữ liệu và 
+vật lý cho doanh nghiệp, liên tục nâng cấp, cập nhật công nghệ mới trong lĩnh vực an toàn an ninh h ệ 
+thống mạng. 
+4. Chuẩn đầu ra học phần (Course Learning Outcomes - CLO) 
+Sau khi học xong học phần này sinh viên có khả năng: 
+CLO1:Nắm vững kiến thức cơ sở về An toàn, bảo mật hệ thống mạng, Giải thích được các nguyên tắc 
+cốt lõi của một hệ thống mạng và bảo mật mạng, các kiểu đe dọa, nguy cơ làm m ất An toàn, Bảo mật 
+mạng. 
+CLO2:Xây dựng, đánh giá và bảo mật được một hệ thống mạng cho doanh nghiệp; phân tích, đề 
+xuất giải pháp và hướng tiếp cận để thực hiện đảm bảo an toàn bảo mật hệ thống mạng cho tổ chức. 
+CLO3:Phân tích các vấn đề mới và xu thế phát triển của lĩnh vực Hệ thống Mạng và bảo mật hệ thống 
+mạng, qua khả năng tự nghiên cứu các tài liệu chuyên ngành; Làm việc độc lập hoặc theo nhóm với các 
+hoạt động và hình thức được qui định. 
+Liên hệ giữa CĐR học phần (CLOs) và CĐR CTĐT (PLOs): 
+PLO/ 
+CLO 
+PLO1 PLO2 PLO3 PL O4 PL O5 PLO6 PLO7 
+  PI2.1 PI2.2 PI2.3 PI2.4 PI 3.1 PI 3.2 PI3 .3     PI6.1 PI6. 2 PI 6.3 PI7.1 PI7.2 
+CLO1     M, A     M, A                    
+CLO2                    M, A  M, A  M, A      
+CLO3                     M, A  M, A  M, A   R R  
+5. Nhiệm vụ của sinh viên (Students duties) 
+--- PAGE 3 ---
+Sinh viên phải tham dự tối thiểu 80% số tiết của học phần; 
+Làm và nộp các bài tập/ báo cáo/ làm việc nhóm/ thuyết trình.... đúng thời gian quy định; 
+Tự nghiên cứu các vấn đề được giao ở nhà hoặc thư viện; 
+Hoàn thành các bài đánh giá quá trình; kết thúc học phần. 
+6. Phương pháp kiểm tra, đánh giá (Assessment methods): 
+Phương pháp kiểm tra đánh giá của HP đảm bảo người học đạt được CĐR mong đợi 
+Thành ph ần đánh 
+giá 
+[1] 
+Phương pháp/ Hình 
+thức đánh giá 
+[2] 
+CĐR HP (CLOs) 
+[3] 
+Tiêu chí đánh 
+giá 
+[4] 
+Trọng s ố 
+(%) 
+[5] 
+Đánh giá quá trình 
+Chuyên cần CLO3 A1.2 10 
+Bài tập/ thực hành CLO2, CLO3 
+A2.2 
+A3.1 
+10 
+Trắc nghiệm CLO2, CLO3 A1.2 10 
+Kiểm tra giữa kỳ CLO1, CLO2 A4.1 20 
+Đánh giá K ết thúc 
+học phần 
+Đồ án môn học CLO1, CLO2, CLO3 A5.3 50 
+Tổng cộng    100 
+7. Kế hoạch giảng dạy và học tập (Teaching and learning plan/outline) 
+Tuần/ 
+Chương 
+Nội dung CLOs Hoạt động dạy và học Hoạt 
+động 
+đánh giá 
+Tuần 1/ 
+Chương 1  
+Chương 1. Tổng quan 
+về Hệ  thống m ạng v à 
+bảo mật 
+Lý thuyết: 
+1.1 Tầm quan trọng của 
+an toàn hệ thống, b ảo 
+mật hệ thống 
+1.2 Khái niệm về an toàn 
+máy tính. 
+1.3 Khái niệm về an toàn  
+CLO1.1 
+ 
+Giảng viên: 
+- Giới thiệu thông tin về Giảng viên. 
+- Các vấn đề liên quan đến môn học. 
+- Cách thức dạy và học 
+- Giới thiệu lướt qua đề cương môn học. 
+- Nhắc gợi nhớ lại các khái niệm, các 
+thuật ngữ về mạng máy tính, hệ điều 
+hành mà sinh viên đã được học từ các 
+môn học trước. 
+- Giảng các slide cho chương 1 
+A1.2 
+A4.1 
+--- PAGE 4 ---
+mạng máy tính. 
+1.4 Kiến trúc bảo mật 
+OSI 
+1.5 Các nguyên tắc cơ 
+bản để thiết kế xây d ựng 
+một hệ thống mạng. 
+1.6 Mô hình thiết kế, xây 
+dựng h ệ thống m ạng v à  
+bảo mật mạng 
+1.7 Tiêu chuẩn ISO 
+27001/27002 
+Elearning: 
+- Ôn tập các kiến thức 
+Mạng máy tính, Quản trị 
+mạng, An ninh mạng và 
+An toàn thông tin. 
+- Đọc kỹ các tiêu chuẩn 
+27001/27002, T CVN về 
+ATTT: TCVN 
+11930:2017; TCVN 
+14423:2025. 
+ 
+Sinh viên: 
+- Theo dõi các nội dung của bài giảng. 
+- Thảo luận các vấn đề được đặt ra. 
+- Làm/sửa/góp ý về các bài tập trên lớp. 
+Tuần 2/ 
+Chương 2  
+ 
+Chương 2: B ảo m ật 
+vật lí 
+Lý thuyết: 
+2.1 Giới thiệu bảo mật  
+vật lí 
+2.2 Các mối nguy hiểm  
+vật lí 
+2.3 Kiểm soát an toàn  
+vật lí 
+2.4 Quản lý con người 
+Elearning: 
+Cài đặt và thực hành và 
+sử dụng các công cụ bảo 
+vệ thiết bị vật lý có sẵn 
+trên các hệ điề u hành 
+Windows, Linux. 
+ 
+ 
+CLO2.1 
+Giảng viên: 
+- Giảng các slide chương 2 
+- Giới thiệu và làm mẫu các nội dung căn 
+bản và hướng dẫn sinh viên tự tìm hiểu 
+thêm và thực hành. 
+- Đưa ra các vấn đề thả o luận liên quan 
+trong thực tế, Đặt câu hỏi gợi mở để  
+sinh viên trả lời.  
+- Liên hệ với những kiến thức thực tế. 
+Sinh viên: 
+- Theo dõi nội dung bài giảng. 
+- Thảo luận các vấn đề Giảng viên đặt ra. 
+- Thực hành sử dụng các công cụ, nắm 
+được các kiểu đe dọa nguy hiểm vật lý để 
+tự suy nghĩ và đưa ra cách phòng ngừa 
+các mối đe dọa đó. 
+- Làm/sửa/góp ý v ề các bài t ập trên 
+lớp. 
+ 
+A1.2 
+A4.1 
+--- PAGE 5 ---
+Tuần 3/ 
+Chương 3 
+ 
+Chương 3: Bảo mật hệ  
+điều hành 
+Lý thuyết: 
+2.1 Tổng quan về hệ  
+điều hành 
+2.2 Các mối đe dọa tới  
+hệ điều hành 
+2.3 Intruders vs Access  
+control 
+2.4 Authentication 
+Elearning: 
+Cài đặt và thực hành và 
+sử dụng các công cụ bảo 
+mật có sẵn trên các hệ 
+điều hành Windows, 
+Linux. 
+Tiến hành bảo mật mức 
+MFA cho tài khoản cá 
+nhân. 
+ 
+CLO2.1 
+Giảng viên: 
+- Giảng các slide chương 3 
+- Giới thiệu và làm mẫu các nội dung căn 
+bản và hướng dẫn sinh viên tự tìm hiểu 
+thêm và thực hành 
+- Đưa ra các vấn đề thả o luận liên quan 
+trong thực tế. 
+- Thực hành các hệ điều hàng Windows 
+Server, Linux các đe doạ bảo mật, xác 
+thực, điều khiển truy cập. 
+Sinh viên: 
+- Theo dõi nội dung bài giảng. 
+- Thảo luận các vấn đề Giảng viên đặt ra. 
+- Thực hành sử dụng các công cụ, hệ điều 
+hành windows Server, linux … để tự suy 
+nghĩ và đưa ra cách triển khai thực tế. 
+- Làm/sửa/góp ý v ề các bài t ập trên 
+lớp. 
+A1.2 
+A4.1 
+Tuần 4/ 
+Chương 4 
+ 
+Chương 4: Bảo mật 
+mạng không dây 
+Lý thuyết: 
+4.1 IEEE 802.11X 
+4.2 Các kỹ thuật tấn  
+công mạng không  
+dây 
+4.3 WEP, WPA, WPA2  
+attack 
+4.4 Encryption problem 
+Elearning: 
+Cài đặt và t hực hành sử 
+dụng việc mã hóa WIFI 
+bằng WEP, WPA2, mã 
+hóa dùng công cụ ảo hóa 
+hệ thống như GNS3, 
+Packet tracer. 
+ 
+CLO2.1 
+Giảng viên: 
+- Giảng các slide chương 4 
+- Giới thiệu và làm mẫu các nội dung căn 
+bản và hướng dẫn sinh viên tự tìm hiểu 
+thêm và thực hành 
+- Đưa ra các vấn đề thảo luận liên quan 
+trong thực tế   
+Sinh viên: 
+- Theo dõi nội dung bài giảng. 
+- Thảo luận các vấn đề Giảng viên đặt ra. 
+- Thực hành sử dụng các công cụ, nắm 
+được các kiểu đe dọa để tự suy nghĩ và 
+đưa ra cách phòng ngừa các mối đe dọa 
+đó, triển khai mạng WLAN an toàn. 
+- Làm/sửa/góp ý v ề các bài t ập trên 
+lớp. 
+A1.2 
+A4.1 
+Tuần 5/ 
+Chương 6 
+Chương 5: Bảo mật cơ 
+sở dữ liệu 
+Lý thuyết: 
+ 
+CLO2.1 
+ 
+Giảng viên: 
+- Giảng các slide chương 5 
+- Đưa ra thảo luận các vấn đề trong thực 
+tế. 
+A1.2 
+A4.1 
+--- PAGE 6 ---
+5.1 Sự cần thiết bảo mật 
+dữ liệu 
+5.2 Hệ thống quản lý 
+CSDL 
+5.3 Cơ sở dữ liệu quan hệ 
+5.4 SQL injection  
+5.5 Điều khiển truy cập 
+dữ liệu 
+5.6 Mã hóa cơ sở dữ liệu 
+5.7 An toàn d ữ liệu 
+trong đi ện toán đám 
+mây 
+Elearning: 
+Cài đặt và thực hành  
+quản lý hệ csdl MSSQL, 
+MYSQL, cấu hình mã 
+hóa, tối ưu hóa sử dụng 
+SQL phòng ngừa lỗ hổng 
+Injection, tìm hiểu thêm 
+về bảo mật Cloud, IoT. 
+Sinh viên: 
+- Theo dõi và thảo luận về nội dung bài 
+giảng. 
+- Làm các bài tập cá nhân về nhà 
+- Thực h ành c ác thi ết l ập đ ến c ác h ệ 
+thống CSDL: MSSQL, MySQL,… 
+- Cloud Security,  IoT Security 
+- Làm/sửa/góp ý v ề các bài t ập trên 
+lớp. 
+Tuần 6/ 
+Chương 6 
+ 
+Chương 6: Bảo mật hệ 
+thống Wan v à 
+Internet 
+Lý thuyết: 
+6.1 Các ki ểu t ấn công 
+trên mạng. 
+6.1.1 TCP/IP Attacks. 
+6.1.2 Malicious Code. 
+6.1.3 Virus  
+- Hoạt động của Virus 
+- Các loại virus 
+- Phòng chống virus 
+6.2 Bảo mật thư điện 
+tử  
+6.3 Bảo mật IP.  
+6.4 Bảo mật Web.  
+Elearning: 
+- Tìm hiểu các công cụ 
+AntiVirus, ứng dụng 
+WAF, Firewall tích 
+hợp trên Windows, 
+CLO1.1 
+ 
+Giảng viên: 
+- Giảng các slide chương 6 
+- Thực hiện ví dụ mẫu và phân tích 
+- Đưa ra thảo luận các vấn đề liên quan 
+trong thực tế   
+Sinh viên: 
+- Theo dõi nội dung bài giảng. 
+- Đưa ra thảo luận các  vấn đề liên quan 
+đến b ảo m ật trong h ệ thống m ạng 
+WAN và Internet trong thực tế. 
+- Làm bài tập cá nhân dùng các ứng dụng 
+Virus khác nhau. 
+- Thực hành các thiết lập cho h ệ thống 
+Email.   
+- Thực hành các ứng dụng b ảo mật IP, 
+WEB. 
+- Làm/sửa/góp ý v ề các bài t ập trên 
+lớp. 
+A1.2 
+A4.1 
+--- PAGE 7 ---
+linux, cấu hình bảo 
+mật theo chủ đề 
+chương. 
+Tuần 7/ 
+Chương 7 
+ 
+ Chương 7: Hệ thống 
+mạng và Bảo mật 
+Lý thuyết: 
+7.1 Các vấn đề chung về 
+bảo mật hệ thống mạng 
+7.2 Các biện pháp bảo 
+mật hệ thống mạng máy 
+tính 
+7.3 Mã hóa dữ liệu & chữ 
+ký điện tử 
+7.4 Firewall 
+7.5 VPN 
+7.6 VLAN 
+7.7 NAT 
+7.8 Media security 
+7.9 IDS/IPS 
+7.10 Network security 
+Policy 
+Elearning: 
+- Thực hành các công 
+cụ mã hóa d ữ liệu, 
+Email; cài đặt Firewall, 
+VPN, Proxy trên 
+windows, linux, c ấu 
+hình bảo mật theo ch ủ 
+đề chương. 
+CLO1.1 
+CLO2.1 
+ 
+Giảng viên: 
+- Giảng các slide chương 7 
+- Thực hiện ví dụ mẫu và phân tích 
+- Đưa ra thảo luận các vấn đề liên quan 
+trong thực tế   
+Sinh viên: 
+- Theo dõi nội dung bài giảng. 
+- Đưa ra thảo luận các vấn đề liên quan 
+đến tường lửa trong thực tế. 
+- Làm bài tập cá nhân về xây dựng mô 
+hình hệ thống có sử dụng tường lửa. 
+- Tạo các tập luật cho tường lửa  
+- Thực hành xây dựng tường lửa mềm 
+bằng một trong các ứng dụng. 
+- Thực h ành: VPN, VLAN, NAT, 
+IDS/IPS… 
+- Làm/sửa/góp ý v ề các bài t ập trên 
+lớp. 
+A1.2 
+A4.1 
+Tuần 8/ 
+Chương 8 
+ 
+Chương 8: Chính sách 
+bảo mật 
+Lý thuyết: 
+8. 1 Chính sách b ảo 
+mật 
+8.2 Chính sách bảo mật 
+mạng 
+8.3 Chính sách phòng 
+chống thảm họa 
+8.4 Luật an ninh mạng  
+CLO2.1 
+ 
+Giảng viên: 
+- Giảng các slide chương 8 
+- Thực hiện ví dụ mẫu và phân tích 
+- Đưa ra các vấn đề thảo luận liên quan 
+trong thực tế   
+Sinh viên: 
+- Theo dõi nội dung bài giảng. 
+- Đưa ra thảo luận các  vấn đề liên quan 
+trong thực tế. 
+- Tìm hiểu luật an ninh mạng và hệ thống 
+quản lý an toàn thông tin (ISMS) 
+A1.2 
+A4.1 
+--- PAGE 8 ---
+8.5 H ệ thống qu ản l ý 
+an to àn thông tin 
+(ISMS) 
+Elearning: 
+-Tìm hiểu luật An ninh 
+mạng 2018, 2025; Tìm 
+hiểu đi ểm m ới trong 
+luật 2025.  
+- Đọc tài liệu ISMS để 
+lập k ế hoạch b ảo m ật 
+an toàn thông tin cho 
+doanh nghi ệp nh ỏ và 
+vừa. 
+ 
+- Làm/sửa/góp ý v ề các bài t ập trên 
+lớp. 
+Tuần 9-15 
+Chương 9 
+ 
+Chương 9: Đồ án môn 
+học Hệ thống  mạng &  
+bảo mật 
+Elearning: 
+9.1 Khảo sát, đánh giá dự 
+án được giao thực hiện 
+9.2 Lập kế hoạch 
+9.3 Thiết kế mô hình h ệ 
+thống mạng 
+9.4 Xây dựng, triển khai 
+hệ thống đã thiết kế 
+9.5 Hoàn thi ện báo cáo 
+kỹ thuật 
+9.6 Tổng kết, hướng phát 
+triển trong tương lai 
+9.7 Báo cáo và đánh giá 
+dự án 
+ 
+CLO3.1 
+ 
+ 
+Giảng viên: 
+- Chia nhóm sinh viên thực hiện đồ án, 
+nhóm tối đa 3 Sinh viên. 
+- Giao các chủ đề, đề tài dự án để s inh 
+viên nhận, mỗi nhóm tối đa 3 sinh viên. 
+- Hướng dẫn sinh viên thực hiện đồ án. 
+- Theo dõi, trao đổi và làm rõ các yêu cầu 
+của sinh viên trong quá trình thực hiện. 
+- Điều hành việc báo cáo và thảo luận, 
+kiểm tra đánh giá mức độ hoàn thành. 
+- Nhận xét, đánh giá và thống nhất kết 
+quả đồ án. 
+Sinh viên: 
+- Thảo luận các vấn đề liên quan các đồ 
+án được giao. 
+- Phân công công việc cho các thành viên 
+và thực hiện. 
+- Trao đổi với giảng viên khi có yêu 
+cầu cần làm rõ và thư ờng xuyên báo 
+cáo tiền độ hoàn thành đồ án. 
+- Theo dõi và thảo luận v ề các báo cáo, 
+thuyết trình của các nhóm khác 
+- Làm việc nhóm và báo cáo thuyết trình 
+trình bày k ết qu ả đã làm, nộp 
+chương trình (n ếu có) và  những tài 
+liệu kèm theo. 
+ 
+A1.2 
+ 
+A5.3 
+  
+ 
+--- PAGE 9 ---
+8. Tài liệu học tập (Course materials) 
+8.1. Tài liệu chính (Main materials) 
+[1] Dr. Chuck Easttom (4 th Edition), 2023, Network Defense and Countermeasures: 
+Principles and Practices, Pearson 
+[2] TS. Lê Qu ốc Tuấn, Bài giảng An ninh m ạng, 2026, Trư ờng Đại học Giao thông v ận tải 
+TPHCM. 
+[3] TS. Lê Quốc Tuấn, Bài giảng An toàn thông tin, 2026, Trường Đại học Giao thông vận tải 
+TPHCM. 
+8.2. Tài liệu tham khảo (References materials) 
+[1] William Stallings (6 th  Edition - eTextbook), 2021,  Network Security Essentials: 
+Applications and Standards, Pearson 
+[2] EC-Council, Certified Network Defender (CND) e-Courseware, EC-Council Press, 
+2024. 
+[3] EC-Council, CEH v13: The Leading Ethical Hacking Course with AI Integration. EC-
+Council Press, 2024. 
+[4] William Stallings and Lawrie Brown (Kindle Edition), 2023, Computer Security: 
+Principles and Practice, Pearson 
+[5] Quốc hội nước Cộng hòa xã hội chủ nghĩa Việt Nam, Luật An ninh mạng, Số 
+24/2018/QH14, ban hành ngày 12 tháng 6 năm 2018. 
+[6] Quốc hội nước Cộng hòa xã hội chủ nghĩa Việt Nam, Luật An ninh mạng, Số 
+116/2025/QH15, ban hành ngày 10 tháng 12 năm 2025. 
+ 
+9. Yêu cầu khác về học phần (Other course requirements and expectations) 
+Không 
+10. Biên soạn và cập nhật đề cương (write and revise course syllabus)  
+- Ngày biên soạn lần đầu: 26.06.2024 
+- Ngày chỉnh sửa: : 25.08.2026 (chỉnh sửa lần thứ 2). 
+PHÒNG ĐÀO TẠO 
+ 
+ 
+QL CHƯƠNG TRÌNH 
+ 
+TS. Lê Văn Quốc Anh 
+ 
+ 
+GV LẬP ĐỀ CƯƠNG 
+ 
+TS. Lê Quốc Tuấn 
+ 
+ 
+  
+--- PAGE 10 ---
+PHỤ LỤC 
+(Phụ lục của Đề cương chi tiết học phần) 
+Phụ lục 1. Các Rubrics đánh giá 
+Đánh giá chuyên cần 
+Rubric A1.1: Chuyên cần 1 
+Tiêu chí đánh 
+giá 
+Mức độ đạt chuẩn quy định 
+Trọng 
+số  MỨC F 
+(0-3.9) 
+MỨC D 
+(4.0-5.4) 
+MỨC C 
+(5.5-6.9) 
+MỨC B 
+(7.0-8.4) 
+MỨC A 
+(8.5-10) 
+Thái đ ộ tham 
+gia tích cực 
+Không 
+tham gia 
+các ho ạt 
+động 
+Ít tham gia các 
+hoạt động 
+Có tham gia các 
+hoạt động 
+Khá tích cực tham 
+gia các hoạt động 
+Tích cực tham gia 
+các hoạt động 50 
+Thời gian tham 
+gia đầy đủ 
+Thời gian 
+dưới 40% 
+Thời gian t ừ 
+40-54% 
+Thời gian t ừ 55-
+69% 
+Thời gian t ừ 70-
+84% 
+Thời gian t ừ 85% 
+trở lên 50 
+Rubric A1.2: Chuyên cần 2 
+Tiêu chí đánh 
+giá 
+Mức độ đạt chuẩn quy định 
+Trọng 
+số  MỨC F 
+(0-3.9) 
+MỨC D 
+(4.0-5.4) 
+MỨC C 
+(5.5-6.9) 
+MỨC B 
+(7.0-8.4) 
+MỨC A 
+(8.5-10) 
+Thảo luận 
+Không 
+tham gia 
+đóng g óp 
+trong các 
+hoạt động 
+Tham gia đ óng 
+góp ý kiến 01 
+lần 
+Tham gia đ óng 
+góp ý kiến 02 lần 
+Tham gia đ óng 
+góp ý kiến 03 lần 
+Tham gia đ óng 
+góp ý kiến trên 03 
+lần 
+50 
+Thời gian tham 
+gia 
+Tham gia 
+dưới 80% 
+tổng bu ổi 
+học đư ợc 
+điểm danh 
+(cấm thi) 
+Tham gia dư ới 
+85% t ổng bu ổi 
+học đư ợc đi ểm 
+danh 
+Tham gia dư ới 
+70% t ổng bu ổi 
+học đư ợc đi ểm 
+danh 
+Tham gia dư ới 
+80% tổng buổi học 
+được điểm danh 
+Tham gia không 
+dưới 80% t ổng 
+buổi h ọc đư ợc 
+điểm danh 
+50 
+Lưu ý: 
+Phần thảo luận: tổ chức tối thiểu 4 lần cho hoạt động như thực hiện bài tập tại lớp, bài tập tại nhà, hoạt động nhóm,... 
+Cách thức tính thời gian tham gia thông qua điểm danh: có thể chọn ít nhất 1 trong các cách  
+Điểm danh kèm kiểm tra thẻ sv tránh sv ngồi nhờ học hộ – điểm danh trực tiếp (ưu tiên) 
+Điểm danh thông qua số lần nộp bài (bài kiểm tra cuối chương bài, bài ôn tập) 
+Điểm danh thông qua số lần phát biểu, số lần tham gia một hoạt động cụ thể 
+Dùng cho PI 7.1 và PI 7.2 
+Đánh giá bài tập trên lớp 
+Rubric A2.1: Bài tập trên lớp (kết hợp có đánh giá hoạt động, dùng cho môn không đánh giá chuyên cần riêng) 
+--- PAGE 11 ---
+Tiêu chí đánh 
+giá 
+Mức độ đạt chuẩn quy định 
+Trọng 
+số  MỨC F 
+(0-3.9) 
+MỨC D 
+(4.0-5.4) 
+MỨC C 
+(5.5-6.9) 
+MỨC B 
+(7.0-8.4) 
+MỨC A 
+(8.5-10) 
+Chất lư ợng b ài 
+nộp 
+Thời gian 
+dưới 40% 
+Thời gian t ừ 
+40-54% 
+Thời gian t ừ 55-
+69% 
+Thời gian t ừ 70-
+84% 
+Thời gian t ừ 85% 
+trở lên 20 
+Thái đ ộ tham 
+gia 
+Không 
+tham gia 
+các ho ạt 
+động 
+Ít tham gia các 
+hoạt động 
+Có tham gia các 
+hoạt động 
+Khá tích cực tham 
+gia các hoạt động 
+Tích cực tham gia 
+các hoạt động 20 
+Kỹ năng th ảo 
+luận 
+Không th ảo 
+luận Kém Trung bình Khá Tốt 20 
+Chất lư ợng 
+đóng góp ý kiến 
+Thời gian 
+dưới 40% 
+Thời gian t ừ 
+40-54% 
+Thời gian t ừ 55-
+69% 
+Thời gian t ừ 70-
+84% 
+Thời gian t ừ 85% 
+trở lên 40 
+ 
+Rubric A2.2: Bài t ập trên l ớp (không kết hợp có đánh giá hoạt động, dùng cho môn c ó phần đánh giá chuyên cần 
+riêng biệt, và các môn có chữ A trong CTĐT, có thu thập minh chứng bài làm của người học) 
+Tiêu chí đánh 
+giá 
+Mức độ đạt chuẩn quy định 
+Trọng 
+số  MỨC F 
+(0-3.9) 
+MỨC D 
+(4.0-5.4) 
+MỨC C 
+(5.5-6.9) 
+MỨC B 
+(7.0-8.4) 
+MỨC A 
+(8.5-10) 
+Chất lư ợng b ài 
+nộp 
+Thời gia n 
+dưới 40% 
+Thời gian t ừ 
+40-54% 
+Thời gian t ừ 55-
+69% 
+Thời gian t ừ 70-
+84% 
+Thời gian t ừ 85% 
+trở lên 100 
+Đánh giá thực hành 
+Rubric A3.1: Bài tập thực hành (dùng cho các môn liên quan đến PLO5) 
+Tiêu chí đánh 
+giá 
+Mức độ đạt chuẩn quy định 
+Trọng 
+số  MỨC F 
+(0-3.9) 
+MỨC D 
+(4.0-5.4) 
+MỨC C 
+(5.5-6.9) 
+MỨC B 
+(7.0-8.4) 
+MỨC A 
+(8.5-10) 
+Thái đ ộ tham 
+dự tích cực 
+Không 
+tham gia 
+các ho ạt 
+động 
+Ít tham gia các 
+hoạt động 
+Có tham gia các 
+hoạt động 
+Khá tích cực tham 
+gia các hoạt động 
+Tích cực tham gia 
+các hoạt động 20 
+Kết quả thực 
+hành  
+Không làm 
+bài tập thực 
+hành 
+Kết qu ả thực 
+hành không đầy 
+đủ, không đáp 
+ứng yêu cầu 
+Tương đối đây đủ 
+và đáp ứng tương 
+đối các yêu c ầu, 
+có m ột sai sót 
+quan trọng. 
+Khá đầy đủ và đáp 
+ứng khá t ốt các 
+yêu c ầu, còn sai 
+sót nhỏ 
+Đầy đủ và đáp ứng 
+hoàn toàn các yêu 
+cầu 
+40 
+Giải thích k ết 
+quả thực hành 
+Không làm 
+bài tập thực 
+hành 
+Giải thích  
+không rõ ràng 
+Giải thích khá rõ 
+ràng, còn nhi ều 
+sai sót quan trọng 
+trong lập luận. 
+Giải thích khá rõ 
+ràng, Còn m ột sai 
+sót quan tr ọng 
+trong lập luận. 
+Giải thích và l ập 
+luận rõ ràng 30 
+--- PAGE 12 ---
+Tiêu chí đánh 
+giá 
+Mức độ đạt chuẩn quy định 
+Trọng 
+số  MỨC F 
+(0-3.9) 
+MỨC D 
+(4.0-5.4) 
+MỨC C 
+(5.5-6.9) 
+MỨC B 
+(7.0-8.4) 
+MỨC A 
+(8.5-10) 
+Báo cáo th ực 
+hành đúng quy 
+định 
+Không làm 
+bài tập thực 
+hành 
+Chưa đ ầy đ ủ, 
+chưa đúng h ạn 
+hoặc đúng đ ịnh 
+dạng 
+Chưa đầy đủ Đầy đ ủ và đúng hạn. Đầy đủ, đúng định dạng và đúng hạn. 10 
+ 
+Đánh giá giữa kỳ/cuối kỳ 
+Rubric A4.1: Thi tự luận/Trắc nghiệm {bài thi giữa kỳ/bài thi cuối kỳ) 
+Tiêu chí đánh 
+giá 
+Mức độ đạt chuẩn quy định 
+Trọng 
+số  MỨC F 
+(0-3.9) 
+MỨC D 
+(4.0-5.4) 
+MỨC C 
+(5.5-6.9) 
+MỨC B 
+(7.0-8.4) 
+MỨC A 
+(8.5-10) 
+Chất lư ợng bài 
+thi 
+Đúng dư ới 
+40% 
+Đúng t ừ 40-
+54% Đúng từ 55-69% Đúng từ 70-84% Đúng t ừ 85% tr ở lên 100 
+Lưu ý: bài tập tại lớp hướng đến đạt bloom, bài thi cuối kỳ là phải có phần kiểm tra các câu đạt mức bloom theo quy đ ịnh 
+của đề cương. 
+BTTL: lấy trung bình cộng các bài tập/ các bài kiểm tra cuối chương. 
+Bài thi giữa kỳ: 2 cách thực hiện 
+- Câu hỏi không cần đạt mức bloom, như BTTL (không dùng để đánh giá đạt bloom), cuối kỳ bộ đề phủ toàn bộ các chương. 
+- Câu hỏi đạt mức bloom, giới hạn phạm vi chương, cu ối kỳ thực hiện trong các chương còn lại, cả giữa kỳ và cuối kỳ đề 
+được lấy để đo lường mức độ bloom. 
+Đánh giá tiểu luận/đồ án/bài tập lớn 
+Rubric A5.1 Đánh giá Tiểu luận/ Đồ án/ Bài tập lớn: <50% tổng điểm môn (dùng cho các môn I hoặc R khi người học 
+đạt ở cấp độ học để cải thiện thêm năng lực/ hoặc làm theo cá nhân/ giảng viên đánh giá người học), chủ yếu cho người 
+học làm quen với việc tự học, thực hiện công việc theo quy định bloom cấp độ 3 trở xuống. 
+ 
+Tiêu chí đánh 
+giá 
+Mức độ đạt chuẩn quy định 
+Trọng 
+số  MỨC 1 
+(0-3.9) 
+MỨC 2 
+(4.0-5.4) 
+MỨC 3 
+(5.5-6.9) 
+MỨC 4 
+(7.0-8.4) 
+MỨC 5 
+(8.5-10) 
+Chất lượng nội dung bài nộp 40% 
+Lỗi thuật ngữ Tối thiểu 5 lỗi Tối đa 4 lỗi Tối đa 3 lỗi Tối đa 2 lỗi Tối đa 1 lỗi 10% 
+Lập luận Không ch ặt ch ẽ, không logic Tương đối chặt chẽ, logic, có sai sót quan trọng Khá ch ặt ch ẽ, logic; còn sai sót nhỏ Hoàn toàn ch ặt chẽ, logic 30% 
+Chất lượng hình thức bài nộp 30% 
+--- PAGE 13 ---
+Format file 
+theo đ ịnh 
+dạng: s ố trang 
+tối đa, cách 
+đều lề trái, 
+phải, trên, 
+dưới, font chữ, 
+cỡ chữ 
+Không đúng yêu 
+cầu - - - Đúng tất cả yêu cầu 30% 
+Thuyết trình  30% 
+Có giao ti ếp 
+mắt, gi ọng rõ, 
+trình bày và trả 
+lời câu hỏi của 
+sv khác trôi 
+chảy, hình ảnh 
+rõ ràng và phù 
+hợp đề tài, thời 
+gian 
+Đúng t ối đa 1 
+tiêu chí Đúng 2 tiêu chí Đúng 3 tiêu chí Đúng 4 tiêu chí Đúng tất cả tiêu chí đánh giá 30% 
+Rubric A5.1 Đánh giá Tiểu luận/ Đồ án/ Bài tập lớn: <50% tổng điểm môn (dùng cho các môn I hoặc R khi người học 
+đạt ở cấp độ học để cải thiện thêm năng lực/ hoặc làm theo nhóm/ giảng viên đánh giá người học), chủ yếu cho người 
+học làm quen với đề xuất hoạt động nhóm. 
+ 
+Tiêu chí 
+đánh giá 
+Mức độ đạt chuẩn quy định 
+Trọng 
+số  MỨC 1 
+(0-3.9) 
+MỨC 2 
+(4.0-5.4) 
+MỨC 3 
+(5.5-6.9) 
+MỨC 4 
+(7.0-8.4) 
+MỨC 5 
+(8.5-10) 
+Nội dung 
+quy trình 
+hoạt đ ộng 
+nhóm do 
+sinh viên đ ề 
+xuất 
+Không đ ảm 
+bảo tiêu chí 
+nào trong quy 
+định: ch ủ 
+động và công 
+bằng 
+Đảm b ảo m ột trong hai tiêu chí 
+công bằng hoặc chủ động 
+Đảm b ảo c ả 
+hai tiêu chí 
+xây d ựng 
+nhóm. 
+Đảm b ảo c ả 
+hai tiê u chí 
+xây d ựng 
+nhóm và hoàn 
+thành tối thiểu 
+85% công 
+việc nhóm 
+được giao. 
+20% 
+Sự phối h ợp 
+trong nhóm 
+theo n ội 
+dung quy 
+định nhóm 
+đề xuất 
+Không th ể 
+hiện s ự phối 
+hợp. 
+Nhóm phối hợp chưa tốt Nhóm ph ối hợp khá tốt. Nhóm ph ối hợp tốt. 20% 
+Chất lư ợng 
+sản ph ẩm 
+giao n ộp và 
+báo cáo. 
+Hoàn thành từ 
+39% bài t ập 
+trở xuống 
+Hoàn thành từ 
+40-54% bài 
+tập 
+Hoàn thành t ừ 
+55-69% bài 
+tập 
+Hoàn thành từ 
+70-84% bài 
+tập 
+Hoàn thành từ 
+85% bài t ập 
+trở  lên 
+60% 
+Rubric A5.3 Đánh giá Tiểu luận/ Đồ án/ Bài tập lớn: <50% tổng điểm môn (dùng cho các môn R khi người học đạt ở 
+cấp độ học để cải thiện thêm năng lực, gv đánh giá người học, người học đánh giá người học theo phương pháp giáo 
+dục khai phóng, các môn có PI yêu cầu sv đề xuất quy trình hoạt động nhóm) 
+Tiêu chí đánh 
+giá 
+Mức độ đạt chuẩn quy định Trọng 
+số  MỨC 1 MỨC 2 MỨC 3 MỨC 4 MỨC 5 
+--- PAGE 14 ---
+(0-3.9) (4.0-5.4) (5.5-6.9) (7.0-8.4) (8.5-10) 
+Chất lư ợng 
+quy trình ho ạt 
+động đề xuất 
+Không nộp 
+theo yêu 
+cầu 
+Mô t ả quy 
+trình đáp ứng 
+các yêu cầu cơ 
+bản 
+Mô tả quy trình 
+rõ ràng, thiếu nội 
+dung quy định. 
+Mô tả quy trình rõ 
+ràng, đ ầy đ ủ, tuy 
+nhiên tính logic 
+không đ ảm b ảo 
+toàn v ẹn trong 
+quy trình. 
+Mô t ả quy trình 
+đầy đ ủ các ph ần: 
+phân công công 
+việc, qu ản lý và 
+kiểm soát, gi ải 
+quyết và ra quy ết 
+định, thu th ập và 
+xử lý thông tin, 
+phối h ợp tăng 
+cường s ự tham 
+gia và cam k ết, 
+đàm phán và gi ải 
+quyết xung đột. 
+Quy trình mang 
+tính logic cao. 
+30% 
+Chất lượng bài 
+nộp 
+Hoàn 
+thành t ừ 
+39% bài 
+tập tr ở 
+xuống 
+Hoàn thành t ừ 
+40-55% bài tập 
+Hoàn thành t ừ 
+55-69% bài tập 
+Hoàn thành từ 70-
+84% bài tập 
+Hoàn thành t ừ 
+85% bài t ập tr ở  
+lên 
+50% 
+Đánh giá ch ất 
+lượng bài n ộp 
+của nhóm khác 
+Đánh giá 
+không tuân 
+thủ theo 
+tiêu chí của 
+nhóm 
+Đánh giá theo 
+tiêu chí c ủa 
+nhóm, nhưng 
+chất lượng tiêu 
+chí ít. 
+Đánh giá theo 
+tiêu chí c ủa 
+nhóm, nhưng 
+chất l ượng tiêu 
+chí ở mức tương 
+đối. 
+Đánh giá theo tiêu 
+chí c ủa nhóm, 
+nhưng chất lượng 
+tiêu chí ở mức 
+tương đối. 
+Đánh giá theo tiêu 
+chí nhóm, ch ất 
+lượng đánh giá 
+thể hiện nguyên 
+tắc pháp lý, trách 
+nhiệm ngh ề 
+nghiệp. 
+20% 
+Rubric A5.4 Đánh giá b ài nộp báo cáo Tiểu luận/ Đồ án/ Bài tập lớn: >=50% tổng điểm môn (dùng cho các môn M, 
+M/A,R/A khi người học đạt ở cấp độ thành thạo) 
+Tiêu chí 
+Tốt 
+100% 
+Khá 
+75% 
+Trung bình 
+50% 
+Kém 
+0% 
+Trọng 
+số (%) 
+Sản phẩm      
+Hình thức trình bày 
+Thể thức 
+văn b ản 
+nhất quán, 
+không l ỗi 
+chính tả 
+Vài sai sót nh ỏ 
+về thể thức, ít 
+lỗi chính tả 
+Vài chỗ không 
+nhất quán v ề 
+thể thức, nhiều 
+lỗi chính tả 
+Thể hiện sự cẩu thả về 
+thể thức, l ỗi chính t ả 
+nhiều 
+10 
+Cấu trúc Cân đ ối hợp lý Khá cân đ ối, hợp lý Tương đối cân đối, hợp lý Không cân đ ối, thi ếu hợp lý 10 
+Nội dung 
+Các thành 
+phần n ội 
+dung 
+Ghi thang điểm cụ thể cho từng phần nội dung tùy thuộc yêu cầu cụ thể của 
+từng môn 
+40 
+Lập luận 
+Hoàn toàn 
+chặt ch ẽ, 
+logic 
+Khá ch ặt ch ẽ, 
+logic; còn sai 
+sót nhỏ 
+Tương đối chặt 
+chẽ, logic, có 
+sai sót quan 
+trọng 
+Không chặt chẽ, không 
+logic 
+20 
+--- PAGE 15 ---
+Kết luận Phù hợp Khá phù hợp Tương đối phù hợp Không phù h ợp, thi ết sót 20 
+Rubric A5.5: Đánh giá Thuyết trình và bảo vệ quan điểm (theo nhóm) – oral presentation, slide thuyết trình 
+Tiêu chí 
+Tốt 
+100% 
+Khá 
+75% 
+Trung bình 
+50% 
+Kém 
+0% 
+Trọng 
+số (%) 
+Nội dung 
+Phong phú hơn 
+yêu cầu Đầy đủ theo yêu cầu Khá đ ầy đ ủ, còn thi ếu 1 nội dung quan trọng Thiếu nhi ều n ội dung quan trọng 10 
+Chính xác khoa 
+học 
+Khá chính xác khoa 
+học, còn vài sai sót 
+nhỏ 
+Tương đối chính xác, khoa 
+học, còn 1 sai sót quan 
+trọng. 
+Thiếu chính xác, khoa 
+học, nhi ều sai sót quan 
+trọng. 
+20 
+Cấu trúc và 
+tính tr ực 
+quan 
+Cấu trúc bài và 
+slide  rất hợp lý 
+Cấu trúc bài và slide 
+khá hợp lý 
+Cấu trúc bài và slide  tương 
+đối hợp lý 
+Cấu trúc bài và slide chưa 
+hợp lý 10 
+Rất tr ực quan 
+và thẩm mỹ 
+Khá tr ực quan và 
+thẩm mỹ 
+Tương đ ối tr ực quan và 
+thẩm mỹ 
+Ít/không tr ực quan và 
+thẩm mỹ 10 
+Kỹ năng 
+trình bày 
+Dẫn dắt vấn đề 
+và l ập lu ận lôi 
+cuốn, thuy ết 
+phục 
+Trình bày rõ ràng 
+nhưng chưa lôi 
+cuốn, l ập lu ận khá 
+thuyết phục 
+Khó theo dõi nhưng vẫn có 
+thể hiểu được các nội dung 
+quan trọng. 
+Trình bày không rõ ràng, 
+người nghe không hi ểu 
+được các n ội dung quan 
+trọng. 
+10 
+Tương tác 
+với ngư ời 
+nghe 
+Nhóm tương 
+tác t ốt, bao 
+quát. 
+Nhóm tương tác khá 
+tốt, khá bao quát 
+Nhóm có tương tác nhưng 
+chưa bao quát. 
+Nhóm không có tương 
+tác/ rất ít. 10 
+Quản lý thời 
+gian 
+Làm ch ủ thời 
+gian và hoàn 
+toàn linh ho ạt 
+điều chỉnh theo 
+tình huống. 
+Hoàn thành đúng 
+thời gian, th ỉnh 
+thoảng có linh ho ạt 
+theo tình huống 
+Hoàn thành đúng thời gian 
+không linh ho ạt theo tình 
+huống. 
+Quá giờ 10 
+Trả lời câu 
+hỏi  
+Các câu hỏi đặt 
+đúng đ ều đư ợc 
+nhóm thảo luận 
+và tr ả lời đ ầy 
+đủ, rõ ràng và 
+thỏa đáng 
+Trả lời đúng đa s ố 
+câu h ỏi đúng, và 
+nêu đư ợc đ ịnh 
+hướng phù h ợp đ ối 
+với nh ững câu h ỏi 
+chưa trả lời được. 
+Trả lời đúng đa số câu hỏi, 
+nhưng chưa nêu được định 
+hướng phù h ợp đ ối v ới 
+những câu hỏi chưa trả lời 
+được. 
+Không trả lời được đa số 
+câu hỏi đặt đúng. 10 
+Sự phối hợp 
+trong nhóm 
+(nếu có) 
+Nhóm phối hợp 
+thực sự chia sẻ 
+và h ỗ trợ nhau 
+trong khi báo 
+cáo và trả lời. 
+Nhóm có ph ối h ợp 
+khi báo cáo và tr ả 
+lời nhưng có vài chỗ 
+chưa đồng bộ. 
+Nhóm ít phối hợp trong khi 
+báo cáo và trả lời. 
+Không thể hiện sự kết nối 
+trong nhóm. 10 
+ 

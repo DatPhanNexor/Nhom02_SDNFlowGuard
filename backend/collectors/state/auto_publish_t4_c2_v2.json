@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "threshold_pps": 4.0,
+  "consecutive": 2,
+  "window_minutes": 10,
+  "watermark": "2026-10-31T18:35:46.654235+00:00",
+  "seen_ids": {
+    "sdnflowguard-events-2026.10.31:VYI9k6EBoaNkWx972E2o": "2026-10-31T18:34:26.219804628Z",
+    "sdnflowguard-events-2026.10.31:VoI9k6EBoaNkWx972E2o": "2026-10-31T18:34:26.227992012Z",
+    "sdnflowguard-events-2026.10.31:V4I9k6EBoaNkWx97_03h": "2026-10-31T18:34:36.260775204Z",
+    "sdnflowguard-events-2026.10.31:WII9k6EBoaNkWx97_03h": "2026-10-31T18:34:36.274093672Z",
+    "sdnflowguard-events-2026.10.31:WYI-k6EBoaNkWx97J00k": "2026-10-31T18:34:46.319884486Z",
+    "sdnflowguard-events-2026.10.31:WoI-k6EBoaNkWx97J00k": "2026-10-31T18:34:46.327111132Z",
+    "sdnflowguard-events-2026.10.31:W4I-k6EBoaNkWx97Tk1e": "2026-10-31T18:34:56.358561242Z",
+    "sdnflowguard-events-2026.10.31:XII-k6EBoaNkWx97Tk1e": "2026-10-31T18:34:56.365886253Z",
+    "sdnflowguard-events-2026.10.31:XYI-k6EBoaNkWx97dU20": "2026-10-31T18:35:06.410069254Z",
+    "sdnflowguard-events-2026.10.31:XoI-k6EBoaNkWx97dU20": "2026-10-31T18:35:06.438572839Z",
+    "sdnflowguard-events-2026.10.31:X4I-k6EBoaNkWx97nE36": "2026-10-31T18:35:16.481494812Z",
+    "sdnflowguard-events-2026.10.31:YII-k6EBoaNkWx97nE36": "2026-10-31T18:35:16.488870088Z",
+    "sdnflowguard-events-2026.10.31:YYI-k6EBoaNkWx97xE04": "2026-10-31T18:35:26.525689553Z",
+    "sdnflowguard-events-2026.10.31:YoI-k6EBoaNkWx97xE04": "2026-10-31T18:35:26.541328694Z",
+    "sdnflowguard-events-2026.10.31:Y4I-k6EBoaNkWx97602G": "2026-10-31T18:35:36.594328445Z",
+    "sdnflowguard-events-2026.10.31:ZII-k6EBoaNkWx97602G": "2026-10-31T18:35:36.603382325Z",
+    "sdnflowguard-events-2026.10.31:ZYI_k6EBoaNkWx97Ek3K": "2026-10-31T18:35:46.635553386Z",
+    "sdnflowguard-events-2026.10.31:ZoI_k6EBoaNkWx97Ek3K": "2026-10-31T18:35:46.654235190Z"
+  },
+  "notified": {
+    "510ede922adcaf6ff780c7845f98e43bef89bb19e8fab2fbe6ad516f461aca5f": "2026-10-31T18:34:46.319884486Z",
+    "cbb1ac5a2f8257df58ce6ba69bca77b3eb63757d6db26a1a2331c8a0a59f8802": "2026-10-31T18:34:46.327111132Z"
+  },
+  "updated_at_utc": "2026-10-31T18:37:08.655886+00:00"
+}

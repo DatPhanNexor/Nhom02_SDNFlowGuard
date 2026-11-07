@@ -1,0 +1,54 @@
+/* Language Switcher Segmented Control */
+
+.sdn-lang-switcher {
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  padding: 2px 4px;
+  gap: 2px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.sdn-lang-switcher:hover {
+  border-color: rgba(56, 189, 248, 0.6);
+  background-color: rgba(15, 23, 42, 0.65);
+}
+
+.sdn-lang-btn {
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.sdn-lang-btn:hover:not(.active) {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sdn-lang-btn.active {
+  background-color: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.sdn-lang-btn:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 1px;
+}
+
+.sdn-lang-divider {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 0.75rem;
+  padding: 0 1px;
+}

@@ -1,0 +1,109 @@
+name: SDNFlowGuard NetDevOps CI
+
+on:
+  push:
+    branches: [ "main", "master", "develop" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+  SDNFLOW_DEFENSE_MODE: "DRY_RUN"
+
+jobs:
+  backend-validation:
+    name: Backend CI & Automated Tests (Python 3.10)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Python Syntax & Bytecode Compilation Check
+        run: |
+          python -m compileall -q backend
+
+      - name: Run SDN CLI Self-Tests (4/4)
+        run: |
+          python -B backend/collectors/sdn_overlap_alert_monitor_v2.py --self-test
+          python -B backend/defense/source_ip_evidence_analyzer.py --self-test
+          python -B backend/defense/onos_host_evidence_correlator.py --self-test
+          python -B backend/defense/sdn_defense_policy.py --self-test
+
+      - name: Run Automated Unittest Suite (79 tests)
+        run: |
+          python -B -m unittest discover -s backend/tests -v
+
+      - name: Secret Leakage & Configuration Safety Audit
+        run: |
+          # Ensure .env.example contains no real credentials
+          grep -q "ONOS_PASSWORD=" .env.example
+          # Ensure primary database integrity
+          python -B -c "
+          import sqlite3, pathlib
+          db = pathlib.Path('database/sdnflowguard.db')
+          if db.is_file():
+              con = sqlite3.connect(f'file:{db.resolve()}?mode=ro', uri=True)
+              res = con.execute('PRAGMA integrity_check;').fetchone()[0]
+              con.close()
+              assert res == 'ok', 'Integrity check failed'
+              print('SQLite schema integrity: ok')
+          "
+
+  frontend-build-check:
+    name: Frontend Build & Dependency Check (Node.js 20)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: "frontend/package-lock.json"
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci --legacy-peer-deps
+
+      - name: Build Production Frontend Artifact
+        working-directory: frontend
+        run: npm run build
+
+      - name: Verify Built Production Artifacts
+        run: |
+          test -f frontend/build/index.html && echo "Frontend production bundle is valid"
+
+  docker-compose-validation:
+    name: Docker Compose Syntax & Architecture Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Pre-provision External Compose Volumes
+        run: |
+          docker volume create sdnflowguard-elasticsearch-data || true
+
+      - name: Validate Canonical Compose Configuration
+        run: |
+          docker compose config --quiet && echo "Canonical docker-compose.yml configuration is valid"

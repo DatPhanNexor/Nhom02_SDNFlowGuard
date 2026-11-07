@@ -1,0 +1,118 @@
+name: sdnflowguard-netsec
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: sdnflowguard-frontend:latest
+    container_name: sdnflowguard-frontend
+    restart: unless-stopped
+    mem_limit: 96m
+    mem_reservation: 32m
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: sdnflowguard-backend:latest
+    container_name: sdnflowguard-backend
+    restart: unless-stopped
+    mem_limit: 160m
+    mem_reservation: 64m
+    environment:
+      - SDNFLOW_FLASK_HOST=0.0.0.0
+      - SDNFLOW_FLASK_PORT=5000
+      - SDNFLOW_ONOS_URL=http://onos:8181/onos/v1
+      - SDNFLOW_ONOS_USER=onos
+      - SDNFLOW_ONOS_PASSWORD=rocks
+      - SDNFLOW_ELK_URL=http://elasticsearch:9200
+      - SDNFLOW_LOGSTASH_HOST=logstash
+      - SDNFLOW_LOGSTASH_PORT=8080
+      - SDNFLOW_DEFENSE_MODE=DRY_RUN
+      - SDNFLOW_DB_PATH=/app/database/sdnflowguard.db
+    volumes:
+      - ./database:/app/database
+    ports:
+      - "127.0.0.1:5000:5000"
+    depends_on:
+      - onos
+      - elasticsearch
+
+  onos:
+    image: onosproject/onos:2.7-latest
+    container_name: sdnflowguard-onos
+    restart: unless-stopped
+    mem_limit: 1400m
+    mem_reservation: 512m
+    environment:
+      - ONOS_APPS=drivers,openflow,gui2,fwd
+      - JAVA_OPTS=-XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Dkaraf.log.console=INFO -Dds.lock.timeout.milliseconds=10000 -Xms256m -Xmx512m
+    ports:
+      - "127.0.0.1:8181:8181"
+      - "127.0.0.1:6653:6653"
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.1
+    container_name: sdnflowguard-elasticsearch
+    restart: unless-stopped
+    mem_limit: 1440m
+    mem_reservation: 512m
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.ml.enabled=false
+      - ES_JAVA_OPTS=-Xms384m -Xmx384m
+    ports:
+      - "127.0.0.1:9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.15.1
+    container_name: sdnflowguard-logstash
+    restart: unless-stopped
+    mem_limit: 960m
+    mem_reservation: 384m
+    environment:
+      LS_JAVA_OPTS: "-Xms256m -Xmx256m -XX:MaxDirectMemorySize=64m"
+      XPACK_MONITORING_ENABLED: "false"
+      PIPELINE_WORKERS: "1"
+      PIPELINE_BATCH_SIZE: "50"
+    ports:
+      - "127.0.0.1:18080:8080"
+    volumes:
+      - ./infrastructure/logstash/pipeline:/usr/share/logstash/pipeline:ro
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.15.1
+    container_name: sdnflowguard-kibana
+    restart: unless-stopped
+    mem_limit: 800m
+    mem_reservation: 384m
+    environment:
+      SERVER_NAME: "sdnflowguard-kibana"
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+      NODE_OPTIONS: "--max-old-space-size=512"
+    ports:
+      - "127.0.0.1:5601:5601"
+    depends_on:
+      - elasticsearch
+
+# ==============================================================================
+# Persistent Named Volumes
+# Note: 'esdata' references external volume 'sdnflowguard-elasticsearch-data'.
+# It is automatically provisioned by scripts/manage.ps1 or via:
+#   docker volume create sdnflowguard-elasticsearch-data
+# ==============================================================================
+volumes:
+  esdata:
+    external: true
+    name: sdnflowguard-elasticsearch-data
+
