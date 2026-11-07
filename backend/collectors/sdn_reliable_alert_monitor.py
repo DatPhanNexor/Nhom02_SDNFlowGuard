@@ -1,13 +1,39 @@
 import argparse
 import json
 import math
-import msvcrt
 import os
 import time
 
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.request import Request, urlopen
+
+try:
+    import msvcrt
+
+    def lock_handle(handle):
+        handle.seek(0)
+        msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+
+    def unlock_handle(handle):
+        try:
+            handle.seek(0)
+            msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        except OSError:
+            pass
+except ImportError:
+    import fcntl
+
+    def lock_handle(handle):
+        handle.seek(0)
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+    def unlock_handle(handle):
+        try:
+            handle.seek(0)
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+        except OSError:
+            pass
 
 from sdn_auto_alert_monitor import valid_sample, make_alert
 from sdn_alert_publisher import (
@@ -271,11 +297,7 @@ def acquire_lock(path):
     handle.seek(0)
 
     try:
-        msvcrt.locking(
-            handle.fileno(),
-            msvcrt.LK_NBLCK,
-            1,
-        )
+        lock_handle(handle)
     except OSError:
         handle.close()
         raise RuntimeError(
@@ -412,15 +434,10 @@ def main():
         print("Reliable monitor finished.")
 
     finally:
-        lock_handle.seek(0)
-
-        msvcrt.locking(
-            lock_handle.fileno(),
-            msvcrt.LK_UNLCK,
-            1,
-        )
-
-        lock_handle.close()
+        try:
+            unlock_handle(lock_handle)
+        finally:
+            lock_handle.close()
 
 
 if __name__ == "__main__":

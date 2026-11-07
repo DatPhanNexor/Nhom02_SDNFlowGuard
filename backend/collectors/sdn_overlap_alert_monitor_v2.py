@@ -1,12 +1,38 @@
 import argparse
 import json
 import math
-import msvcrt
 import os
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.request import Request, urlopen
+
+try:
+    import msvcrt
+
+    def lock_handle(handle):
+        handle.seek(0)
+        msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+
+    def unlock_handle(handle):
+        try:
+            handle.seek(0)
+            msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        except OSError:
+            pass
+except ImportError:
+    import fcntl
+
+    def lock_handle(handle):
+        handle.seek(0)
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+    def unlock_handle(handle):
+        try:
+            handle.seek(0)
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+        except OSError:
+            pass
 
 from sdn_auto_alert_monitor import valid_sample, make_alert
 from sdn_alert_publisher import already_exists, http_json, LOGSTASH_URL
@@ -149,7 +175,7 @@ def lock_file(path):
         handle.flush()
     handle.seek(0)
     try:
-        msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+        lock_handle(handle)
     except OSError:
         handle.close()
         raise RuntimeError('Another V2 monitor is running with this configuration.')
@@ -316,9 +342,10 @@ def main():
         print('No ONOS flow rules were changed.')
         print('Overlap Monitor V2 finished.')
     finally:
-        lock.seek(0)
-        msvcrt.locking(lock.fileno(), msvcrt.LK_UNLCK, 1)
-        lock.close()
+        try:
+            unlock_handle(lock)
+        finally:
+            lock.close()
 
 
 if __name__ == '__main__':

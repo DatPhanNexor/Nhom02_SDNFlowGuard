@@ -189,6 +189,7 @@ def _handle_controller_status(is_en: bool = False) -> str:
         return (
             f"### ONOS SDN Controller Status\n\n"
             f"- **Connection State:** `{status_label}`\n"
+            f"- **OpenFlow 1.3 Control Port:** `TCP 6653` (for Open vSwitch / Mininet)\n"
             f"- **Audit Timestamp:** `{ts}`\n\n"
             f"⚠️ **Warning:** Unable to connect to ONOS REST API at `{ctrl['url']}`. "
             f"The container may be starting or experiencing an Atomix port lock conflict. "
@@ -210,6 +211,7 @@ def _handle_controller_status(is_en: bool = False) -> str:
     return (
         f"### Trạng thái Bộ điều khiển ONOS (SDN Controller)\n\n"
         f"- **Trạng thái kết nối:** `{status_label}`\n"
+        f"- **Cổng điều khiển OpenFlow 1.3:** `TCP 6653` (cho Open vSwitch / Mininet)\n"
         f"- **Thời điểm kiểm tra:** `{ts}`\n\n"
         f"⚠️ **Cảnh báo:** Không thể kết nối tới ONOS REST API tại `{ctrl['url']}`. "
         f"Nguyên nhân có thể do container đang khởi động hoặc gặp xung đột lock cổng Atomix. "
