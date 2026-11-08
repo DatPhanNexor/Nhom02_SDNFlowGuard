@@ -88,7 +88,11 @@ def _evaluate_action_gate(
     api_info = _resolve_onos_api()
     is_manual = str(admin_or_automated).lower() == "admin"
     if operator_authenticated is None:
-        operator_authenticated = is_manual
+        configured_key = getattr(api_info.get("settings"), "api_key", None)
+        if configured_key:
+            operator_authenticated = False
+        else:
+            operator_authenticated = is_manual
     verdict = evaluate_safety_gate(
         action_type=action_type,
         defense_mode=api_info["settings"].defense_mode,
@@ -232,6 +236,7 @@ def block_ip(
     admin_or_automated="Admin",
     dry_run=None,
     test_only=False,
+    operator_authenticated=None,
 ):
     if src_ip and "/" not in str(src_ip):
         src_ip = f"{src_ip}/32"
@@ -245,6 +250,7 @@ def block_ip(
         admin_or_automated=admin_or_automated,
         dry_run=dry_run,
         test_only=test_only,
+        operator_authenticated=operator_authenticated,
     )
 
     if not verdict.safety_checks["valid_and_unprotected_target"] or not verdict.safety_checks["not_test_only_alert"]:
@@ -611,13 +617,14 @@ def redirect_traffic(
     }
 
 
-def rate_limit_for_host(host_ip, rate_limit_bps, admin_or_automated="Admin", dry_run=None, test_only=False):
+def rate_limit_for_host(host_ip, rate_limit_bps, admin_or_automated="Admin", dry_run=None, test_only=False, operator_authenticated=None):
     verdict, api_info = _evaluate_action_gate(
         "throttle_traffic",
         host_ip,
         admin_or_automated=admin_or_automated,
         dry_run=dry_run,
         test_only=test_only,
+        operator_authenticated=operator_authenticated,
     )
     if not verdict.safety_checks["valid_and_unprotected_target"] or not verdict.safety_checks["not_test_only_alert"]:
         return {

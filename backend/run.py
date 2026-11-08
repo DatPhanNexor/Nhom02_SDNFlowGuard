@@ -827,6 +827,7 @@ def block():
         dst_port=data.get("dstPort"),
         dry_run=data.get("dry_run"),
         test_only=bool(data.get("test_only", False)),
+        operator_authenticated=authorized,
     )
     if isinstance(result, dict):
         status = result.get("status")
@@ -949,6 +950,7 @@ def apply_rate_limit():
         admin_or_automated=admin_or_automated,
         dry_run=data.get("dry_run"),
         test_only=bool(data.get("test_only", False)),
+        operator_authenticated=authorized,
     )
     if isinstance(result, dict) and result.get("status") == "REJECTED_BY_SAFETY_GATE":
         return jsonify({"error": f"Rejected by Safety Gate for {host_ip}", **result}), 403

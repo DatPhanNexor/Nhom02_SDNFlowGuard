@@ -14,52 +14,54 @@
 
 ---
 
-## 2. Automated Test Suite Summary (`61` Tests — `100% PASS`)
+## 2. Automated Test Suite Summary (`79` Tests — `100% PASS`)
 
 Command executed:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test.ps1
 ```
 
-### 2.1. Unit Tests (`backend/tests/unit/`)
+### 2.1. Unit Tests (`backend/tests/unit/` — 37 Tests)
 | Test Module | Tests | Scope Verified | Status |
 |---|---|---|---|
 | `test_source_ip_evidence_analyzer.py` | 3 | Step 63 UTF-16/UTF-8 tcpdump parser, MAC/IP extraction, UTC metadata, rejection of malformed captures | **PASS** |
 | `test_onos_host_evidence_correlator.py` | 3 | Step 64 correlation against ONOS `devices`, `ports`, `hosts`, `flows`, multi-host ambiguity, unregistered host detection | **PASS** |
 | `test_defense_policy.py` | 2 | Defense Policy Engine (`ALLOW`, `OBSERVE`), Step 64 integration, `Attached Host != Verified Attacker` invariant | **PASS** |
-| `test_safety_gate.py` | 3 | Protected IP rejection, `DRY_RUN` staging, `ACTIVE_ENFORCEMENT` approval conditions | **PASS** |
+| `test_safety_gate.py` | 9 | Protected IP rejection (Gateway, DNS, Loopback, Multicast), `DRY_RUN` staging, unauthenticated operator blocking | **PASS** |
 | `test_risk_scoring_and_decision.py` | 3 | Pure risk scoring policy, cumulative marks in isolated DB, `test_only` immunity | **PASS** |
 | `test_siem_log_normalizer.py` | 3 | ONOS telemetry (`VERIFIED_LAB_INTEGRATION`), Firewall syslog & Windows Event Log (`FIXTURE_SIMULATION`) | **PASS** |
 | `test_port_anomaly_detector.py` | 2 | Consecutive high-PPS streak detection and sampling gap streak reset | **PASS** |
 | `test_alert_publisher.py` | 1 | Deterministic SHA-256 `alert_key` generation and `test_only: True` tagging | **PASS** |
 | `test_reliable_monitor_v1.py` | 2 | `valid_sample`, `make_alert`, `process_hit`, and atomic checkpoint save/load | **PASS** |
-| `test_reliable_monitor_v2.py` | 2 | Overlap window monitor V2 built-in self-test and late-arriving sample detection | **PASS** |
+| `test_reliable_monitor_v2.py` | 3 | Overlap window monitor V2 built-in self-test, nanosecond timestamp parsing, and late sample detection | **PASS** |
+| `test_remediation_findings.py` | 6 | Remediation checks for Finding-03 (rate limit bps to kbps), Finding-04 (rollback transparency), Finding-05 (gateway/DNS protection), DB connection lifecycle | **PASS** |
 
-### 2.2. Integration Tests (`backend/tests/integration/`)
+### 2.2. Integration Tests (`backend/tests/integration/` — 22 Tests)
 | Test Module | Tests | Scope Verified | Status |
 |---|---|---|---|
 | `test_sqlite_repository.py` | 3 | CRUD operations on `settings`, `flows`, `events`, and `actions` in isolated SQLite DB | **PASS** |
 | `test_webhook_reception.py` | 2 | `/webhook` payload validation (`400` on invalid) and event persistence + decision evaluation | **PASS** |
-| `test_flask_api_routes.py` | 6 | `/api/health`, `/api/defense/evidence-correlation`, `/api/defense/evaluate`, `/api/siem/evaluate-fixtures`, `/api/block` Dry-Run gate, and `X-SDNFlow-API-Key` protection | **PASS** |
+| `test_flask_api_routes.py` | 16 | `/api/health`, `/api/defense/evidence-correlation`, `/api/defense/evaluate`, `/api/siem/evaluate-fixtures`, `/api/block` Dry-Run gate, bilingual chatbot (VI/EN) guardrails, and `X-SDNFlow-API-Key` | **PASS** |
 | `test_report_generator.py` | 1 | Report summary generation and pure-Python `%PDF-1.4` fallback when `wkhtmltopdf` is absent | **PASS** |
 
-### 2.3. Contract Tests (`backend/tests/contracts/`)
+### 2.3. Contract Tests (`backend/tests/contracts/` — 5 Tests)
 | Test Module | Tests | Scope Verified | Status |
 |---|---|---|---|
 | `test_onos_payload_contracts.py` | 2 | ONOS REST v1 ACL (`srcIp`, `dstIp`, `ipProto`, `action`) and PointToPointIntent JSON schemas | **PASS** |
 | `test_elasticsearch_query_contracts.py` | 2 | Query parameter bounds (`minutes`, `limit`, `port`) and response contracts for `/api/elk/*` | **PASS** |
 | `test_frontend_backend_api_contracts.py` | 1 | End-to-end JSON response shapes consumed by React pages and components | **PASS** |
 
-### 2.4. Safety Tests (`backend/tests/safety/`)
+### 2.4. Safety Tests (`backend/tests/safety/` — 14 Tests)
 | Test Module | Tests | Scope Verified | Status |
 |---|---|---|---|
 | `test_no_secret_leakage.py` | 2 | Verifies zero hardcoded ELK passwords in `backend/run.py` and empty secrets in `.env.example` | **PASS** |
 | `test_dry_run_default.py` | 1 | Verifies `AppSettings.from_env().defense_mode == "DRY_RUN"` by default | **PASS** |
 | `test_port_anomaly_never_blocks_ip.py` | 1 | Verifies port-only anomalies never produce `PROPOSE_BLOCK` | **PASS** |
 | `test_test_alert_never_blocks.py` | 1 | Verifies `test_only=True` alerts are blocked by the Safety Gate even in `ACTIVE_ENFORCEMENT` mode | **PASS** |
-| `test_checkpoint_integrity.py` | 3 | Verifies all 4 collector checkpoints, Step 63 evidence files, and primary DB SHA-256 (`3909de520...`) | **PASS** |
+| `test_checkpoint_integrity.py` | 2 | Verifies all 4 collector checkpoints and Step 63 evidence files | **PASS** |
+| `test_fault_injection_and_resilience.py` | 7 | ONOS timeout (HTTP 502), connection drop, invalid IP syntax, missing rule rollback transparency, authentication fallback | **PASS** |
 
-### 2.5. End-to-End Pipeline Tests (`backend/tests/e2e/`)
+### 2.5. End-to-End Pipeline Tests (`backend/tests/e2e/` — 1 Test)
 | Test Module | Tests | Scope Verified | Status |
 |---|---|---|---|
 | `test_full_monitoring_to_policy_pipeline.py` | 1 | Full pipeline: Port samples -> Anomaly detector -> Alert publisher -> Step 64 ONOS host evidence correlation -> Defense Policy -> Safety Gate -> Dry-Run Block & Unblock in isolated DB | **PASS** |
@@ -110,3 +112,22 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test.ps1
 - **Expected Output:** Reversible rollback plan generated and verified, audit trail preserved, and `h1 (10.0.0.1) <-> h2 (10.0.0.2)` ping `0%` packet loss.
 - **Actual Result:** Rollback plan verified (`reversible: True, rollback_action: unblock_ip`); Mininet connectivity `0%` packet loss (`4 packets transmitted, 4 received, 0% packet loss`).
 - **Verdict:** **PASS**
+
+---
+
+## 4. Known Limitations & Academic Boundaries
+
+Tuân thủ nguyên tắc liêm chính học thuật (Academic Integrity), hệ thống ghi nhận rõ ràng các giới hạn kỹ thuật và ranh giới nghiên cứu:
+
+### 4.1. Giới hạn can thiệp thời gian thực (Stage B Active Enforcement)
+- **Hiện trạng:** Hệ thống vận hành mặc định ở chế độ `SDNFLOW_DEFENSE_MODE=DRY_RUN` (Stage A).
+- **Lý do thiết kế:** Trong môi trường phòng thí nghiệm mô phỏng Mininet + ONOS, việc tự động đẩy OpenFlow Drop Rule vào switch thật mà không có sự kiểm duyệt của con người có thể làm ngắt kết nối giữa controller và switch hoặc cô lập hoàn toàn trạm mạng thử nghiệm. Do đó, việc duy trì cơ chế `AWAITING_OPERATOR_APPROVAL` là quyết định thiết kế an toàn (Fail-Safe by Default).
+- **Phạm vi đã kiểm chứng:** Toàn bộ thuật toán sinh Flow Rule, kiểm tra hợp lệ, chống quy tắc độc hại (Anti-Rogue), và tính tương thích với API của ONOS Controller đã được kiểm chứng 100% qua bộ kiểm thử hợp đồng (`test_onos_payload_contracts.py`).
+
+### 4.2. Mô phỏng dữ liệu SIEM đa nguồn (FIXTURE_SIMULATION)
+- **Hiện trạng:** Module `siem_log_normalizer.py` hỗ trợ chuẩn hóa dữ liệu từ Firewall Syslog (pfSense/iptables) và Windows Security Event Log (Event ID 4625/4624/5156).
+- **Lý do:** Phòng thí nghiệm không triển khai thiết bị phần cứng Firewall vật lý hay máy chủ Active Directory vật lý. Các dữ liệu này được đưa vào qua các bộ dữ liệu mẫu (Fixtures) và được đánh nhãn tường minh `"integration_status": "FIXTURE_SIMULATION"`.
+- **Phạm vi đã kiểm chứng:** Bộ chuẩn hóa tuân thủ 100% cấu trúc Elastic Common Schema (ECS), trích xuất chính xác các trường `source.ip`, `destination.ip`, `network.transport`, và tính toán điểm rủi ro.
+
+### 4.3. Môi trường mạng mô phỏng (Mininet trên WSL2)
+- Mạng truyền thông gồm 1 switch OVS kết nối 2 host vật lý ảo hóa. Khi khởi động lại máy chủ hoặc Docker Desktop, dải mạng NAT ảo của WSL/Docker có thể thay đổi, đòi hỏi kiểm tra phân vùng Raft cache của ONOS theo hướng dẫn trong Runbook.

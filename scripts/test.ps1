@@ -45,11 +45,12 @@ if (-not (Test-Path $DbPath)) {
 }
 $HashBefore = (Get-FileHash -Path $DbPath -Algorithm SHA256).Hash.ToLower()
 
-# 2. Python Syntax Compilation Check
-Write-Host "`n[1/5] Verifying Python Syntax (compileall)..." -ForegroundColor Cyan
-& $PythonExe -B -m compileall -q (Join-Path $ProjectRoot "backend")
-if ($LASTEXITCODE -ne 0) { throw "Python compileall detected syntax errors." }
-Write-Host "  [PASS] All backend Python files compiled with zero syntax errors." -ForegroundColor Green
+# 2. Python Syntax Compilation Check (In-memory, zero bytecode artifacts)
+Write-Host "`n[1/5] Verifying Python Syntax (in-memory AST & bytecode)..." -ForegroundColor Cyan
+$SyntaxValidator = Join-Path $ProjectRoot "scripts\verify_syntax.py"
+& $PythonExe -B $SyntaxValidator (Join-Path $ProjectRoot "backend")
+if ($LASTEXITCODE -ne 0) { throw "Python syntax validation detected errors." }
+Write-Host "  [PASS] All backend Python files compiled in-memory with zero syntax errors." -ForegroundColor Green
 
 # 3. Defense & Collector CLI Self-Tests
 Write-Host "`n[2/5] Running CLI Self-Tests (Monitor V2, Step 63, Step 64, Defense Policy)..." -ForegroundColor Cyan

@@ -271,7 +271,7 @@ switch ($Action) {
         if (Test-Path $TestScript) {
             & powershell.exe -ExecutionPolicy Bypass -File $TestScript
         } else {
-            & powershell.exe -ExecutionPolicy Bypass -File (Join-Path $ScriptDir "run_all_tests.ps1")
+            throw "Master test runner not found at $TestScript"
         }
     }
 

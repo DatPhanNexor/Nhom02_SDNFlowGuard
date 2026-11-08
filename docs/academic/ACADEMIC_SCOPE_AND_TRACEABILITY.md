@@ -24,7 +24,7 @@
 | **REQ-12** | Cơ chế rollback hoặc khôi phục | `backend/app/controller_actions.py` (`unblock_ip`, `rollback_action`), `/api/defense/rollback`, `ManualTrafficControl.js` | `test_full_monitoring_to_policy_pipeline.py`, `test_flask_api_routes.py` | **VERIFIED** |
 | **REQ-13** | Nhật ký quyết định và bằng chứng thực nghiệm | `database/sdnflowguard.db` (bảng `actions`, `events`), `DecisionLogs.js`, `backend/defense/evidence/` | `test_sqlite_repository.py`, `test_checkpoint_integrity.py` | **VERIFIED** |
 | **REQ-14** | Mở rộng định hướng SIEM (Firewall & Windows Server logs) | `sdnflowguard/domain/services/siem_log_normalizer.py`, `/api/siem/evaluate-fixtures`, `AnomalyDetection.js` | `test_siem_log_normalizer.py` (gắn nhãn trung thực `FIXTURE_SIMULATION`) | **FIXTURE_SIMULATION VERIFIED** |
-| **REQ-15** | Hướng dẫn tái hiện hệ thống và kiểm thử tự động | `scripts/*.ps1`, `docs/operations/*.md`, `README.md` | `scripts/run_all_tests.ps1` (`50/50` tests `OK`) | **VERIFIED** |
+| **REQ-15** | Hướng dẫn tái hiện hệ thống và kiểm thử tự động | `scripts/*.ps1`, `docs/operations/*.md`, `README.md` | `scripts/test.ps1` (`79/79` tests `OK`, `4/4` CLI self-tests `PASS`) | **VERIFIED** |
 
 ---
 

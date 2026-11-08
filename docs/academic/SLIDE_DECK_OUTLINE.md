@@ -70,8 +70,8 @@
     - Chuẩn hóa Syslog tường lửa và Windows Event Log theo Elastic Common Schema (ECS), gắn nhãn minh bạch `FIXTURE_SIMULATION`.
 25. **Slide 25 — Cơ chế hoàn nguyên chính sách phòng thủ (Rollback):**
     - Hoàn nguyên luật chặn tức thì qua `/api/defense/rollback`; xác minh xóa rule trên ONOS; loại bỏ trạng thái thành công giả.
-26. **Slide 26 — Kết quả kiểm thử tự động toàn diện (53/53 Tests PASS):**
-    - 53 bài kiểm thử unit/integration/safety/contract đạt 100% PASS trong ~0.6s; 4/4 CLI self-tests PASS; SQLite DB SHA-256 nguyên vẹn.
+26. **Slide 26 — Kết quả kiểm thử tự động toàn diện (79/79 Tests PASS):**
+    - 79 bài kiểm thử unit/integration/safety/contract/e2e đạt 100% PASS trong ~0.9s; 4/4 CLI self-tests PASS; SQLite DB SHA-256 nguyên vẹn.
 27. **Slide 27 — So sánh giải pháp & Giá trị thực tiễn:**
     - So sánh với Snort/Suricata và tường lửa tĩnh; ưu điểm can thiệp Data Plane tức thời và loại bỏ chặn nhầm qua Step 64.
 28. **Slide 28 — Đóng góp của đề tài & Hướng phát triển:**

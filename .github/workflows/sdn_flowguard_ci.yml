@@ -36,7 +36,7 @@ jobs:
 
       - name: Python Syntax & Bytecode Compilation Check
         run: |
-          python -m compileall -q backend
+          python -B scripts/verify_syntax.py backend
 
       - name: Run SDN CLI Self-Tests (4/4)
         run: |

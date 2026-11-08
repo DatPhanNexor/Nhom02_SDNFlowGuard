@@ -29,7 +29,7 @@
 
 ## 3. Verifying System Health & Running Automated Tests
 
-Run the non-destructive health check and full 61-test suite:
+Run the non-destructive health check and full 79-test suite:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\manage.ps1 -Action check
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test.ps1
