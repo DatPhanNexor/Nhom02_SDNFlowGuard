@@ -3,6 +3,7 @@ import axios from 'axios';
 import { API_BASE_URL } from '../config/apiConfig';
 import { useLanguage } from '../i18n/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
+import ThemeToggle from './ThemeToggle';
 import './Header.css';
 
 const Header = () => {
@@ -42,6 +43,7 @@ const Header = () => {
       </div>
       <div className="user-info">
         <LanguageSwitcher />
+        <ThemeToggle />
         <span
           className="header-badge header-badge-defense"
           style={{

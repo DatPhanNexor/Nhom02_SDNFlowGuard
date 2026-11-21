@@ -83,25 +83,33 @@ def process_event(event):
 
     actions = []
     if updated_marks >= 100:
-        block_ip(src_ip=f"{source_ip}/32", admin_or_automated="Automated")
-        actions.append("Block")
+        res = block_ip(src_ip=f"{source_ip}/32", admin_or_automated="Automated")
+        status = res.get("status") if isinstance(res, dict) else None
+        actions.append("Block" if status == "RULE_APPLIED" else f"Block ({status or 'STAGED'})")
     elif updated_marks >= 60:
-        redirect_traffic_full(source_ip, honeypot_ip, admin_or_automated="Automated")
-        actions.append("Redirect")
+        res = redirect_traffic_full(source_ip, honeypot_ip, admin_or_automated="Automated")
+        status = res.get("status") if isinstance(res, dict) else None
+        actions.append("Redirect" if status == "RULE_APPLIED" else f"Redirect ({status or 'STAGED'})")
     elif updated_marks >= 40:
-        rate_limit_for_host(
+        res = rate_limit_for_host(
             source_ip,
-            rate_limit_bps=50,
+            rate_limit_bps=50000,
             admin_or_automated="Automated",
         )
-        actions.append("Rate Limit")
+        status = res.get("status") if isinstance(res, dict) else None
+        actions.append("Rate Limit" if status == "RULE_APPLIED" else f"Rate Limit ({status or 'STAGED'})")
     elif updated_marks >= 20:
-        redirect_to_intermediate_ovs(
+        res = redirect_to_intermediate_ovs(
             source_ip,
             ovs_id="of:0000000000000003",
             admin_or_automated="Automated",
         )
-        actions.append("Intermediate Redirect")
+        status = res.get("status") if isinstance(res, dict) else None
+        actions.append(
+            "Intermediate Redirect"
+            if status == "RULE_APPLIED"
+            else f"Intermediate Redirect ({status or 'STAGED'})"
+        )
     else:
         actions.append("No Action")
 

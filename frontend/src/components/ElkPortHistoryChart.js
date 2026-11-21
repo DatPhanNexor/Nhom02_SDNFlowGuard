@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { Line } from 'react-chartjs-2';
 import {
@@ -8,10 +8,11 @@ import {
   PointElement,
   LineElement,
   Tooltip,
-  Legend
+  Legend,
 } from 'chart.js';
 import { API_BASE_URL } from '../config/apiConfig';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useTheme } from '../theme/ThemeContext';
 
 ChartJS.register(
   CategoryScale,
@@ -24,91 +25,129 @@ ChartJS.register(
 
 const API_URL = `${API_BASE_URL}/api/elk/port-traffic-history`;
 
-function ElkPortHistoryChart() {
+function ElkPortHistoryChart({ refreshTrigger }) {
   const { language, t } = useLanguage();
+  const { isDark } = useTheme();
   const [minutes, setMinutes] = useState(240);
   const [rows, setRows] = useState([]);
+  const [topologyDevices, setTopologyDevices] = useState([]);
   const [switchId, setSwitchId] = useState('');
   const [port, setPort] = useState('1');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
   const [lastLoaded, setLastLoaded] = useState(null);
+  const isMountedRef = useRef(true);
 
-  useEffect(() => {
-    let active = true;
+  const loadHistoryAndTopology = useCallback(async () => {
+    setLoading(true);
+    setError('');
 
-    const loadHistory = async () => {
-      try {
-        const response = await axios.get(API_URL, {
-          params: {
-            minutes,
-            limit: 500
-          },
-          timeout: 12000
-        });
+    try {
+      const [historyRes, topoRes] = await Promise.allSettled([
+        axios.get(API_URL, {
+          params: { minutes, limit: 500 },
+          timeout: 10000,
+        }),
+        axios.get(`${API_BASE_URL}/api/topology`, { timeout: 4500 }),
+      ]);
 
-        if (!active) return;
+      if (!isMountedRef.current) return;
 
-        const data = Array.isArray(response.data.data)
-          ? response.data.data
-          : [];
-
-        const sorted = [...data].sort(
-          (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
-        );
-
-        setRows(sorted);
-        setError('');
+      if (historyRes.status === 'fulfilled') {
+        const historyData = historyRes.value.data;
+        const validRows = Array.isArray(historyData?.data)
+          ? historyData.data
+          : Array.isArray(historyData?.rows)
+            ? historyData.rows
+            : Array.isArray(historyData)
+              ? historyData
+              : [];
+        setRows(validRows);
         setLastLoaded(new Date());
-      } catch (err) {
-        if (!active) return;
-
+      } else {
+        setRows([]);
         setError(
           language === 'vi'
-            ? 'Không thể tải lịch sử từ Elasticsearch. Kiểm tra Flask và Elasticsearch.'
-            : 'Unable to load traffic history from Elasticsearch. Verify Flask and Elasticsearch.'
+            ? 'Không thể truy vấn lịch sử lưu lượng từ Elasticsearch. Kiểm tra dịch vụ Elasticsearch/Backend.'
+            : 'Unable to query port traffic history from Elasticsearch. Verify Elasticsearch/Backend availability.'
         );
-
-        console.error('ELK traffic history error:', err);
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
       }
-    };
 
-    setLoading(true);
-    loadHistory();
+      if (topoRes.status === 'fulfilled' && topoRes.value?.data?.controller_status !== 'UNAVAILABLE') {
+        const devices = Array.isArray(topoRes.value.data?.devices)
+          ? topoRes.value.data.devices
+          : [];
+        setTopologyDevices(devices);
+      } else {
+        setTopologyDevices([]);
+      }
+    } catch (err) {
+      if (!isMountedRef.current) return;
+      console.error('ELK traffic history error:', err);
+      setRows([]);
+      setError(
+        language === 'vi'
+          ? 'Lỗi kết nối dịch vụ đo lường lưu lượng lịch sử.'
+          : 'Failed to connect to port traffic history service.'
+      );
+    } finally {
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
+    }
+  }, [minutes, language]);
 
-    const timer = setInterval(loadHistory, 30000);
+  useEffect(() => {
+    isMountedRef.current = true;
+    loadHistoryAndTopology();
+
+    const timer = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        loadHistoryAndTopology();
+      }
+    }, 30000);
 
     return () => {
-      active = false;
+      isMountedRef.current = false;
       clearInterval(timer);
     };
-  }, [minutes, refreshKey, language]);
+  }, [loadHistoryAndTopology, refreshKey, refreshTrigger]);
 
-  const switches = Array.from(
-    new Set(rows.map((row) => row.switch_id).filter(Boolean))
-  );
+  const switchesFromRows = rows.map((row) => row.switch_id).filter(Boolean);
+  const switchesFromTopo = topologyDevices.map((d) => d.id).filter(Boolean);
+  const switches = Array.from(new Set([...switchesFromRows, ...switchesFromTopo]));
 
   const currentSwitch = switches.includes(switchId)
     ? switchId
-    : (switches[0] || '');
+    : switches[0] || topologyDevices[0]?.id || '';
 
-  const ports = Array.from(
-    new Set(
-      rows
-        .filter((row) => row.switch_id === currentSwitch)
-        .map((row) => String(row.port_number))
-        .filter((value) => value !== 'undefined' && value !== 'null')
-    )
+  const selectedTopoDevice = topologyDevices.find((d) => d.id === currentSwitch);
+  const livePortsSet = new Set(
+    Array.isArray(selectedTopoDevice?.ports)
+      ? selectedTopoDevice.ports
+          .map((p) => String(p.port || p.portNumber || p))
+          .filter(Boolean)
+      : []
+  );
+
+  const portsFromRows = rows
+    .filter((row) => row.switch_id === currentSwitch)
+    .map((row) => String(row.port_number))
+    .filter((val) => val && val !== 'undefined' && val !== 'null');
+
+  const fallbackPorts = ['1', '2', '3', '4'];
+  const allCandidatePorts = Array.from(
+    new Set([
+      ...Array.from(livePortsSet),
+      ...portsFromRows,
+      ...(livePortsSet.size === 0 && portsFromRows.length === 0 ? fallbackPorts : []),
+    ])
   ).sort((a, b) => Number(a) - Number(b));
 
-  const currentPort = ports.includes(port)
+  const currentPort = allCandidatePorts.includes(port)
     ? port
-    : (ports[0] || '');
+    : allCandidatePorts[0] || '1';
 
   const selectedRows = rows.filter(
     (row) =>
@@ -118,44 +157,54 @@ function ElkPortHistoryChart() {
 
   const values = (field) =>
     selectedRows.map((row) => {
-      const number = Number(row[field]);
-      return Number.isFinite(number) ? number : 0;
+      const num = Number(row[field]);
+      return Number.isFinite(num) ? num : 0;
     });
 
   const rxValues = values('rx_mbps');
   const txValues = values('tx_mbps');
 
-  const peakRx = Math.max(0, ...rxValues);
-  const peakTx = Math.max(0, ...txValues);
+  const peakRx = rxValues.length > 0 ? Math.max(...rxValues) : 0;
+  const peakTx = txValues.length > 0 ? Math.max(...txValues) : 0;
+  const avgRx =
+    rxValues.length > 0 ? rxValues.reduce((a, b) => a + b, 0) / rxValues.length : 0;
+  const avgTx =
+    txValues.length > 0 ? txValues.reduce((a, b) => a + b, 0) / txValues.length : 0;
 
   const chartData = {
     labels: selectedRows.map((row) =>
-      new Date(row.timestamp).toLocaleTimeString(language === 'vi' ? 'vi-VN' : 'en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      })
+      new Date(row.timestamp).toLocaleTimeString(
+        language === 'vi' ? 'vi-VN' : 'en-US',
+        {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        }
+      )
     ),
     datasets: [
       {
         label: t('elkChart.rxMbps'),
         data: rxValues,
-        borderColor: '#15803d',
-        backgroundColor: '#15803d',
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
         borderWidth: 2,
-        pointRadius: 3,
-        tension: 0.2
+        pointRadius: 2.5,
+        tension: 0.2,
+        fill: true,
       },
       {
         label: t('elkChart.txMbps'),
         data: txValues,
         borderColor: '#0284c7',
-        backgroundColor: '#0284c7',
+        backgroundColor: 'rgba(2, 132, 199, 0.1)',
         borderWidth: 2,
-        pointRadius: 3,
-        tension: 0.2
-      }
-    ]
+        pointRadius: 2.5,
+        tension: 0.2,
+        fill: true,
+      },
+    ],
   };
 
   const chartOptions = {
@@ -163,172 +212,239 @@ function ElkPortHistoryChart() {
     maintainAspectRatio: false,
     interaction: {
       mode: 'index',
-      intersect: false
+      intersect: false,
     },
     plugins: {
       legend: {
-        position: 'top'
+        position: 'top',
+        labels: {
+          color: isDark ? '#f8fafc' : '#0f172a',
+          font: { family: 'sans-serif', size: 13 },
+          usePointStyle: true,
+        },
       },
       tooltip: {
         callbacks: {
           label: (context) =>
-            `${context.dataset.label}: ${Number(context.parsed.y).toFixed(6)} Mbps`
-        }
-      }
+            `${context.dataset.label}: ${Number(context.parsed.y).toFixed(6)} Mbps`,
+        },
+      },
     },
     scales: {
       x: {
+        grid: { color: isDark ? 'rgba(255, 255, 255, 0.08)' : '#f1f5f9' },
+        ticks: { color: isDark ? '#94a3b8' : '#475569', maxTicksLimit: 8, font: { size: 12 } },
         title: {
           display: true,
-          text: t('elkChart.timeAxis')
-        }
+          text: t('elkChart.timeAxis'),
+          color: isDark ? '#f8fafc' : '#0f172a',
+          font: { weight: 'bold', size: 12 },
+        },
       },
       y: {
         beginAtZero: true,
+        grid: { color: isDark ? 'rgba(255, 255, 255, 0.08)' : '#f1f5f9' },
+        ticks: { color: isDark ? '#94a3b8' : '#475569', font: { size: 12 } },
         title: {
           display: true,
-          text: t('elkChart.speedAxis')
-        }
-      }
+          text: t('elkChart.speedAxis'),
+          color: isDark ? '#f8fafc' : '#0f172a',
+          font: { weight: 'bold', size: 12 },
+        },
+      },
+    },
+  };
+
+  const getTimeRangeText = () => {
+    switch (minutes) {
+      case 60:
+        return language === 'vi' ? '1 giờ qua' : 'past 1 hour';
+      case 240:
+        return language === 'vi' ? '4 giờ qua' : 'past 4 hours';
+      case 1440:
+        return language === 'vi' ? '24 giờ qua' : 'past 24 hours';
+      case 10080:
+        return language === 'vi' ? '7 ngày qua' : 'past 7 days';
+      default:
+        return `${minutes} min`;
     }
   };
 
-  const selectStyle = {
-    padding: '7px 12px',
-    border: '1px solid #cbd5e1',
-    borderRadius: 6,
-    background: '#fff',
-    fontSize: 13,
-    color: '#0f172a'
-  };
-
   return (
-    <section
-      style={{
-        background: '#fff',
-        border: '1px solid #e2e8f0',
-        borderRadius: 10,
-        padding: 20,
-        marginBottom: 22,
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-      }}
-    >
-      <h3 style={{ marginTop: 0, color: '#0f172a', fontSize: '1.15rem', fontWeight: 700 }}>
-        {t('elkChart.title')}
-      </h3>
+    <section className="elk-history-card">
+      <div className="panel-card-header">
+        <div className="panel-card-title-group">
+          <h3 className="card-heading">{t('elkChart.title')}</h3>
+          <span className={`noc-pill ${error ? 'pill-offline' : 'pill-info'}`}>
+            {error
+              ? language === 'vi'
+                ? 'ELK MẤT KẾT NỐI'
+                : 'ELK OFFLINE'
+              : language === 'vi'
+                ? 'Dữ liệu lịch sử (ELK)'
+                : 'Historical Data (ELK)'}
+          </span>
+          {!error && (
+            <span className="noc-pill pill-neutral">
+              {selectedRows.length} {language === 'vi' ? 'mẫu đo' : 'samples'}
+            </span>
+          )}
+        </div>
 
-      <p style={{ color: '#64748b', fontSize: 13, marginBottom: 16 }}>
-        {t('elkChart.subtitle')}
-      </p>
+        {/* Filter Toolbar */}
+        <div className="panel-toolbar-controls">
+          <label className="toolbar-field">
+            <span>{t('elkChart.switchLabel')}:</span>
+            <select
+              className="noc-select"
+              value={currentSwitch}
+              onChange={(e) => setSwitchId(e.target.value)}
+            >
+              {switches.length > 0 ? (
+                switches.map((id) => (
+                  <option key={id} value={id}>
+                    {id}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>
+                  {language === 'vi' ? '-- Chưa có Switch --' : '-- No switch --'}
+                </option>
+              )}
+            </select>
+          </label>
 
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'end',
-          gap: 14,
-          marginBottom: 18
-        }}
-      >
-        <label style={{ fontSize: 13, color: '#475569', fontWeight: 600 }}>
-          <div style={{ marginBottom: 4 }}>{t('elkChart.switchLabel')}</div>
-          <select
-            style={selectStyle}
-            value={currentSwitch}
-            onChange={(e) => setSwitchId(e.target.value)}
+          <label className="toolbar-field">
+            <span>{t('elkChart.portLabel')}:</span>
+            <select
+              className="noc-select"
+              value={currentPort}
+              onChange={(e) => setPort(e.target.value)}
+            >
+              {allCandidatePorts.map((number) => {
+                const isLive = livePortsSet.has(number);
+                return (
+                  <option key={number} value={number}>
+                    Port {number}{' '}
+                    {isLive
+                      ? `(${language === 'vi' ? 'Live ONOS' : 'Live'})`
+                      : `(${language === 'vi' ? 'Lịch sử' : 'History'})`}
+                  </option>
+                );
+              })}
+            </select>
+          </label>
+
+          <label className="toolbar-field">
+            <span>{t('elkChart.timeRangeLabel')}:</span>
+            <select
+              className="noc-select"
+              value={minutes}
+              onChange={(e) => setMinutes(Number(e.target.value))}
+            >
+              <option value={60}>{t('alertsTable.oneHour')}</option>
+              <option value={240}>{t('alertsTable.fourHours')}</option>
+              <option value={1440}>{t('alertsTable.twentyFourHours')}</option>
+              <option value={10080}>{t('alertsTable.sevenDays')}</option>
+            </select>
+          </label>
+
+          <button
+            type="button"
+            className="noc-action-btn primary"
+            disabled={loading}
+            onClick={() => setRefreshKey((val) => val + 1)}
           >
-            {switches.map((id) => (
-              <option key={id} value={id}>{id}</option>
-            ))}
-          </select>
-        </label>
-
-        <label style={{ fontSize: 13, color: '#475569', fontWeight: 600 }}>
-          <div style={{ marginBottom: 4 }}>{t('elkChart.portLabel')}</div>
-          <select
-            style={selectStyle}
-            value={currentPort}
-            onChange={(e) => setPort(e.target.value)}
-          >
-            {ports.map((number) => (
-              <option key={number} value={number}>
-                Port {number}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label style={{ fontSize: 13, color: '#475569', fontWeight: 600 }}>
-          <div style={{ marginBottom: 4 }}>{t('elkChart.timeRangeLabel')}</div>
-          <select
-            style={selectStyle}
-            value={minutes}
-            onChange={(e) => setMinutes(Number(e.target.value))}
-          >
-            <option value={60}>{t('alertsTable.oneHour')}</option>
-            <option value={240}>{t('alertsTable.fourHours')}</option>
-            <option value={1440}>{t('alertsTable.twentyFourHours')}</option>
-            <option value={10080}>{t('alertsTable.sevenDays')}</option>
-          </select>
-        </label>
-
-        <button
-          type="button"
-          style={{
-            ...selectStyle,
-            cursor: 'pointer',
-            background: '#0f172a',
-            color: '#fff',
-            border: '1px solid #334155',
-            fontWeight: 600
-          }}
-          onClick={() => setRefreshKey((value) => value + 1)}
-        >
-          {t('common.refresh')}
-        </button>
+            <svg
+              className={loading ? 'spin-icon' : ''}
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              stroke="currentColor"
+              fill="none"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            {t('common.refresh')}
+          </button>
+        </div>
       </div>
+
+      <p className="panel-card-subtitle">{t('elkChart.subtitle')}</p>
 
       {error && (
-        <p role="alert" style={{ color: '#b91c1c', fontSize: 13 }}>
+        <div className="noc-error-banner" role="alert">
           {error}
-        </p>
+        </div>
       )}
 
-      <div style={{ marginBottom: 12, fontSize: 13, color: '#334155' }}>
-        <strong>{t('elkChart.samples')}: {selectedRows.length}</strong>
-        {' | '}
-        {t('elkChart.rxMax')}: {peakRx.toFixed(6)} Mbps
-        {' | '}
-        {t('elkChart.txMax')}: {peakTx.toFixed(6)} Mbps
-      </div>
+      {/* Stats Summary Bar when data exists */}
+      {selectedRows.length > 0 && (
+        <div className="elk-stats-strip">
+          <span>
+            <strong>{t('elkChart.samples')}:</strong> {selectedRows.length}
+          </span>
+          <span>
+            <strong>{t('elkChart.rxMax')}:</strong>{' '}
+            <span className="metric-rx">{peakRx.toFixed(6)} Mbps</span>
+          </span>
+          <span>
+            <strong>{t('elkChart.txMax')}:</strong>{' '}
+            <span className="metric-tx">{peakTx.toFixed(6)} Mbps</span>
+          </span>
+          <span>
+            <strong>{language === 'vi' ? 'Trung bình RX/TX' : 'Avg RX/TX'}:</strong>{' '}
+            {avgRx.toFixed(4)} / {avgTx.toFixed(4)} Mbps
+          </span>
+        </div>
+      )}
 
+      {/* Chart Canvas or Compact Empty State */}
       {selectedRows.length > 0 ? (
-        <div style={{ position: 'relative', height: 320, width: '100%' }}>
+        <div className="elk-chart-canvas">
           <Line data={chartData} options={chartOptions} />
         </div>
       ) : (
-        <div
-          style={{
-            padding: 30,
-            textAlign: 'center',
-            background: '#f8fafc',
-            color: '#64748b',
-            borderRadius: 8,
-            fontSize: 13
-          }}
-        >
-          {loading
-            ? t('common.loadingData')
-            : t('elkChart.noHistoryData')}
+        <div className="elk-empty-strip">
+          <div>
+            <div className="elk-empty-title">
+              {loading
+                ? t('common.loadingData')
+                : error
+                  ? language === 'vi'
+                    ? 'Không thể tải dữ liệu lưu lượng lịch sử từ Elasticsearch.'
+                    : 'Historical port traffic cannot be loaded from Elasticsearch.'
+                  : language === 'vi'
+                    ? `Chưa có dữ liệu lưu lượng để hiển thị cho ${currentSwitch || 'Switch'} (Cổng ${currentPort}) trong ${getTimeRangeText()}.`
+                    : `No traffic data available to display for ${currentSwitch || 'Switch'} (Port ${currentPort}) in ${getTimeRangeText()}.`}
+            </div>
+            <div className="elk-empty-desc">
+              {language === 'vi'
+                ? 'Chỉ mục: sdnflowguard-events-*. Dữ liệu được Logstash lập chỉ mục từ ONOS Port Collector khi có lưu lượng đi qua switch.'
+                : 'Index: sdnflowguard-events-*. Telemetry is indexed via Logstash from ONOS Port Collector when traffic traverses switch ports.'}
+            </div>
+          </div>
         </div>
       )}
 
-      <p style={{ marginBottom: 0, marginTop: 14, fontSize: 12, color: '#94a3b8' }}>
-        {lastLoaded
-          ? `${t('common.lastUpdated')}: ${lastLoaded.toLocaleTimeString(language === 'vi' ? 'vi-VN' : 'en-US')}. `
-          : ''}
-        {t('elkChart.footerNotice')}
-      </p>
+      <div className="panel-footer-meta">
+        <span>{t('elkChart.footerNotice')}</span>
+        {lastLoaded && !error && (
+          <span className="panel-updated-time">
+            {t('common.lastUpdated')}:{' '}
+            <strong>
+              {lastLoaded.toLocaleTimeString(language === 'vi' ? 'vi-VN' : 'en-US', {
+                hour12: false,
+              })}
+            </strong>
+          </span>
+        )}
+      </div>
     </section>
   );
 }

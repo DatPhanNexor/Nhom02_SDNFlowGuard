@@ -50,7 +50,7 @@ services:
     mem_limit: 1400m
     mem_reservation: 512m
     environment:
-      - ONOS_APPS=drivers,openflow,gui2,fwd
+      - ONOS_APPS=drivers,openflow,gui2,fwd,acl
       - JAVA_OPTS=-XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Dkaraf.log.console=INFO -Dds.lock.timeout.milliseconds=10000 -Xms256m -Xmx512m
     ports:
       - "127.0.0.1:8181:8181"

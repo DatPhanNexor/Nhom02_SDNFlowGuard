@@ -11,30 +11,34 @@ import Reports from './pages/Reports';
 import SystemSettings from './pages/SystemSettings';
 import Chatbot from './components/Chatbot';
 import { LanguageProvider } from './i18n/LanguageContext';
+import { ThemeProvider } from './theme/ThemeContext';
 import './App.css';
 
 function App() {
   return (
-    <LanguageProvider>
-      <div className="app-container">
-        <Header />
-        <div className="main-layout">
-          <Sidebar />
-          <div className="content">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/traffic-overview" element={<TrafficOverview />} />
-              <Route path="/anomaly-detection" element={<AnomalyDetection />} />
-              <Route path="/decision-logs" element={<DecisionLogs />} />
-              <Route path="/manual-traffic-control" element={<ManualTrafficControl />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/system-settings" element={<SystemSettings />} />
-            </Routes>
+    <ThemeProvider>
+      <LanguageProvider>
+        <div className="app-container">
+          <Header />
+          <div className="main-layout">
+            <Sidebar />
+            <div className="content">
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/traffic-overview" element={<TrafficOverview />} />
+                <Route path="/anomaly-detection" element={<AnomalyDetection />} />
+                <Route path="/decision-logs" element={<DecisionLogs />} />
+                <Route path="/manual-traffic-control" element={<ManualTrafficControl />} />
+                <Route path="/reports" element={<Reports />} />
+                <Route path="/system-settings" element={<SystemSettings />} />
+                <Route path="/settings" element={<SystemSettings />} />
+              </Routes>
+            </div>
           </div>
+          <Chatbot />
         </div>
-        <Chatbot />
-      </div>
-    </LanguageProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 

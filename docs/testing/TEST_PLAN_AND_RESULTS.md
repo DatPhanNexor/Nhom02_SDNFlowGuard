@@ -14,14 +14,14 @@
 
 ---
 
-## 2. Automated Test Suite Summary (`79` Tests — `100% PASS`)
+## 2. Automated Test Suite Summary (`91` Tests — `100% PASS`)
 
 Command executed:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test.ps1
 ```
 
-### 2.1. Unit Tests (`backend/tests/unit/` — 37 Tests)
+### 2.1. Unit Tests (`backend/tests/unit/` — 43 Tests)
 | Test Module | Tests | Scope Verified | Status |
 |---|---|---|---|
 | `test_source_ip_evidence_analyzer.py` | 3 | Step 63 UTF-16/UTF-8 tcpdump parser, MAC/IP extraction, UTC metadata, rejection of malformed captures | **PASS** |
@@ -35,6 +35,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test.ps1
 | `test_reliable_monitor_v1.py` | 2 | `valid_sample`, `make_alert`, `process_hit`, and atomic checkpoint save/load | **PASS** |
 | `test_reliable_monitor_v2.py` | 3 | Overlap window monitor V2 built-in self-test, nanosecond timestamp parsing, and late sample detection | **PASS** |
 | `test_remediation_findings.py` | 6 | Remediation checks for Finding-03 (rate limit bps to kbps), Finding-04 (rollback transparency), Finding-05 (gateway/DNS protection), DB connection lifecycle | **PASS** |
+| `test_topology_service.py` | 6 | Empty topology, single switch 3 hosts, linear multi-switch, dynamic host join/leave, ONOS 502 handling, malformed fields | **PASS** |
 
 ### 2.2. Integration Tests (`backend/tests/integration/` — 22 Tests)
 | Test Module | Tests | Scope Verified | Status |
@@ -51,7 +52,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test.ps1
 | `test_elasticsearch_query_contracts.py` | 2 | Query parameter bounds (`minutes`, `limit`, `port`) and response contracts for `/api/elk/*` | **PASS** |
 | `test_frontend_backend_api_contracts.py` | 1 | End-to-end JSON response shapes consumed by React pages and components | **PASS** |
 
-### 2.4. Safety Tests (`backend/tests/safety/` — 14 Tests)
+### 2.4. Safety Tests (`backend/tests/safety/` — 20 Tests)
 | Test Module | Tests | Scope Verified | Status |
 |---|---|---|---|
 | `test_no_secret_leakage.py` | 2 | Verifies zero hardcoded ELK passwords in `backend/run.py` and empty secrets in `.env.example` | **PASS** |
@@ -60,6 +61,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test.ps1
 | `test_test_alert_never_blocks.py` | 1 | Verifies `test_only=True` alerts are blocked by the Safety Gate even in `ACTIVE_ENFORCEMENT` mode | **PASS** |
 | `test_checkpoint_integrity.py` | 2 | Verifies all 4 collector checkpoints and Step 63 evidence files | **PASS** |
 | `test_fault_injection_and_resilience.py` | 7 | ONOS timeout (HTTP 502), connection drop, invalid IP syntax, missing rule rollback transparency, authentication fallback | **PASS** |
+| `test_audit_remediation_hardening.py` | 6 | Fail-safe operator auth separation (`is_operator_authenticated`), `block_ip -> create_acl_rule` auth propagation & read-back verification (`RULE_INSTALLED`), `/api/save-flows` auth enforcement, truthful 404/502 error codes on `/api/rate-limit` & `/api/redirect`, `unblock_ip` post-delete `None` guard, ONOS Meter `Location` header parsing & rollback plan | **PASS** |
 
 ### 2.5. End-to-End Pipeline Tests (`backend/tests/e2e/` — 1 Test)
 | Test Module | Tests | Scope Verified | Status |

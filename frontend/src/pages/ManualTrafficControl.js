@@ -67,8 +67,8 @@ function ManualTrafficControl() {
         if (!rateLimitBps || Number(rateLimitBps) <= 0) {
           setStatusMessage(
             language === 'vi'
-              ? 'Lỗi xác thực: Giới hạn tốc độ (Bps) phải là số dương lớn hơn 0.'
-              : 'Validation Error: Rate Limit (Bps) must be a positive number.'
+              ? 'Lỗi xác thực: Giới hạn tốc độ (bps) phải là số dương lớn hơn 0.'
+              : 'Validation Error: Rate Limit (bps) must be a positive number.'
           );
           return;
         }
@@ -143,13 +143,13 @@ function ManualTrafficControl() {
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* L2/L3 Endpoints */}
-            <div style={{ background: '#f8fafc', padding: 16, borderRadius: 8, border: '1px solid #e2e8f0' }}>
-              <h4 style={{ margin: '0 0 12px 0', color: '#0f172a', fontSize: 14, fontWeight: 700 }}>
+            <div style={{ background: 'var(--bg-surface-subtle)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)' }}>
+              <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
                 {t('manualControl.endpointSection')}
               </h4>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
                 <div className="form-group">
-                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block' }}>
+                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
                     {t('manualControl.sourceIp')}
                   </label>
                   <input
@@ -157,11 +157,11 @@ function ManualTrafficControl() {
                     value={formData.srcIp || ''}
                     placeholder={t('manualControl.sourceIpPlaceholder')}
                     onChange={(e) => handleInputChange('srcIp', e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                   />
                 </div>
                 <div className="form-group">
-                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block' }}>
+                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
                     {t('manualControl.destinationIp')}
                   </label>
                   <input
@@ -169,11 +169,11 @@ function ManualTrafficControl() {
                     value={formData.dstIp || ''}
                     placeholder={t('manualControl.destinationIpPlaceholder')}
                     onChange={(e) => handleInputChange('dstIp', e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                   />
                 </div>
                 <div className="form-group">
-                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block' }}>
+                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
                     {t('manualControl.sourceMac')}
                   </label>
                   <input
@@ -181,11 +181,11 @@ function ManualTrafficControl() {
                     value={formData.srcMac || ''}
                     placeholder="vd: 00:00:00:00:00:01"
                     onChange={(e) => handleInputChange('srcMac', e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                   />
                 </div>
                 <div className="form-group">
-                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block' }}>
+                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
                     {t('manualControl.destinationMac')}
                   </label>
                   <input
@@ -193,26 +193,26 @@ function ManualTrafficControl() {
                     value={formData.dstMac || ''}
                     placeholder="vd: 00:00:00:00:00:02"
                     onChange={(e) => handleInputChange('dstMac', e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                   />
                 </div>
               </div>
             </div>
 
             {/* Protocol & Match Criteria */}
-            <div style={{ background: '#f8fafc', padding: 16, borderRadius: 8, border: '1px solid #e2e8f0' }}>
-              <h4 style={{ margin: '0 0 12px 0', color: '#0f172a', fontSize: 14, fontWeight: 700 }}>
+            <div style={{ background: 'var(--bg-surface-subtle)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)' }}>
+              <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
                 {t('manualControl.flowMatchSection')}
               </h4>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
                 <div className="form-group">
-                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block' }}>
+                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
                     {t('manualControl.protocol')}
                   </label>
                   <select
                     value={formData.ipProto || ''}
                     onChange={(e) => handleInputChange('ipProto', e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1', background: '#fff' }}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                   >
                     <option value="">{t('manualControl.protocolAll')}</option>
                     <option value="TCP">{t('manualControl.protocolTcp')}</option>
@@ -221,7 +221,7 @@ function ManualTrafficControl() {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block' }}>
+                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
                     {t('manualControl.sourcePort')}
                   </label>
                   <input
@@ -229,11 +229,11 @@ function ManualTrafficControl() {
                     value={formData.srcPort || ''}
                     placeholder="vd: 80, 443"
                     onChange={(e) => handleInputChange('srcPort', e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                   />
                 </div>
                 <div className="form-group">
-                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block' }}>
+                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
                     {t('manualControl.destinationPort')}
                   </label>
                   <input
@@ -241,11 +241,11 @@ function ManualTrafficControl() {
                     value={formData.dstPort || ''}
                     placeholder="vd: 80, 443"
                     onChange={(e) => handleInputChange('dstPort', e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                   />
                 </div>
                 <div className="form-group">
-                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block' }}>
+                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
                     {t('manualControl.prefixLength')}
                   </label>
                   <input
@@ -255,7 +255,7 @@ function ManualTrafficControl() {
                     min="0"
                     max="32"
                     onChange={(e) => handleInputChange('prefixLength', e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                   />
                 </div>
               </div>
@@ -265,13 +265,13 @@ function ManualTrafficControl() {
 
       case 'rate-limit':
         return (
-          <div style={{ background: '#f8fafc', padding: 16, borderRadius: 8, border: '1px solid #e2e8f0' }}>
-            <h4 style={{ margin: '0 0 12px 0', color: '#0f172a', fontSize: 14, fontWeight: 700 }}>
+          <div style={{ background: 'var(--bg-surface-subtle)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)' }}>
+            <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
               {t('manualControl.endpointSection')}
             </h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
               <div className="form-group">
-                <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block' }}>
+                <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
                   {t('manualControl.hostIp')}
                 </label>
                 <input
@@ -279,11 +279,11 @@ function ManualTrafficControl() {
                   placeholder="vd: 10.0.0.1"
                   value={hostIp}
                   onChange={(e) => setHostIp(e.target.value)}
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                 />
               </div>
               <div className="form-group">
-                <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block' }}>
+                <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
                   {t('manualControl.rateLimitValue')}
                 </label>
                 <input
@@ -291,11 +291,11 @@ function ManualTrafficControl() {
                   placeholder={t('manualControl.rateLimitPlaceholder')}
                   value={rateLimitBps}
                   onChange={(e) => setRateLimitBps(e.target.value)}
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                 />
               </div>
             </div>
-            <p style={{ margin: '10px 0 0 0', fontSize: 12, color: '#64748b' }}>
+            <p style={{ margin: '10px 0 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
               ℹ️ {t('manualControl.rateLimitNote')}
             </p>
           </div>
@@ -303,13 +303,13 @@ function ManualTrafficControl() {
 
       case 'redirect':
         return (
-          <div style={{ background: '#f8fafc', padding: 16, borderRadius: 8, border: '1px solid #e2e8f0' }}>
-            <h4 style={{ margin: '0 0 12px 0', color: '#0f172a', fontSize: 14, fontWeight: 700 }}>
+          <div style={{ background: 'var(--bg-surface-subtle)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)' }}>
+            <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
               {t('manualControl.endpointSection')}
             </h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
               <div className="form-group">
-                <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block' }}>
+                <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
                   {t('manualControl.sourceIp')}
                 </label>
                 <input
@@ -317,11 +317,11 @@ function ManualTrafficControl() {
                   placeholder={t('manualControl.sourceIpPlaceholder')}
                   value={formData.srcIp || ''}
                   onChange={(e) => handleInputChange('srcIp', e.target.value)}
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                 />
               </div>
               <div className="form-group">
-                <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block' }}>
+                <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
                   {t('manualControl.redirectIp')}
                 </label>
                 <input
@@ -329,7 +329,7 @@ function ManualTrafficControl() {
                   placeholder="vd: 10.0.0.6 (Honeypot)"
                   value={redirectIp}
                   onChange={(e) => setRedirectIp(e.target.value)}
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                 />
               </div>
             </div>
@@ -339,13 +339,13 @@ function ManualTrafficControl() {
       case 'unblock':
       case 'rollback':
         return (
-          <div style={{ background: '#f8fafc', padding: 16, borderRadius: 8, border: '1px solid #e2e8f0' }}>
-            <h4 style={{ margin: '0 0 12px 0', color: '#0f172a', fontSize: 14, fontWeight: 700 }}>
+          <div style={{ background: 'var(--bg-surface-subtle)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)' }}>
+            <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
               {t('manualControl.endpointSection')}
             </h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
               <div className="form-group">
-                <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block' }}>
+                <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
                   {t('manualControl.sourceIp')}
                 </label>
                 <input
@@ -353,12 +353,12 @@ function ManualTrafficControl() {
                   placeholder={t('manualControl.sourceIpPlaceholder')}
                   value={formData.srcIp || ''}
                   onChange={(e) => handleInputChange('srcIp', e.target.value)}
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                 />
               </div>
               {action === 'unblock' && (
                 <div className="form-group">
-                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block' }}>
+                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
                     {t('manualControl.destinationIp')} ({language === 'vi' ? 'Tùy chọn' : 'Optional'})
                   </label>
                   <input
@@ -366,7 +366,7 @@ function ManualTrafficControl() {
                     placeholder={t('manualControl.destinationIpPlaceholder')}
                     value={formData.dstIp || ''}
                     onChange={(e) => handleInputChange('dstIp', e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                   />
                 </div>
               )}
@@ -379,13 +379,87 @@ function ManualTrafficControl() {
     }
   };
 
+  const resolveStageBadge = (res) => {
+    if (!res) return null;
+    const status = String(res.status || res.enforcement_status || '').toUpperCase();
+    const isDryRun = res.dry_run || status.includes('DRY_RUN') || status.includes('STAGED');
+    const isRejected = status.includes('REJECT') || status.includes('FAIL') || status.includes('DENIED');
+    const isRollback = status.includes('ROLLBACK');
+    const isDataplane = status.includes('DATAPLANE_VERIFIED');
+    const isInstalled = res.rule_installed === true || status.includes('RULE_INSTALLED');
+    const isAccepted = status.includes('CONTROLLER_ACCEPTED') || status.includes('ACCEPTED');
+    const isApprovalReq = status.includes('APPROVAL_REQUIRED') || status.includes('OPERATOR');
+
+    if (isDryRun) {
+      return {
+        badge: t('manualControl.stageDryRun'),
+        bg: '#0284c7',
+        color: '#ffffff',
+      };
+    }
+    if (isRejected) {
+      return {
+        badge: t('manualControl.stageSafetyGateRejected'),
+        bg: '#dc2626',
+        color: '#ffffff',
+      };
+    }
+    if (isRollback) {
+      return {
+        badge: t('manualControl.stageRollbackVerified'),
+        bg: '#059669',
+        color: '#ffffff',
+      };
+    }
+    if (isDataplane) {
+      return {
+        badge: t('manualControl.stageDataplaneVerified'),
+        bg: '#0d9488',
+        color: '#ffffff',
+      };
+    }
+    if (isInstalled) {
+      return {
+        badge: t('manualControl.stageRuleInstalled'),
+        bg: '#16a34a',
+        color: '#ffffff',
+      };
+    }
+    if (isAccepted) {
+      return {
+        badge: t('manualControl.stageControllerAccepted'),
+        bg: '#d97706',
+        color: '#ffffff',
+      };
+    }
+    if (isApprovalReq) {
+      return {
+        badge: t('manualControl.stageApprovalRequired'),
+        bg: '#ea580c',
+        color: '#ffffff',
+      };
+    }
+    if (status.includes('ERROR') || status.includes('DOWN')) {
+      return {
+        badge: t('manualControl.stageFailed'),
+        bg: '#b91c1c',
+        color: '#ffffff',
+      };
+    }
+    return {
+      badge: status || (language === 'vi' ? 'Đã hoàn tất' : 'Completed'),
+      bg: '#475569',
+      color: '#ffffff',
+    };
+  };
+
   return (
     <div className="manual-traffic-control">
       <div style={{ marginBottom: 20 }}>
-        <h2 style={{ margin: 0, color: '#0f172a', fontSize: '1.6rem', fontWeight: 700 }}>
+        <h2>
           {t('manualControl.title')}
         </h2>
-        <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: 14 }}>
+        <p style={{ margin: '4px 0 0 0', color: 'var(--text-secondary)', fontSize: 14 }}>
           {t('manualControl.subtitle')}
         </p>
       </div>
@@ -398,7 +472,7 @@ function ManualTrafficControl() {
           padding: '14px 18px',
           borderRadius: 8,
           marginBottom: 20,
-          border: '1px solid #e2e8f0',
+          border: '1px solid var(--border-color)',
         }}
       >
         <label
@@ -444,16 +518,16 @@ function ManualTrafficControl() {
       )}
 
       {/* Main Control Form */}
-      <form onSubmit={handleSubmit} style={{ background: '#fff', padding: 22, borderRadius: 10, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+      <form onSubmit={handleSubmit} style={{ background: 'var(--card-bg)', padding: 22, borderRadius: 10, border: '1px solid var(--card-border)', boxShadow: 'var(--card-shadow)' }}>
         {/* 1. Action Selection */}
         <div className="form-group" style={{ marginBottom: 20 }}>
-          <label style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', marginBottom: 6, display: 'block' }}>
+          <label style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', marginBottom: 6, display: 'block' }}>
             {t('manualControl.actionSelection')}
           </label>
           <select
             value={action}
             onChange={(e) => setAction(e.target.value)}
-            style={{ width: '100%', maxWidth: '400px', padding: '9px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 14, background: '#fff' }}
+            style={{ width: '100%', maxWidth: '400px', padding: '9px 12px', borderRadius: 6, border: '1px solid var(--input-border)', fontSize: 14, background: 'var(--input-bg)', color: 'var(--input-text)' }}
           >
             <option value="block">{t('manualControl.actionBlock')}</option>
             <option value="allow">{t('manualControl.actionAllow')}</option>
@@ -470,14 +544,14 @@ function ManualTrafficControl() {
         </div>
 
         {/* 5. Policy Preview Card */}
-        <div style={{ background: '#f8fafc', padding: 14, borderRadius: 8, border: '1px solid #cbd5e1', marginBottom: 20 }}>
-          <h4 style={{ margin: '0 0 8px 0', fontSize: 13, fontWeight: 700, color: '#334155' }}>
+        <div style={{ background: 'var(--bg-surface-subtle)', padding: 14, borderRadius: 8, border: '1px solid var(--border-color)', marginBottom: 20 }}>
+          <h4 style={{ margin: '0 0 8px 0', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
             {t('manualControl.policyPreviewTitle')}
           </h4>
-          <div style={{ fontSize: 12, color: '#475569', display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <div><strong>{t('manualControl.selectedAction')}:</strong> <code style={{ color: '#0284c7' }}>{action.toUpperCase()}</code></div>
-            <div><strong>{t('manualControl.targetSubject')}:</strong> <code>{formData.srcIp || hostIp || (language === 'vi' ? 'Chưa chỉ định' : 'Not specified')}</code></div>
-            <div><strong>{t('manualControl.safetyStatus')}:</strong> <span style={{ fontWeight: 600, color: dryRun ? '#0d9488' : '#e11d48' }}>{dryRun ? 'DRY_RUN (SIMULATED)' : 'LIVE_ENFORCEMENT'}</span></div>
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div><strong>{t('manualControl.selectedAction')}</strong> <code style={{ color: '#0284c7' }}>{action.toUpperCase()}</code></div>
+            <div><strong>{t('manualControl.targetSubject')}</strong> <code>{formData.srcIp || hostIp || (language === 'vi' ? 'Chưa chỉ định' : 'Not specified')}</code></div>
+            <div><strong>{t('manualControl.safetyStatus')}</strong> <span style={{ fontWeight: 600, color: dryRun ? '#0d9488' : '#e11d48' }}>{dryRun ? 'DRY_RUN (SIMULATED)' : 'LIVE_ENFORCEMENT'}</span></div>
           </div>
         </div>
 
@@ -518,7 +592,7 @@ function ManualTrafficControl() {
         </div>
       </form>
 
-      {/* Telemetry Response Box */}
+      {/* Telemetry Response Box with Structured Stage Badge */}
       {telemetry && (
         <div
           style={{
@@ -530,10 +604,34 @@ function ManualTrafficControl() {
             boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
           }}
         >
-          <h4 style={{ marginTop: 0, color: '#38bdf8', fontSize: 14, fontWeight: 700 }}>
-            {t('manualControl.executionResponseTitle')}
-          </h4>
-          <pre style={{ margin: 0, overflowX: 'auto', fontSize: 12, color: '#e2e8f0', lineHeight: 1.4 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
+            <h4 style={{ margin: 0, color: '#38bdf8', fontSize: 14, fontWeight: 700 }}>
+              {t('manualControl.executionResponseTitle')}
+            </h4>
+            {(() => {
+              const stage = resolveStageBadge(telemetry);
+              return stage ? (
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    padding: '4px 10px',
+                    borderRadius: '9999px',
+                    backgroundColor: stage.bg,
+                    color: stage.color,
+                  }}
+                >
+                  {stage.badge}
+                </span>
+              ) : null;
+            })()}
+          </div>
+          {telemetry.message && (
+            <p style={{ margin: '0 0 12px 0', fontSize: 13, color: '#cbd5e1' }}>
+              {telemetry.message}
+            </p>
+          )}
+          <pre style={{ margin: 0, overflowX: 'auto', fontSize: 12, color: '#e2e8f0', lineHeight: 1.4, background: '#1e293b', padding: 12, borderRadius: 6 }}>
             {JSON.stringify(telemetry, null, 2)}
           </pre>
         </div>

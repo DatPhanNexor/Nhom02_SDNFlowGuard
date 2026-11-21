@@ -62,25 +62,25 @@ function DecisionLogs() {
     <div className="decision-logs">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', marginBottom: 20 }}>
         <div>
-          <h2 style={{ margin: 0, color: '#0f172a', fontSize: '1.6rem', fontWeight: 700 }}>
+          <h2>
             {t('decisionLogs.title')}
           </h2>
-          <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: 14 }}>
+          <p style={{ margin: '4px 0 0 0', color: 'var(--text-secondary)', fontSize: 14 }}>
             {language === 'vi'
               ? 'Lịch sử kiểm toán các quyết định phòng vệ, nguồn phát sinh và mức độ thực thi'
               : 'Audit trail of defense policy decisions, initiation sources, and enforcement status'}
           </p>
         </div>
-        <span style={{ fontSize: 13, color: '#475569', fontWeight: 600, background: '#f1f5f9', padding: '6px 12px', borderRadius: 6, border: '1px solid #cbd5e1' }}>
+        <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 600, background: 'var(--bg-surface-subtle)', padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border-color)' }}>
           {t('decisionLogs.showingRecords', { filtered: filteredLogs.length, total: logs.length })}
         </span>
       </div>
 
       {/* Filter Bar */}
-      <div className="filter-section" style={{ background: '#fff', padding: '16px 20px', borderRadius: 10, border: '1px solid #e2e8f0', marginBottom: 22, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+      <div className="filter-section">
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
           <div style={{ flex: '1 1 240px' }}>
-            <label htmlFor="search-kw" style={{ fontWeight: 600, fontSize: 13, marginRight: 6, color: '#334155', display: 'block', marginBottom: 4 }}>
+            <label htmlFor="search-kw" style={{ fontWeight: 600, fontSize: 13, marginRight: 6, display: 'block', marginBottom: 4 }}>
               {t('decisionLogs.searchLabel')}
             </label>
             <input
@@ -89,19 +89,18 @@ function DecisionLogs() {
               placeholder={t('decisionLogs.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ width: '100%', padding: '7px 10px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 13 }}
+              style={{ width: '100%', maxWidth: '320px', padding: '7px 10px', border: '1px solid var(--input-border)', borderRadius: 6, fontSize: 13, background: 'var(--input-bg)', color: 'var(--input-text)' }}
             />
           </div>
 
           <div>
-            <label htmlFor="log-type" style={{ fontWeight: 600, fontSize: 13, marginRight: 6, color: '#334155', display: 'block', marginBottom: 4 }}>
+            <label htmlFor="log-type" style={{ fontWeight: 600, fontSize: 13, marginRight: 6, display: 'block', marginBottom: 4 }}>
               {t('decisionLogs.filterAction')}
             </label>
             <select
               id="log-type"
               value={actionTypeFilter}
               onChange={(e) => setActionTypeFilter(e.target.value)}
-              style={{ padding: '7px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 13, background: '#fff' }}
             >
               <option value="all">{t('decisionLogs.allActions')}</option>
               <option value="block">{t('decisionLogs.blockAction')}</option>
@@ -112,14 +111,13 @@ function DecisionLogs() {
           </div>
 
           <div>
-            <label htmlFor="admin-type" style={{ fontWeight: 600, fontSize: 13, marginRight: 6, color: '#334155', display: 'block', marginBottom: 4 }}>
+            <label htmlFor="admin-type" style={{ fontWeight: 600, fontSize: 13, marginRight: 6, display: 'block', marginBottom: 4 }}>
               {t('decisionLogs.filterSource')}
             </label>
             <select
               id="admin-type"
               value={adminTypeFilter}
               onChange={(e) => setAdminTypeFilter(e.target.value)}
-              style={{ padding: '7px 12px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 13, background: '#fff' }}
             >
               <option value="all">{t('decisionLogs.allSources')}</option>
               <option value="admin">{t('decisionLogs.manualSource')}</option>
@@ -130,23 +128,23 @@ function DecisionLogs() {
       </div>
 
       {/* Decision Table */}
-      <div style={{ background: '#fff', padding: 20, borderRadius: 10, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <div style={{ overflowX: 'auto' }}>
+        <table>
           <thead>
-            <tr style={{ background: '#f8fafc', borderBottom: '1px solid #cbd5e1' }}>
-              <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 13, color: '#475569', fontWeight: 700 }}>
+            <tr>
+              <th>
                 {t('decisionLogs.tableHeaders.time')}
               </th>
-              <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 13, color: '#475569', fontWeight: 700 }}>
+              <th>
                 {t('decisionLogs.tableHeaders.actionType')}
               </th>
-              <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 13, color: '#475569', fontWeight: 700 }}>
+              <th>
                 {t('decisionLogs.tableHeaders.reason')}
               </th>
-              <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 13, color: '#475569', fontWeight: 700 }}>
+              <th>
                 {t('decisionLogs.tableHeaders.sourceIp')}
               </th>
-              <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 13, color: '#475569', fontWeight: 700 }}>
+              <th>
                 {t('decisionLogs.tableHeaders.enforcement')}
               </th>
             </tr>
@@ -154,7 +152,7 @@ function DecisionLogs() {
           <tbody>
             {filteredLogs.length === 0 ? (
               <tr>
-                <td colSpan="5" style={{ textAlign: 'center', padding: '36px', color: '#64748b' }}>
+                <td colSpan="5" style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
                   {t('decisionLogs.noMatchingLogs')}
                 </td>
               </tr>
@@ -163,11 +161,11 @@ function DecisionLogs() {
                 const isBlock = String(log.action_type || '').toLowerCase().includes('block');
                 const isAutomated = String(log.admin_or_automated || '').toLowerCase() === 'automated';
                 return (
-                  <tr key={index} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                    <td style={{ whiteSpace: 'nowrap', fontSize: 13, padding: '12px 14px' }}>
+                  <tr key={index}>
+                    <td style={{ whiteSpace: 'nowrap', fontSize: 13 }}>
                       {log.timestamp}
                     </td>
-                    <td style={{ padding: '12px 14px' }}>
+                    <td>
                       <span
                         style={{
                           display: 'inline-block',
@@ -182,13 +180,13 @@ function DecisionLogs() {
                         {log.action_type}
                       </span>
                     </td>
-                    <td style={{ fontSize: 13, padding: '12px 14px' }}>
+                    <td style={{ fontSize: 13 }}>
                       {log.reason}
                     </td>
-                    <td style={{ padding: '12px 14px' }}>
+                    <td>
                       <code>{log.source_ip || 'N/A'}</code>
                     </td>
-                    <td style={{ padding: '12px 14px' }}>
+                    <td>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <span
                           style={{
@@ -204,7 +202,7 @@ function DecisionLogs() {
                         >
                           {isAutomated ? t('decisionLogs.automatedSource') : t('decisionLogs.manualSource')}
                         </span>
-                        <span style={{ fontSize: 11, color: '#94a3b8' }}>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                           {t('decisionLogs.unverifiedNotice')}
                         </span>
                       </div>

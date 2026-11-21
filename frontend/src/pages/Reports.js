@@ -59,24 +59,23 @@ function Reports() {
   return (
     <div className="reports">
       <div style={{ marginBottom: 20 }}>
-        <h2 style={{ margin: 0, color: '#0f172a', fontSize: '1.6rem', fontWeight: 700 }}>
+        <h2>
           {t('reports.title')}
         </h2>
-        <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: 14 }}>
+        <p style={{ margin: '4px 0 0 0', color: 'var(--text-secondary)', fontSize: 14 }}>
           {t('reports.localDbNotice')}
         </p>
       </div>
 
       {/* Filter & Export Bar */}
-      <div className="report-filters" style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20, flexWrap: 'wrap', background: '#fff', padding: '16px 20px', borderRadius: 10, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-        <label htmlFor="report-type" style={{ fontWeight: 600, fontSize: 14, color: '#334155' }}>
+      <div className="report-filters">
+        <label htmlFor="report-type">
           {t('reports.datasetLabel')}
         </label>
         <select
           id="report-type"
           value={reportType}
           onChange={(e) => setReportType(e.target.value)}
-          style={{ padding: '8px 14px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14, background: '#fff' }}
         >
           <option value="anomalies">{t('reports.anomaliesOption')}</option>
           <option value="actions">{t('reports.actionsOption')}</option>
@@ -109,18 +108,18 @@ function Reports() {
       </div>
 
       {/* Report Table Display */}
-      <div className="report-display" style={{ background: '#fff', padding: 20, borderRadius: 10, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+      <div className="report-display">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
-          <h3 style={{ margin: 0, color: '#0f172a', fontSize: '1.15rem', fontWeight: 700 }}>
+          <h3 style={{ margin: 0 }}>
             {t('reports.auditReportTitle', { type: reportTypeTitle })}
           </h3>
-          <span style={{ fontSize: 13, color: '#64748b' }}>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
             {t('reports.recordsAvailable', { count: reportData.length })}
           </span>
         </div>
 
         {isLoading ? (
-          <p style={{ color: '#64748b', padding: '24px 0', textAlign: 'center' }}>
+          <p style={{ color: 'var(--text-muted)', padding: '24px 0', textAlign: 'center' }}>
             {t('reports.generating')}
           </p>
         ) : error ? (
@@ -131,7 +130,7 @@ function Reports() {
           <div style={{ overflowX: 'auto' }}>
             <table>
               <thead>
-                <tr style={{ background: '#f8fafc' }}>
+                <tr>
                   {reportData.length > 0 &&
                     Object.keys(reportData[0]).map((key) => (
                       <th key={key} style={{ textTransform: 'uppercase', fontSize: 12 }}>

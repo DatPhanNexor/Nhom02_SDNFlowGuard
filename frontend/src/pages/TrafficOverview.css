@@ -1,47 +1,491 @@
+/* TrafficOverview.css - Network Engineering Grade Topology Styles */
+
 .traffic-overview {
-    padding: 20px;
-    background-color: #f8f9fc;
-    font-family: Arial, sans-serif;
+  padding: 24px;
+  background-color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  min-height: 100vh;
+}
+
+/* Controls Bar */
+.topology-controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: #ffffff;
+  padding: 12px 18px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.topology-status-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.controller-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.controller-status-pill.online {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.controller-status-pill.offline {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.pulsing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #22c55e;
+  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.controller-status-pill.offline .pulsing-dot {
+  background-color: #ef4444;
+  animation: none;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
   }
-  
-  h2 {
-    text-align: center;
-    margin-bottom: 20px;
+  50% {
+    opacity: 0.4;
+    transform: scale(1.2);
   }
-  
-  .topology-section {
-    margin-bottom: 20px;
-  }
-  
-  .network-container {
-    height: 500px;
-    width: 100%;
-    border: 1px solid #ccc;
-  }
-  
-  .traffic-details {
-    margin-top: 20px;
-  }
-  
-  .traffic-details h3 {
-    text-align: left;
-    margin-bottom: 10px;
-  }
-  
-  .traffic-details table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-  }
-  
-  .traffic-details table th,
-  .traffic-details table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-  }
-  
-  .traffic-details table th {
-    background-color: #f2f2f2;
-  }
-  
+}
+
+.topology-stat-pill {
+  padding: 4px 10px;
+  border-radius: 6px;
+  background-color: #f1f5f9;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+}
+
+.topology-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.last-updated-text {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.auto-refresh-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #0284c7;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #0f172a;
+  color: #ffffff;
+  border: 1px solid #334155;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background-color: #1e293b;
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.topology-error-banner {
+  padding: 10px 14px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #b91c1c;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+/* Topology Canvas Section */
+.topology-section {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+  margin: 0 0 14px 0;
+  color: #0f172a;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.section-subtitle {
+  margin: -8px 0 16px 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.topology-canvas-wrapper {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.topology-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.topology-empty-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(248, 250, 252, 0.96);
+  padding: 24px;
+  text-align: center;
+  z-index: 5;
+}
+
+.empty-icon {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.topology-empty-overlay h4 {
+  margin: 0 0 8px 0;
+  color: #0f172a;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.topology-empty-overlay p {
+  margin: 0 0 12px 0;
+  color: #64748b;
+  font-size: 13px;
+  max-width: 540px;
+  line-height: 1.5;
+}
+
+.mininet-code-block {
+  display: inline-block;
+  background: #0f172a;
+  color: #38bdf8;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  border: 1px solid #1e293b;
+  user-select: all;
+  max-width: 90%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.topology-hosts-notice {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  background: rgba(240, 253, 244, 0.95);
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  z-index: 4;
+}
+
+/* Stored Flows Table Section */
+.flow-table-section {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  margin-top: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.flow-table-empty {
+  padding: 30px;
+  text-align: center;
+  color: #64748b;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed #cbd5e1;
+}
+
+.flow-table-wrapper {
+  overflow-x: auto;
+}
+
+.flow-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.flow-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.flow-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.flow-table tr:hover td {
+  background-color: #f8fafc;
+}
+
+.flow-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.flow-pill.info {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.flow-pill.success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.flow-pill.neutral {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* Traffic Overview Header */
+.traffic-overview-header {
+  margin-bottom: 20px;
+}
+
+.traffic-overview-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.traffic-overview-subtitle {
+  margin: 4px 0 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.topology-filter-container {
+  display: inline-flex;
+  background: #e2e8f0;
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.topology-filter-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent;
+  color: #475569;
+  transition: all 0.15s ease;
+}
+
+.topology-filter-btn.active {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.mininet-tip {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.offline-switches-btn {
+  margin-top: 10px;
+  padding: 6px 14px;
+  background: var(--bg-surface-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: #0284c7;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.15s ease;
+}
+
+.offline-switches-btn:hover {
+  border-color: #0284c7;
+}
+
+/* =========================================================
+   DARK THEME SPECIFIC OVERRIDES FOR TRAFFIC OVERVIEW
+   ========================================================= */
+[data-theme="dark"] .traffic-overview {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .traffic-overview-title {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .traffic-overview-subtitle {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .topology-controls-bar,
+[data-theme="dark"] .topology-section,
+[data-theme="dark"] .traffic-details {
+  background: var(--card-bg);
+  border-color: var(--card-border);
+  box-shadow: var(--card-shadow);
+}
+
+[data-theme="dark"] .section-title {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .section-subtitle {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .topology-canvas-wrapper {
+  background: var(--bg-surface-subtle);
+  border-color: var(--card-border);
+}
+
+[data-theme="dark"] .topology-empty-overlay {
+  background: rgba(17, 24, 39, 0.95);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .topology-empty-overlay h4 {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .topology-empty-overlay p {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .topology-filter-container {
+  background: var(--bg-surface-subtle);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .topology-filter-btn {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .topology-filter-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .topology-stat-pill {
+  background-color: var(--bg-surface-subtle);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .last-updated-text {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .traffic-details h3 {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .topology-stat-pill.neutral {
+  background: var(--bg-surface-subtle);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .flow-table th {
+  background: var(--table-header-bg);
+  color: var(--text-primary);
+  border-bottom-color: var(--table-border);
+}
+
+[data-theme="dark"] .flow-table td {
+  color: var(--text-primary);
+  border-bottom-color: var(--table-border);
+}
+
+[data-theme="dark"] .flow-table tr:hover td {
+  background-color: var(--table-row-hover);
+}
+
+[data-theme="dark"] .flow-pill.neutral {
+  background: var(--bg-surface-subtle);
+  color: var(--text-secondary);
+}
+

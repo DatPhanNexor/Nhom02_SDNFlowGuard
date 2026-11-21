@@ -24,7 +24,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("up", "down", "status", "check", "logs", "test", "guide", "open", "reclaim")]
+    [ValidateSet("up", "down", "status", "check", "logs", "test", "guide", "open", "reclaim", "start-topo", "stop-topo", "status-topo")]
     [string]$Action = "status",
 
     [Parameter(Position = 1)]
@@ -302,7 +302,7 @@ switch ($Action) {
 
 [SCENARIO B] Connecting WSL2 Mininet Virtual Network (Optional Lab)
   1. In WSL2 Ubuntu terminal:
-     sudo mn --topo single,3 --controller=remote,ip=127.0.0.1,port=6653 --switch ovsk
+     sudo mn --topo single,3 --controller=remote,ip=127.0.0.1,port=6653 --switch ovsk,protocols=OpenFlow13
   2. In Mininet CLI, test ping:
      mininet> pingall
   3. Observe real-time topology updates in the Web Dashboard at http://localhost:3000
@@ -342,6 +342,45 @@ switch ($Action) {
         } else {
             Write-Host "[WARN] reclaim_wsl_memory.ps1 not found." -ForegroundColor Yellow
         }
+    }
+
+    "start-topo" {
+        Write-Host "[MININET] Starting SDNFlowGuard 6-Switch, 9-Host Reference Topology in WSL2..." -ForegroundColor Cyan
+        wsl.exe -d Ubuntu-26.04 -u root bash -c "systemctl start sdnflowguard-topo"
+        $maxWait = 15
+        $elapsed = 0
+        $devsCount = 0
+        $hostsCount = 0
+        while ($elapsed -lt $maxWait) {
+            Start-Sleep -Seconds 2
+            $elapsed += 2
+            try {
+                $devs = curl.exe -s -u onos:rocks http://127.0.0.1:8181/onos/v1/devices | ConvertFrom-Json
+                $hosts = curl.exe -s -u onos:rocks http://127.0.0.1:8181/onos/v1/hosts | ConvertFrom-Json
+                $devsCount = if ($devs.devices) { $devs.devices.Count } else { 0 }
+                $hostsCount = if ($hosts.hosts) { $hosts.hosts.Count } else { 0 }
+                if ($devsCount -ge 6 -and $hostsCount -ge 9) {
+                    break
+                }
+            } catch { }
+        }
+        Write-Host ("  [PASS] ONOS Discovered: {0} Switches, {1} Hosts" -f $devsCount, $hostsCount) -ForegroundColor Green
+    }
+
+    "stop-topo" {
+        Write-Host "[MININET] Stopping Mininet Topology in WSL2..." -ForegroundColor Cyan
+        wsl.exe -d Ubuntu-26.04 -u root bash -c "systemctl stop sdnflowguard-topo; mn -c > /dev/null 2>&1"
+        Write-Host "  [PASS] Mininet Topology stopped and dataplane cleaned." -ForegroundColor Green
+    }
+
+    "status-topo" {
+        Write-Host "[TOPOLOGY STATUS] Inspecting Live SDN Dataplane..." -ForegroundColor Cyan
+        $devs = curl.exe -s -u onos:rocks http://127.0.0.1:8181/onos/v1/devices | ConvertFrom-Json
+        $hosts = curl.exe -s -u onos:rocks http://127.0.0.1:8181/onos/v1/hosts | ConvertFrom-Json
+        $links = curl.exe -s -u onos:rocks http://127.0.0.1:8181/onos/v1/links | ConvertFrom-Json
+        Write-Host ("  Active Switches: {0}" -f $devs.devices.Count) -ForegroundColor White
+        Write-Host ("  Active Hosts   : {0}" -f $hosts.hosts.Count) -ForegroundColor White
+        Write-Host ("  Directed Links : {0}" -f $links.links.Count) -ForegroundColor White
     }
 }
 

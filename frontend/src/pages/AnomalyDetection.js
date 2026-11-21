@@ -11,7 +11,7 @@ import './AnomalyDetection.css';
 function AnomalyDetection() {
   const { language, t } = useLanguage();
   const [anomalies, setAnomalies] = useState([]);
-  const [step64Data, setStep64Data] = useState(null);
+  const [evidenceData, setEvidenceData] = useState(null);
   const [policyReport, setPolicyReport] = useState(null);
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [blockIp, setBlockIp] = useState('');
@@ -32,8 +32,8 @@ function AnomalyDetection() {
 
     axios
       .get(`${API_BASE_URL}/api/defense/evidence-correlation`)
-      .then((response) => setStep64Data(response.data?.data || null))
-      .catch(() => setStep64Data(null));
+      .then((response) => setEvidenceData(response.data?.data || null))
+      .catch(() => setEvidenceData(null));
 
     axios
       .get(`${API_BASE_URL}/api/defense/evaluate`)
@@ -178,11 +178,11 @@ function AnomalyDetection() {
 
   return (
     <div className="anomaly-detection">
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={{ margin: 0, color: '#0f172a', fontSize: '1.6rem', fontWeight: 700 }}>
+      <div className="anomaly-header" style={{ marginBottom: 20 }}>
+        <h2>
           {t('anomalyDetection.title')}
         </h2>
-        <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: 14 }}>
+        <p className="anomaly-subtitle">
           {language === 'vi'
             ? 'Quy trình đối soát an ninh: Quan sát lưu lượng → Bằng chứng gói tin → Đối chiếu định danh Host → Quyết định chính sách'
             : 'Forensic workflow: Traffic Observation → Packet Evidence → Host Identity Correlation → Policy Decision'}
@@ -206,22 +206,22 @@ function AnomalyDetection() {
         </div>
       )}
 
-      {/* 1. Step 64 Packet Evidence & ONOS Host Topology Correlation */}
-      {step64Data && (
-        <div className="anomaly-list" style={{ marginBottom: 22, background: '#fff', padding: 20, borderRadius: 10, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <h3 style={{ margin: '0 0 8px 0', color: '#0f172a', fontSize: '1.15rem', fontWeight: 700 }}>
+      {/* 1. Packet Evidence & ONOS Host Topology Correlation */}
+      {evidenceData && (
+        <div className="anomaly-list">
+          <h3>
             {t('anomalyDetection.packetEvidenceTitle')}
           </h3>
-          <p style={{ fontSize: 13, color: '#64748b', marginBottom: 14 }}>
-            <strong>{t('dashboard.evidenceArtifact')}:</strong> <code>{step64Data.evidence_source_file}</code> |{' '}
-            <strong>{t('anomalyDetection.tableHeaders.packets')}:</strong> {step64Data.total_packets} |{' '}
+          <p>
+            <strong>{t('dashboard.evidenceArtifact')}:</strong> <code>{evidenceData.evidence_source_file}</code> |{' '}
+            <strong>{t('anomalyDetection.tableHeaders.packets')}:</strong> {evidenceData.total_packets} |{' '}
             <strong>{t('dashboard.historicalUtcCorrelation')}:</strong>{' '}
-            {step64Data.time_verification?.reason}
+            {evidenceData.time_verification?.reason}
           </p>
           <div style={{ overflowX: 'auto' }}>
             <table>
               <thead>
-                <tr style={{ background: '#f8fafc' }}>
+                <tr>
                   <th>{t('anomalyDetection.tableHeaders.switchPort')}</th>
                   <th>{t('anomalyDetection.tableHeaders.interface')}</th>
                   <th>{t('anomalyDetection.tableHeaders.observedMac')}</th>
@@ -233,7 +233,7 @@ function AnomalyDetection() {
                 </tr>
               </thead>
               <tbody>
-                {(step64Data.correlated_observations || []).map((item, idx) => (
+                {(evidenceData.correlated_observations || []).map((item, idx) => (
                   <tr key={idx}>
                     <td>
                       <code>{item.switch_id} : port {item.ingress_port}</code>
@@ -278,14 +278,14 @@ function AnomalyDetection() {
 
       {/* 2. Defense Policy Engine Per-Port Evaluation */}
       {policyReport && (
-        <div className="anomaly-list" style={{ marginBottom: 22, background: '#fff', padding: 20, borderRadius: 10, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <h3 style={{ margin: '0 0 14px 0', color: '#0f172a', fontSize: '1.15rem', fontWeight: 700 }}>
+        <div className="anomaly-list">
+          <h3>
             {t('anomalyDetection.policyEvaluationTitle')} ({t('header.defenseMode')}: {policyReport.defense_mode})
           </h3>
           <div style={{ overflowX: 'auto' }}>
             <table>
               <thead>
-                <tr style={{ background: '#f8fafc' }}>
+                <tr>
                   <th>{t('anomalyDetection.tableHeaders.switchPort')}</th>
                   <th>{t('anomalyDetection.tableHeaders.attachedHosts')}</th>
                   <th>{t('anomalyDetection.tableHeaders.alerts')}</th>
@@ -334,14 +334,14 @@ function AnomalyDetection() {
       )}
 
       {/* 3. Recent Webhook / SIEM Anomalies (SQLite Events) */}
-      <div className="anomaly-list" style={{ marginBottom: 22, background: '#fff', padding: 20, borderRadius: 10, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-        <h3 style={{ margin: '0 0 14px 0', color: '#0f172a', fontSize: '1.15rem', fontWeight: 700 }}>
+      <div className="anomaly-list">
+        <h3>
           {t('anomalyDetection.recentAnomaliesTitle')}
         </h3>
         <div style={{ overflowX: 'auto' }}>
           <table>
             <thead>
-              <tr style={{ background: '#f8fafc' }}>
+              <tr>
                 <th>{t('common.timestamp')}</th>
                 <th>{t('trafficOverview.tableHeaders.sourceIp')}</th>
                 <th>{t('anomalyDetection.tableHeaders.anomalyType')}</th>
@@ -369,8 +369,8 @@ function AnomalyDetection() {
                     <td><strong>{anomaly.score}</strong></td>
                     <td>
                       <button
+                        className="investigate-btn"
                         onClick={() => fetchFlowDetails(anomaly.source_ip)}
-                        style={{ padding: '4px 10px', background: '#0f172a', color: '#fff', border: '1px solid #334155', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
                       >
                         {t('anomalyDetection.btnInvestigate')}
                       </button>
@@ -384,11 +384,11 @@ function AnomalyDetection() {
       </div>
 
       {/* 4. Alert Actions Panel */}
-      <div className="alerts-panel" style={{ background: '#fff', padding: 20, borderRadius: 10, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-        <h3 style={{ margin: '0 0 8px 0', color: '#0f172a', fontSize: '1.15rem', fontWeight: 700 }}>
+      <div className="alerts-panel">
+        <h3>
           {t('anomalyDetection.alertActionsTitle')}
         </h3>
-        <p style={{ fontSize: 13, color: '#64748b', marginBottom: 14 }}>
+        <p>
           {language === 'vi'
             ? 'Mọi hành động can thiệp đều bắt buộc tuân thủ chính sách Safety Gate và cơ chế kiểm soát DRY_RUN.'
             : 'All enforcement actions strictly adhere to Safety Gate authorization and DRY_RUN staging.'}
@@ -420,7 +420,7 @@ function AnomalyDetection() {
         <div className="modal">
           <div className="modal-content">
             <h3>{t('anomalyDetection.modalBlockTitle')}</h3>
-            <label htmlFor="block-ip" style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, display: 'block' }}>
+            <label htmlFor="block-ip">
               {t('anomalyDetection.modalBlockPrompt')}
             </label>
             <input
@@ -429,18 +429,17 @@ function AnomalyDetection() {
               value={blockIp}
               onChange={(e) => setBlockIp(e.target.value)}
               placeholder="vd: 10.0.0.1"
-              style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1', marginBottom: 16 }}
             />
-            <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+            <div className="modal-actions">
               <button
                 onClick={handleBlockIpSubmit}
-                style={{ padding: '8px 16px', background: '#e11d48', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}
+                style={{ background: '#e11d48', color: '#fff' }}
               >
                 {t('common.submit')}
               </button>
               <button
+                type="button"
                 onClick={() => setShowBlockModal(false)}
-                style={{ padding: '8px 16px', background: '#e2e8f0', color: '#334155', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}
               >
                 {t('common.cancel')}
               </button>
@@ -454,7 +453,7 @@ function AnomalyDetection() {
         <div className="modal">
           <div className="modal-content">
             <h3>{t('anomalyDetection.modalIgnoreTitle')}</h3>
-            <label htmlFor="ignore-ip" style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, display: 'block' }}>
+            <label htmlFor="ignore-ip">
               {t('anomalyDetection.modalIgnorePrompt')}
             </label>
             <input
@@ -463,18 +462,17 @@ function AnomalyDetection() {
               value={ignoreIp}
               onChange={(e) => setIgnoreIp(e.target.value)}
               placeholder="vd: 10.0.0.1"
-              style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1', marginBottom: 16 }}
             />
-            <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+            <div className="modal-actions">
               <button
                 onClick={handleIgnoreSubmit}
-                style={{ padding: '8px 16px', background: '#0284c7', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}
+                style={{ background: '#0284c7', color: '#fff' }}
               >
                 {t('common.submit')}
               </button>
               <button
+                type="button"
                 onClick={() => setShowIgnoreModal(false)}
-                style={{ padding: '8px 16px', background: '#e2e8f0', color: '#334155', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}
               >
                 {t('common.cancel')}
               </button>
@@ -488,7 +486,7 @@ function AnomalyDetection() {
         <div className="modal">
           <div className="modal-content">
             <h3>{t('anomalyDetection.modalHoneypotTitle')}</h3>
-            <label htmlFor="redirect-ip" style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, display: 'block' }}>
+            <label htmlFor="redirect-ip">
               {t('anomalyDetection.modalHoneypotPrompt')}
             </label>
             <input
@@ -497,18 +495,17 @@ function AnomalyDetection() {
               value={redirectIp}
               onChange={(e) => setRedirectIp(e.target.value)}
               placeholder="vd: 10.0.0.1"
-              style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1', marginBottom: 16 }}
             />
-            <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+            <div className="modal-actions">
               <button
                 onClick={handleRedirectToHoneypot}
-                style={{ padding: '8px 16px', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}
+                style={{ background: '#f59e0b', color: '#fff' }}
               >
                 {t('common.submit')}
               </button>
               <button
+                type="button"
                 onClick={() => setShowHoneypotModal(false)}
-                style={{ padding: '8px 16px', background: '#e2e8f0', color: '#334155', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}
               >
                 {t('common.cancel')}
               </button>
@@ -521,13 +518,13 @@ function AnomalyDetection() {
       {showFlowModal && (
         <div className="modal">
           <div className="modal-content" style={{ maxWidth: '850px', width: '92vw' }}>
-            <h3 style={{ margin: '0 0 14px 0', color: '#0f172a' }}>
+            <h3>
               {t('anomalyDetection.flowDetailsTitle', { ip: selectedIp })}
             </h3>
             <div className="table-container" style={{ maxHeight: '380px', overflowY: 'auto' }}>
               <table>
                 <thead>
-                  <tr style={{ background: '#f8fafc' }}>
+                  <tr>
                     <th>{t('common.timestamp')}</th>
                     <th>{t('trafficOverview.tableHeaders.sourceIp')}</th>
                     <th>Index / Type</th>
@@ -564,8 +561,8 @@ function AnomalyDetection() {
             </div>
             <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
               <button
+                className="investigate-btn"
                 onClick={() => setShowFlowModal(false)}
-                style={{ padding: '8px 16px', background: '#0f172a', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}
               >
                 {t('common.close')}
               </button>

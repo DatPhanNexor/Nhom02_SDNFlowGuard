@@ -171,7 +171,7 @@ sudo service openvswitch-switch start
 
 ### 2. Khởi tạo tôpô Mininet kết nối về ONOS:
 ```bash
-sudo mn --topo single,3 --controller=remote,ip=127.0.0.1,port=6653 --switch ovsk
+sudo mn --topo single,3 --controller=remote,ip=127.0.0.1,port=6653 --switch ovsk,protocols=OpenFlow13
 ```
 > *Lưu ý về mạng WSL2:* Nếu WSL2 ở chế độ mạng NAT không truy cập được trực tiếp `127.0.0.1`, hãy thay thế bằng địa chỉ IP của Windows Host lấy qua lệnh:
 > ```bash
@@ -206,7 +206,7 @@ mininet> pingall
 
 ## 9. Kiểm thử tự động & Xác minh toàn vẹn hệ thống
 
-SDNFlowGuard trang bị bộ kiểm thử toàn diện với **79 bài test tự động** nhằm đảm bảo tính ổn định và tính đúng đắn trước khi phát hành:
+SDNFlowGuard trang bị bộ kiểm thử toàn diện với **91 bài test tự động** nhằm đảm bảo tính ổn định và tính đúng đắn trước khi phát hành:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\test.ps1
@@ -214,16 +214,16 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\test.ps1
 
 Quy trình xác minh trải qua 5 cổng kiểm tra nghiêm ngặt:
 
-1. **[1/5] Kiểm tra cú pháp Python in-memory (`scripts/verify_syntax.py`):** Kiểm tra AST và biên dịch bytecode trong bộ nhớ cho toàn bộ 86 tệp mã nguồn Python backend, tuyệt đối không tạo bất kỳ thư mục rác `__pycache__` hay tệp `.pyc` nào trên đĩa.
-2. **[2/5] CLI Self-Tests (4/4 module độc lập):** Xác minh thuật toán Monitor V2, bộ phân tích tcpdump Step 63, đối soát bằng chứng Step 64, và chính sách Defense Policy với $0$ cuộc gọi mạng ra bên ngoài.
-3. **[3/5] Bộ kiểm thử tự động Automated Test Suite (79 Tests):**
+1. **[1/5] Kiểm tra cú pháp Python in-memory (`scripts/verify_syntax.py`):** Kiểm tra AST và biên dịch bytecode trong bộ nhớ cho toàn bộ 88 tệp mã nguồn Python backend, tuyệt đối không tạo bất kỳ thư mục rác `__pycache__` hay tệp `.pyc` nào trên đĩa.
+2. **[2/5] CLI Self-Tests (4/4 module độc lập):** Xác minh thuật toán Monitor V2, bộ phân tích tcpdump Step 63, đối soát bằng chứng Step 64, và chính sách Defense Policy với 0 cuộc gọi mạng ra bên ngoài.
+3. **[3/5] Bộ kiểm thử tự động Automated Test Suite (91 Tests):**
    - **Contract Tests (5 tests):** Kiểm chứng tính tương thích của JSON payload gửi sang ONOS REST API và cấu trúc phản hồi cho Frontend.
    - **Integration Tests (22 tests):** Kiểm tra toàn diện Flask REST API, cơ chế tiếp nhận Webhook, kho lưu trữ SQLite, và tính năng xuất báo cáo.
-   - **Safety Tests (14 tests):** Kiểm tra cơ chế chống tiêm quy tắc độc hại (Anti-Rogue), bảo vệ Gateway/DNS, xác nhận chế độ `DRY_RUN`, và khả năng tự phục hồi khi tiêm lỗi.
-   - **Unit Tests (37 tests):** Kiểm thử chi tiết từng thuật toán tính điểm rủi ro, phân loại nhật ký SIEM, cửa sổ trượt, và chính sách phòng thủ.
+   - **Safety Tests (20 tests):** Kiểm tra cơ chế chống tiêm quy tắc độc hại (Anti-Rogue), bảo vệ Gateway/DNS, tách biệt xác thực quản trị viên (`is_operator_authenticated`), xác nhận chế độ `DRY_RUN`, và khả năng tự phục hồi khi tiêm lỗi.
+   - **Unit Tests (43 tests):** Kiểm thử chi tiết từng thuật toán tính điểm rủi ro, phân loại nhật ký SIEM, cửa sổ trượt, parser topology và chính sách phòng thủ.
    - **End-to-End Pipeline (1 test):** Kiểm tra chu trình khép kín từ lúc nhận mẫu lưu lượng đến khi đối soát bằng chứng Step 64 và kích hoạt Safety Gate.
-4. **[4/5] Kiểm tra Production Bundle Frontend:** Xác thực tính nguyên vẹn của bản build React production tại `frontend/build/index.html`.
-5. **[5/5] Kiểm tra tính bất biến của cơ sở dữ liệu SQLite:** Xác thực tính toàn vẹn qua lệnh `PRAGMA integrity_check` và đối soát mã băm SHA-256 bất biến:
+4. **[4/5] Kiểm tra Production Bundle Frontend:** Xác thực tính nguyên vẹn và độ mới của bản build React production tại `frontend/build/index.html` (hỗ trợ cờ `-BuildFrontend` để build lại).
+5. **[5/5] Kiểm tra tính bất biến của cơ sở dữ liệu SQLite & zero-bytecode:** Xác thực 0 tệp `.pyc` ngoài `backend/venv` và đối soát mã băm SHA-256 bất biến của `database/sdnflowguard.db`:
    ```text
    3909de520f89ea050e7858104c8aa17bddd94d06af9db5ad84652404b9463fe9
    ```
@@ -239,7 +239,7 @@ Nhom02_SDNFlowGuard/
 │   ├── collectors/                # Bộ thu thập dữ liệu lưu lượng mạng (Monitor V1 & V2)
 │   ├── defense/                   # Mô-đun phân tích Step 63, đối soát Step 64, và Safety Gate
 │   ├── sdnflowguard/              # Kiến trúc phân lớp miền (Domain models, policies, settings)
-│   ├── tests/                     # 79 bài automated tests (contracts, integration, safety, unit, e2e)
+│   ├── tests/                     # 91 bài automated tests (contracts, integration, safety, unit, e2e)
 │   └── requirements.txt           # Danh mục thư viện phụ thuộc Python
 ├── frontend/                      # Mã nguồn giao diện người dùng React 18
 │   ├── public/                    # Logo thương hiệu nguyên bản, favicon và index.html

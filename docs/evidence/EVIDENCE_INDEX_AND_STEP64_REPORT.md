@@ -2,20 +2,23 @@
 
 ## 1. Preserved & Live-Verified Experimental Artifacts Index
 
-All historical experimental data, collector checkpoints, and switch packet captures are 100% preserved and verified by SHA-256:
+All historical experimental data, collector checkpoints, and switch packet captures are 100% preserved and verified by SHA-256 directly from disk (reconciled 2026-11-18):
 
 | Artifact Path | Role | Size (Bytes) | SHA-256 |
 |---|---|---:|---|
-| `database/sdnflowguard.db` | Primary SQLite database (`flows`: 25, `events`: 8, `actions`: 89, `settings`: 5) | `28,672` | `3909de520f89ea050e7858104c8aa17bddd94d06af9db5ad84652404b9463fe9` |
-| `database/netsecflow.db.bak` | Historical pre-branding SQLite backup | `28,672` | `d12be7a29b412061213ef13f1c7e47e75405f84a83fb9949bbde3c7e31110443` |
-| `backend/defense/evidence/ingress_icmp_20261101_014645.txt` | Step 63 raw UTF-16 `tcpdump -nne` capture from switch `s1` (`s1-eth1`, `s1-eth2`) | `5,146` | `3076efccdc79564568e320b983b1fd12c2f1ef4f1ec2df55f7ab4e21a21b40d7` |
-| `backend/defense/evidence/ingress_icmp_20261101_014645.json` | Step 63 structured packet observation JSON (`24` ICMP packets) | `2,202` | `05a659224fb184be2e0e7416f18602bc6d658a10d5d43d7b89c1420db024e91c` |
+| `database/sdnflowguard.db` | Primary SQLite database (`flows`: 25, `events`: 8, `actions`: 89, `settings`: 5) | `61,440` | `3909de520f89ea050e7858104c8aa17bddd94d06af9db5ad84652404b9463fe9` |
+| `database/sdnflowguard.db.bak` | Preserved SQLite backup snapshot (identical to `sdnflowguard.db`) | `61,440` | `3909de520f89ea050e7858104c8aa17bddd94d06af9db5ad84652404b9463fe9` |
+| `frontend/public/sdnflowguard-logo.png` | Official preserved SDNFlowGuard brand logo | `168,888` | `fb1f267cdafe39e99f97dc5c5d9eb06cde77ad6cf01c5e39a5739af0b590faba` |
+| `backend/defense/evidence/ingress_icmp_20261101_014454.txt` | Step 63 preliminary switch ingress capture probe | `154` | `71c9de6b73a3cfd6f98c6b9ac7ec50d7b0222c003bb1bb1d1df4f645b41fc14c` |
+| `backend/defense/evidence/ingress_icmp_20261101_014614.txt` | Step 63 intermediate UTF-16 `tcpdump -nne` capture from switch `s1` | `7,694` | `ddb77b16850975c644d659daf66d5f416ed09e795f4ab98188a1ead304e9e351` |
+| `backend/defense/evidence/ingress_icmp_20261101_014645.txt` | Step 63 primary raw UTF-16 `tcpdump -nne` capture from switch `s1` (`s1-eth1`, `s1-eth2`) | `7,694` | `33e319e7ae99ee8ac9812f41aa3d0839c1b30f88631b475d1e0622df4b528cdb` |
+| `backend/defense/evidence/ingress_icmp_20261101_014645.json` | Step 63 structured packet observation JSON (`24` ICMP packets) | `1,195` | `de91995d973fbaa36fe414541af234804d6bbf48838f2a9978164d4b860a6ecd` |
 | `backend/defense/evidence/ingress_icmp_live_utc_verified.txt` | Step 72 live WSL `Ubuntu-26.04` `tcpdump -i any -nne -Q in` capture on `s1` | `959` | `bef49f603007d7f0fd154b691d8de9b8945a7e89055bf6f4c9fa7ff7d71c8cf8` |
 | `backend/defense/evidence/ingress_icmp_live_utc_verified.json` | Step 72 structured observation JSON with full UTC window (`2026-11-05T06:20:32Z` -> `2026-11-05T06:20:36Z`) | `1,521` | `1d36f69569871845848c5cbcdec2c99ce2d1832da53b3b4cf70ba4750cfdda68` |
-| `backend/collectors/state/auto_dry_t4_c2.json` | Reliable Monitor V1 dry-run cursor checkpoint | `376` | `c852e276cbca38ec0bc9a637c132d6cc3be6d735fc67d393055ff6a9ef19a91e` |
-| `backend/collectors/state/auto_dry_t4_c2_v2.json` | Overlap Monitor V2 dry-run watermark checkpoint | `5,395` | `c011906fb042f684fd33945f2c5b8c04d31f925b80eb774da06346ff2512fc33` |
-| `backend/collectors/state/auto_publish_t4_c2.json` | Reliable Monitor V1 publish cursor checkpoint | `376` | `a2ab7d86fc0bc5a19833a44a2232c1914f8fb2bc97c832c451ff1a4533bf0628` |
-| `backend/collectors/state/auto_publish_t4_c2_v2.json` | Overlap Monitor V2 publish watermark checkpoint | `5,495` | `dc7fb2ef306c64e4ecbc0f950174da1cf002798efab5166037b0ab95395cb16e` |
+| `backend/collectors/state/auto_dry_t4_c2.json` | Reliable Monitor V1 dry-run cursor checkpoint | `490` | `e7765c9f322b515373c829455246ab018f83cf8f164665efebd036020d1e42a1` |
+| `backend/collectors/state/auto_dry_t4_c2_v2.json` | Overlap Monitor V2 dry-run watermark checkpoint | `2,902` | `9191a7d539209c695529bff85326af9a9400efcacf9d6b6c9edc7aaa48a1ffd5` |
+| `backend/collectors/state/auto_publish_t4_c2.json` | Reliable Monitor V1 publish cursor checkpoint | `490` | `25698fdce0581d2c7725bd0e71f8e5b07afc69408d782a1f485db0d2055966bc` |
+| `backend/collectors/state/auto_publish_t4_c2_v2.json` | Overlap Monitor V2 publish watermark checkpoint | `2,150` | `41e274680388d5445653c60f8d7b16a9979a173e014b1574f296aaaffa608c45` |
 
 ---
 

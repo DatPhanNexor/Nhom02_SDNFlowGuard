@@ -6,7 +6,7 @@
     outside the active database file and verifies PRAGMA integrity_check and SHA-256.
 #>
 param(
-    [string]$OutputDir = "D:\Project\_SDNFlowGuard_Cleanup_Rollback\db_backups"
+    [string]$OutputDir = (Join-Path (Split-Path -Parent $PSScriptRoot) "database\backups")
 )
 $ErrorActionPreference = "Stop"
 $env:PYTHONDONTWRITEBYTECODE = "1"

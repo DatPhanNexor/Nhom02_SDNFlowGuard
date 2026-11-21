@@ -16,6 +16,8 @@ function SystemSettings() {
   const [honeypotIp, setHoneypotIp] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
   const [healthSummary, setHealthSummary] = useState(null);
+  const [copiedJson, setCopiedJson] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     axios
@@ -28,18 +30,14 @@ function SystemSettings() {
         setHoneypotIp(settings['Honeypot IP Address'] || '');
       })
       .catch(() => {
-        setStatusMessage(
-          language === 'vi'
-            ? 'Không thể tải cấu hình từ backend.'
-            : 'Unable to fetch settings from backend.'
-        );
+        setStatusMessage(t('settings.fetchError'));
       });
 
     axios
       .get(`${API_BASE_URL}/api/health`)
       .then((response) => setHealthSummary(response.data?.config || null))
       .catch(() => setHealthSummary(null));
-  }, [language]);
+  }, [language, t]);
 
   const handleSaveSettings = () => {
     if (
@@ -47,13 +45,12 @@ function SystemSettings() {
       !isValidIpAddress(elkIp) ||
       !isValidIpAddress(honeypotIp)
     ) {
-      setStatusMessage(
-        language === 'vi'
-          ? 'Lỗi xác thực: Địa chỉ IP Controller, SIEM và Honeypot phải là địa chỉ IP hợp lệ.'
-          : 'Validation Error: SDN Controller IP, SIEM IP Address, and Honeypot IP Address must be valid IP addresses.'
-      );
+      setStatusMessage(t('settings.validationError'));
       return;
     }
+
+    setIsSaving(true);
+    setStatusMessage('');
 
     const settings = {
       Mode: mode,
@@ -67,15 +64,29 @@ function SystemSettings() {
         headers: getApiHeaders(),
       })
       .then((response) => {
-        setStatusMessage(
-          response.data.message || (language === 'vi' ? 'Đã lưu cấu hình thành công' : 'Settings saved successfully')
-        );
+        setStatusMessage(response.data.message || t('settings.saveSuccess'));
       })
       .catch((error) => {
-        setStatusMessage(
-          error.response?.data?.error || (language === 'vi' ? 'Lưu cấu hình thất bại' : 'Failed to save settings')
-        );
+        setStatusMessage(error.response?.data?.error || t('settings.saveFailed'));
+      })
+      .finally(() => {
+        setIsSaving(false);
       });
+  };
+
+  const handleCopyJson = () => {
+    if (!healthSummary) return;
+    const jsonStr = JSON.stringify(healthSummary, null, 2);
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(jsonStr)
+        .then(() => {
+          setCopiedJson(true);
+          setTimeout(() => setCopiedJson(false), 2500);
+        })
+        .catch(() => {
+          setCopiedJson(false);
+        });
+    }
   };
 
   const modeDescriptions = {
@@ -86,177 +97,173 @@ function SystemSettings() {
 
   return (
     <div className="system-settings">
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={{ margin: 0, color: '#0f172a', fontSize: '1.6rem', fontWeight: 700 }}>
-          {t('settings.title')}
-        </h2>
-        <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: 14 }}>
-          {language === 'vi'
-            ? 'Quản lý tham số dịch vụ mạng, chế độ phát hiện bất thường và cơ chế bảo vệ Safety Gate'
-            : 'Manage network service endpoints, detection sensitivity modes, and Safety Gate policy'}
-        </p>
-      </div>
-
-      {/* Runtime Precedence Notice */}
-      <div
-        style={{
-          background: '#f8fafc',
-          border: '1px solid #cbd5e1',
-          borderLeft: '4px solid #0284c7',
-          padding: '14px 18px',
-          borderRadius: 8,
-          marginBottom: 20,
-          fontSize: 13,
-          color: '#334155',
-          lineHeight: 1.5,
-        }}
-      >
-        <strong>{language === 'vi' ? 'Lưu ý về thứ tự ưu tiên cấu hình:' : 'Runtime Precedence Notice:'}</strong>{' '}
-        {t('settings.runtimeNotice')}
-      </div>
-
-      {statusMessage && (
-        <div
-          style={{
-            background: '#e0f2fe',
-            color: '#0369a1',
-            padding: '10px 14px',
-            borderRadius: 6,
-            marginBottom: 18,
-            fontWeight: 600,
-            border: '1px solid #bae6fd',
-            fontSize: 13,
-          }}
-        >
-          {statusMessage}
-        </div>
-      )}
-
-      {/* 1. Detection Mode */}
-      <div className="settings-group" style={{ background: '#fff', padding: 22, borderRadius: 10, border: '1px solid #e2e8f0', marginBottom: 22, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-        <h3 style={{ margin: '0 0 8px 0', color: '#0f172a', fontSize: '1.15rem', fontWeight: 700 }}>
-          {t('settings.detectionMode')}
-        </h3>
-        <p style={{ fontSize: 13, color: '#64748b', marginBottom: 14 }}>
-          {t('settings.detectionDescription')}
-        </p>
-
-        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 14 }}>
-          {['strict', 'balanced', 'loose'].map((option) => (
-            <label key={option} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#334155' }}>
-              <input
-                type="radio"
-                id={option}
-                name="mode"
-                value={option}
-                checked={mode === option}
-                onChange={(e) => setMode(e.target.value)}
-                style={{ cursor: 'pointer' }}
-              />
-              <span>{option.charAt(0).toUpperCase() + option.slice(1)}</span>
-            </label>
-          ))}
+      <div className="settings-container" data-testid="settings-container">
+        {/* Page Header */}
+        <div className="settings-header">
+          <h2>{t('settings.title')}</h2>
+          <p>{t('settings.subtitle')}</p>
         </div>
 
-        <div style={{ background: '#f8fafc', padding: 12, borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 13, color: '#475569' }}>
-          <strong>{t('settings.selectedModeDesc')}</strong> {modeDescriptions[mode]}
+        {/* Runtime Precedence Notice */}
+        <div className="settings-notice-card" role="note" aria-label="Runtime Precedence Notice">
+          <span className="notice-icon" aria-hidden="true">ℹ️</span>
+          <div>
+            <strong>{t('settings.runtimeNoticeLabel')}</strong>{' '}
+            {t('settings.runtimeNotice')}
+          </div>
         </div>
-      </div>
 
-      {/* 2. Application Variables */}
-      <div className="settings-group" style={{ background: '#fff', padding: 22, borderRadius: 10, border: '1px solid #e2e8f0', marginBottom: 22, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-        <h3 style={{ margin: '0 0 16px 0', color: '#0f172a', fontSize: '1.15rem', fontWeight: 700 }}>
-          {t('settings.appVariables')}
-        </h3>
+        {/* Status Message Banner */}
+        {statusMessage && (
+          <div
+            className={`settings-status-banner ${
+              statusMessage.toLowerCase().includes('lỗi') ||
+              statusMessage.toLowerCase().includes('error') ||
+              statusMessage.toLowerCase().includes('thất bại') ||
+              statusMessage.toLowerCase().includes('failed')
+                ? 'error'
+                : 'success'
+            }`}
+            role="alert"
+          >
+            {statusMessage}
+          </div>
+        )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {[
-            {
-              label: t('settings.controllerIp'),
-              id: 'sdn-ctrl-ip',
-              value: sdnControllerIp,
-              set: setSdnControllerIp,
-              placeholder: '127.0.0.1',
-            },
-            {
-              label: t('settings.siemIp'),
-              id: 'siem-ip',
-              value: elkIp,
-              set: setElkIp,
-              placeholder: '127.0.0.1',
-            },
-            {
-              label: t('settings.honeypotIp'),
-              id: 'honeypot-ip',
-              value: honeypotIp,
-              set: setHoneypotIp,
-              placeholder: '10.0.0.6',
-            },
-          ].map(({ label, id, value, set, placeholder }) => (
-            <div className="form-field" key={id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <label htmlFor={id} style={{ fontWeight: 600, fontSize: 13, color: '#334155' }}>
-                {label}
+        {/* 1. Detection Mode */}
+        <div className="settings-group">
+          <h3>{t('settings.detectionMode')}</h3>
+          <p className="card-description">{t('settings.detectionDescription')}</p>
+
+          <div className="detection-mode-options" role="radiogroup" aria-label={t('settings.detectionMode')}>
+            {[
+              { id: 'strict', badge: 'High Sensitivity' },
+              { id: 'balanced', badge: 'Recommended' },
+              { id: 'loose', badge: 'Low Sensitivity' },
+            ].map(({ id: option, badge }) => (
+              <label
+                key={option}
+                htmlFor={`mode-${option}`}
+                className={`mode-option-card ${mode === option ? 'selected' : ''}`}
+              >
+                <input
+                  type="radio"
+                  id={`mode-${option}`}
+                  name="mode"
+                  value={option}
+                  checked={mode === option}
+                  onChange={(e) => setMode(e.target.value)}
+                />
+                <div className="mode-label-wrap">
+                  <span className="mode-title">
+                    {option.charAt(0).toUpperCase() + option.slice(1)}
+                  </span>
+                  <span className="mode-badge">{badge}</span>
+                </div>
               </label>
-              <input
-                type="text"
-                id={id}
-                value={value}
-                onChange={(e) => set(e.target.value)}
-                placeholder={placeholder}
-                style={{ width: '100%', maxWidth: '420px', padding: '8px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 13 }}
-              />
+            ))}
+          </div>
+
+          <div className="mode-description-box">
+            <strong>{t('settings.selectedModeDesc')}</strong> {modeDescriptions[mode]}
+          </div>
+        </div>
+
+        {/* 2. Application Variables */}
+        <div className="settings-group">
+          <h3>{t('settings.appVariables')}</h3>
+          <p className="card-description">
+            {language === 'vi'
+              ? 'Cấu hình địa chỉ IP các thành phần hạ tầng SDN, hệ thống SIEM và máy chủ Honeypot'
+              : 'Configure network endpoints for SDN Controller, SIEM infrastructure, and Honeypot hosts'}
+          </p>
+
+          <div className="settings-form-grid">
+            {[
+              {
+                label: t('settings.controllerIp'),
+                id: 'sdn-ctrl-ip',
+                value: sdnControllerIp,
+                set: setSdnControllerIp,
+                placeholder: '127.0.0.1',
+                hint: 'ONOS REST API (Default port: 8181)',
+              },
+              {
+                label: t('settings.siemIp'),
+                id: 'siem-ip',
+                value: elkIp,
+                set: setElkIp,
+                placeholder: '127.0.0.1',
+                hint: 'Elasticsearch Cluster (Default port: 9200)',
+              },
+              {
+                label: t('settings.honeypotIp'),
+                id: 'honeypot-ip',
+                value: honeypotIp,
+                set: setHoneypotIp,
+                placeholder: '10.0.0.6',
+                hint: 'Internal Honeypot / Decoy host',
+              },
+            ].map(({ label, id, value, set, placeholder, hint }) => (
+              <div className="form-field" key={id}>
+                <label htmlFor={id}>{label}</label>
+                <input
+                  type="text"
+                  id={id}
+                  value={value}
+                  onChange={(e) => set(e.target.value)}
+                  placeholder={placeholder}
+                />
+                <span className="field-hint">{hint}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="settings-actions">
+            <button
+              type="button"
+              className="btn-save-settings"
+              onClick={handleSaveSettings}
+              disabled={isSaving}
+            >
+              {isSaving ? t('settings.saving') : t('settings.btnSave')}
+            </button>
+          </div>
+        </div>
+
+        {/* 3. Effective Runtime Configuration & Safety Gate */}
+        {healthSummary && (
+          <div className="settings-group">
+            <div className="runtime-header-row">
+              <div>
+                <h3>{t('settings.runtimeSummaryTitle')}</h3>
+                <p className="card-description" style={{ marginBottom: 0 }}>
+                  {t('settings.runtimeNoticeSub')}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="btn-copy-json"
+                onClick={handleCopyJson}
+                title="Copy active configuration JSON"
+              >
+                {copiedJson ? `✓ ${t('settings.copied')}` : `📋 ${t('settings.copyJson')}`}
+              </button>
             </div>
-          ))}
-        </div>
 
-        <div style={{ marginTop: 20 }}>
-          <button
-            onClick={handleSaveSettings}
-            style={{
-              padding: '10px 22px',
-              background: '#0284c7',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 6,
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: 'pointer',
-              boxShadow: '0 1px 3px rgba(2, 132, 199, 0.3)'
-            }}
-          >
-            {t('settings.btnSave')}
-          </button>
-        </div>
+            <pre className="settings-code-viewer" data-testid="runtime-config-viewer">
+              {JSON.stringify(healthSummary, null, 2)}
+            </pre>
+
+            <div className="safety-gate-notice">
+              <span className="safety-icon" aria-hidden="true">🛡️</span>
+              <div>
+                <strong>{t('settings.safetyGateTitle')}:</strong> {t('settings.safetyGateDesc')}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* 3. Effective Runtime Configuration & Safety Gate */}
-      {healthSummary && (
-        <div className="settings-group" style={{ background: '#fff', padding: 22, borderRadius: 10, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <h3 style={{ margin: '0 0 6px 0', color: '#0f172a', fontSize: '1.15rem', fontWeight: 700 }}>
-            {t('settings.runtimeSummaryTitle')}
-          </h3>
-          <p style={{ fontSize: 13, color: '#64748b', marginBottom: 14 }}>
-            {t('settings.runtimeNoticeSub')}
-          </p>
-          <pre
-            style={{
-              background: '#0f172a',
-              color: '#f8fafc',
-              padding: 16,
-              borderRadius: 8,
-              fontSize: 12,
-              overflowX: 'auto',
-              lineHeight: 1.4,
-              margin: 0
-            }}
-          >
-            {JSON.stringify(healthSummary, null, 2)}
-          </pre>
-          <p style={{ margin: '14px 0 0 0', fontSize: 12, color: '#94a3b8' }}>
-            ℹ️ {t('settings.safetyGateDesc')}
-          </p>
-        </div>
-      )}
     </div>
   );
 }

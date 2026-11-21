@@ -1,4 +1,5 @@
 from collections import defaultdict
+from datetime import datetime, timezone
 from heapq import heappop, heappush
 import json
 import os
@@ -76,6 +77,10 @@ def is_valid_ip(ip):
         return False
 
 
+def _utc_now_iso():
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def _evaluate_action_gate(
     action_type,
     target_ip,
@@ -87,12 +92,9 @@ def _evaluate_action_gate(
 ):
     api_info = _resolve_onos_api()
     is_manual = str(admin_or_automated).lower() == "admin"
-    if operator_authenticated is None:
-        configured_key = getattr(api_info.get("settings"), "api_key", None)
-        if configured_key:
-            operator_authenticated = False
-        else:
-            operator_authenticated = is_manual
+    # Fail-safe: never promote an unauthenticated call to operator_authenticated=True
+    # simply because SDNFLOW_API_KEY is unset. Callers must pass verified auth explicitly.
+    resolved_operator_auth = bool(operator_authenticated) if operator_authenticated is not None else False
     verdict = evaluate_safety_gate(
         action_type=action_type,
         defense_mode=api_info["settings"].defense_mode,
@@ -101,7 +103,7 @@ def _evaluate_action_gate(
         test_only=test_only,
         manual_operator_override=is_manual,
         operator_approved=is_manual,
-        operator_authenticated=operator_authenticated,
+        operator_authenticated=resolved_operator_auth,
         allowlist_ips=api_info["settings"].allowlist_ips,
         controller_ip=api_info["controller_ip"],
         elk_ip=api_info["elk_ip"],
@@ -122,6 +124,8 @@ def create_acl_rule(
     dst_port=None,
     action="ALLOW",
     dry_run=None,
+    admin_or_automated="Admin",
+    operator_authenticated=None,
 ):
     if src_ip and not is_valid_ip(src_ip):
         return {"status": "VALIDATION_ERROR", "error": f"Invalid source IP address: {src_ip}"}
@@ -170,12 +174,16 @@ def create_acl_rule(
         "block_ip" if action == "DENY" else "allow_ip",
         target_ip=src_ip,
         dst_ip=dst_ip,
+        admin_or_automated=admin_or_automated,
         dry_run=dry_run,
+        operator_authenticated=operator_authenticated,
     )
     if not verdict.safety_checks["valid_and_unprotected_target"]:
         return {
             "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
             "status": "REJECTED_BY_SAFETY_GATE",
+            "verification_status": "REJECTED_BY_SAFETY_GATE",
             "executed": False,
             "dry_run": verdict.dry_run,
             "defense_mode": verdict.defense_mode,
@@ -185,11 +193,14 @@ def create_acl_rule(
         }
 
     if verdict.dry_run or not verdict.allowed_to_execute:
+        is_approval_blocked = not verdict.dry_run and not verdict.allowed_to_execute
         return {
             "request_id": generate_request_id(),
-            "status": "DRY_RUN_SIMULATED",
+            "timestamp_utc": _utc_now_iso(),
+            "status": "APPROVAL_REQUIRED" if is_approval_blocked else "DRY_RUN_SIMULATED",
+            "verification_status": "APPROVAL_REQUIRED" if is_approval_blocked else "DRY_RUN_SIMULATED",
             "executed": False,
-            "dry_run": True,
+            "dry_run": verdict.dry_run,
             "defense_mode": verdict.defense_mode,
             "safety_verdict": verdict.to_dict(),
             "acl_rule_preview": acl_rule,
@@ -204,10 +215,32 @@ def create_acl_rule(
             timeout=5,
         )
         response = requests.post(url, json=acl_rule, auth=api_info["auth"], timeout=10)
+        accepted = response.status_code in (200, 201)
+        verification_status = "EXECUTION_FAILED"
+        verified_rule_id = None
+        if accepted:
+            verification_status = "CONTROLLER_ACCEPTED_UNVERIFIED"
+            current_rules = list_acl_rules()
+            if isinstance(current_rules, list):
+                for rule in current_rules:
+                    if not isinstance(rule, dict):
+                        continue
+                    src_match = (not src_ip) or (rule.get("srcIp", "").strip() == src_ip)
+                    dst_match = (not dst_ip) or (rule.get("dstIp", "").strip() == dst_ip)
+                    action_match = str(rule.get("action", "")).upper() == action
+                    if src_match and dst_match and action_match:
+                        verification_status = "RULE_INSTALLED"
+                        verified_rule_id = rule.get("id")
+                        break
         return {
             "request_id": generate_request_id(),
-            "status": "RULE_APPLIED" if response.status_code in (200, 201) else "EXECUTION_FAILED",
-            "executed": response.status_code in (200, 201),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "RULE_APPLIED" if accepted else "EXECUTION_FAILED",
+            "controller_accepted": accepted,
+            "controller_status": response.status_code,
+            "verification_status": verification_status,
+            "rule_id": verified_rule_id,
+            "executed": accepted,
             "dry_run": False,
             "defense_mode": verdict.defense_mode,
             "acl_rule": acl_rule,
@@ -216,7 +249,10 @@ def create_acl_rule(
     except requests.exceptions.RequestException as exc:
         return {
             "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
             "status": "EXECUTION_FAILED",
+            "controller_accepted": False,
+            "verification_status": "EXECUTION_FAILED",
             "executed": False,
             "dry_run": False,
             "error": str(exc),
@@ -263,7 +299,7 @@ def block_ip(
             "safety_verdict": verdict.to_dict(),
         }
 
-    mode_tag = " [DRY_RUN]" if verdict.dry_run else ""
+    mode_tag = " [DRY_RUN]" if (verdict.dry_run or not verdict.allowed_to_execute) else ""
     log_action(
         action_type=f"Block{mode_tag}",
         reason=f"Blocked traffic for {src_ip} to {dst_ip}.{mode_tag}",
@@ -282,6 +318,8 @@ def block_ip(
         ip_proto=ip_proto or "TCP",
         action="DENY",
         dry_run=verdict.dry_run,
+        admin_or_automated=admin_or_automated,
+        operator_authenticated=operator_authenticated,
     )
 
 
@@ -297,6 +335,7 @@ def allow_ip(
     dst_port=None,
     admin_or_automated="Admin",
     dry_run=None,
+    operator_authenticated=None,
 ):
     if src_ip and "/" not in str(src_ip):
         src_ip = f"{src_ip}/32"
@@ -309,8 +348,20 @@ def allow_ip(
         dst_ip=dst_ip,
         admin_or_automated=admin_or_automated,
         dry_run=dry_run,
+        operator_authenticated=operator_authenticated,
     )
-    mode_tag = " [DRY_RUN]" if verdict.dry_run else ""
+    if not verdict.safety_checks["valid_and_unprotected_target"]:
+        return {
+            "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "REJECTED_BY_SAFETY_GATE",
+            "verification_status": "REJECTED_BY_SAFETY_GATE",
+            "executed": False,
+            "dry_run": verdict.dry_run,
+            "defense_mode": verdict.defense_mode,
+            "safety_verdict": verdict.to_dict(),
+        }
+    mode_tag = " [DRY_RUN]" if (verdict.dry_run or not verdict.allowed_to_execute) else ""
     log_action(
         action_type=f"Allow{mode_tag}",
         reason=f"Allow traffic from {src_ip} to {dst_ip}.{mode_tag}",
@@ -329,6 +380,8 @@ def allow_ip(
         ip_proto=ip_proto or "TCP",
         action="ALLOW",
         dry_run=verdict.dry_run,
+        admin_or_automated=admin_or_automated,
+        operator_authenticated=operator_authenticated,
     )
 
 
@@ -362,6 +415,7 @@ def unblock_ip(
     admin_or_automated="Admin",
     dry_run=None,
     return_structured=False,
+    operator_authenticated=None,
 ):
     if src_ip and "/" not in str(src_ip):
         src_ip = f"{src_ip}/{prefix_length}"
@@ -401,6 +455,7 @@ def unblock_ip(
         dst_ip=dst_ip,
         admin_or_automated=admin_or_automated,
         dry_run=dry_run,
+        operator_authenticated=operator_authenticated,
     )
     if not verdict.safety_checks["valid_and_unprotected_target"]:
         err_msg = "Unblock rejected by Safety Gate (target IP is protected)"
@@ -426,17 +481,23 @@ def unblock_ip(
     )
 
     if verdict.dry_run or not verdict.allowed_to_execute:
-        msg = f"[DRY RUN] Simulated unblock for IP {src_ip or dst_ip}"
+        is_approval_blocked = not verdict.dry_run and not verdict.allowed_to_execute
+        msg = (
+            f"Operator authentication required to rollback IP {src_ip or dst_ip}"
+            if is_approval_blocked
+            else f"[DRY RUN] Simulated unblock for IP {src_ip or dst_ip}"
+        )
         if return_structured:
             return {
                 "request_id": generate_request_id(),
-                "status": "ROLLBACK_SIMULATED",
+                "timestamp_utc": _utc_now_iso(),
+                "status": "APPROVAL_REQUIRED" if is_approval_blocked else "ROLLBACK_SIMULATED",
                 "target_ip": clean_target,
                 "executed": False,
-                "dry_run": True,
+                "dry_run": verdict.dry_run,
                 "rule_id": None,
                 "controller_status": None,
-                "verification_result": "SIMULATED",
+                "verification_result": "APPROVAL_REQUIRED" if is_approval_blocked else "SIMULATED",
                 "message": msg,
             }
         return msg
@@ -469,14 +530,20 @@ def unblock_ip(
                 try:
                     response = requests.delete(delete_url, auth=api_info["auth"], timeout=10)
                     if response.status_code in (200, 204):
-                        # Verify rule removal from ONOS
+                        # Verify rule removal from ONOS (safely handling None if ONOS disconnects)
                         rem_rules = list_acl_rules()
-                        still_there = any(r.get("id") == rule_id for r in rem_rules if isinstance(r, dict))
-                        v_result = "ROLLBACK_VERIFIED" if not still_there else "DELETE_REQUEST_ACCEPTED"
+                        if rem_rules is None:
+                            v_result = "CONTROLLER_ACCEPTED_UNVERIFIED"
+                        else:
+                            still_there = any(
+                                r.get("id") == rule_id for r in rem_rules if isinstance(r, dict)
+                            )
+                            v_result = "ROLLBACK_VERIFIED" if not still_there else "DELETE_REQUEST_ACCEPTED"
                         msg = f"Successfully unblocked traffic for IP: {src_ip or dst_ip}"
                         if return_structured:
                             return {
                                 "request_id": generate_request_id(),
+                                "timestamp_utc": _utc_now_iso(),
                                 "status": "ROLLBACK_COMPLETED",
                                 "target_ip": clean_target,
                                 "executed": True,
@@ -544,6 +611,7 @@ def redirect_traffic(
     config_name="redirect_intent",
     admin_or_automated="Admin",
     dry_run=None,
+    operator_authenticated=None,
 ):
     if src_ip and "/" not in str(src_ip):
         src_ip = f"{src_ip}/32"
@@ -558,7 +626,19 @@ def redirect_traffic(
         src_ip,
         admin_or_automated=admin_or_automated,
         dry_run=dry_run,
+        operator_authenticated=operator_authenticated,
     )
+    if not verdict.safety_checks["valid_and_unprotected_target"]:
+        return {
+            "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "REJECTED_BY_SAFETY_GATE",
+            "verification_status": "REJECTED_BY_SAFETY_GATE",
+            "executed": False,
+            "dry_run": verdict.dry_run,
+            "defense_mode": verdict.defense_mode,
+            "safety_verdict": verdict.to_dict(),
+        }
     mode_tag = " [DRY_RUN]" if verdict.dry_run else ""
     log_action(
         action_type=f"Redirect{mode_tag}",
@@ -587,12 +667,16 @@ def redirect_traffic(
     }
 
     if verdict.dry_run or not verdict.allowed_to_execute:
+        is_approval_blocked = not verdict.dry_run and not verdict.allowed_to_execute
         return {
             "request_id": generate_request_id(),
-            "status": "DRY_RUN_SIMULATED",
+            "timestamp_utc": _utc_now_iso(),
+            "status": "APPROVAL_REQUIRED" if is_approval_blocked else "DRY_RUN_SIMULATED",
+            "verification_status": "APPROVAL_REQUIRED" if is_approval_blocked else "DRY_RUN_SIMULATED",
             "executed": False,
-            "dry_run": True,
+            "dry_run": verdict.dry_run,
             "defense_mode": verdict.defense_mode,
+            "safety_verdict": verdict.to_dict(),
             "intent_preview": intent,
         }
 
@@ -602,19 +686,36 @@ def redirect_traffic(
         json.dump(intent, json_file, indent=4)
 
     headers = {"Content-Type": "application/json"}
-    response = requests.post(
-        f"{api_info['base_url']}/intents",
-        headers=headers,
-        data=json.dumps(intent),
-        auth=api_info["auth"],
-        timeout=10,
-    )
-    return {
-        "request_id": generate_request_id(),
-        "status": "RULE_APPLIED" if response.status_code == 201 else "EXECUTION_FAILED",
-        "executed": response.status_code == 201,
-        "dry_run": False,
-    }
+    try:
+        response = requests.post(
+            f"{api_info['base_url']}/intents",
+            headers=headers,
+            data=json.dumps(intent),
+            auth=api_info["auth"],
+            timeout=10,
+        )
+        accepted = response.status_code == 201
+        return {
+            "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "RULE_APPLIED" if accepted else "EXECUTION_FAILED",
+            "controller_accepted": accepted,
+            "controller_status": response.status_code,
+            "verification_status": "CONTROLLER_ACCEPTED_UNVERIFIED" if accepted else "EXECUTION_FAILED",
+            "executed": accepted,
+            "dry_run": False,
+        }
+    except requests.exceptions.RequestException as exc:
+        return {
+            "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "EXECUTION_FAILED",
+            "controller_accepted": False,
+            "verification_status": "EXECUTION_FAILED",
+            "executed": False,
+            "dry_run": False,
+            "error": str(exc),
+        }
 
 
 def rate_limit_for_host(host_ip, rate_limit_bps, admin_or_automated="Admin", dry_run=None, test_only=False, operator_authenticated=None):
@@ -659,6 +760,7 @@ def rate_limit_for_host(host_ip, rate_limit_bps, admin_or_automated="Admin", dry
     rate_kb_per_sec = max(1, int(round(rate_bps_int / 1000.0)))
 
     if verdict.dry_run or not verdict.allowed_to_execute:
+        is_approval_blocked = not verdict.dry_run and not verdict.allowed_to_execute
         log_action(
             action_type="Rate Limit [DRY_RUN]",
             reason=f"Simulated rate limit for {host_ip} to {rate_limit_bps} bps ({rate_kb_per_sec} kbps / KB_PER_SEC).",
@@ -667,25 +769,51 @@ def rate_limit_for_host(host_ip, rate_limit_bps, admin_or_automated="Admin", dry
         )
         return {
             "request_id": generate_request_id(),
-            "status": "DRY_RUN_SIMULATED",
+            "timestamp_utc": _utc_now_iso(),
+            "status": "APPROVAL_REQUIRED" if is_approval_blocked else "DRY_RUN_SIMULATED",
+            "verification_status": "APPROVAL_REQUIRED" if is_approval_blocked else "DRY_RUN_SIMULATED",
             "executed": False,
-            "dry_run": True,
+            "dry_run": verdict.dry_run,
             "defense_mode": verdict.defense_mode,
             "safety_verdict": verdict.to_dict(),
             "rate_limit_bps": rate_bps_int,
             "rate_kb_per_sec": rate_kb_per_sec,
         }
 
-    topology_data = get_topology_data()
+    try:
+        topology_data = get_topology_data()
+    except Exception as exc:
+        return {
+            "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "EXECUTION_FAILED",
+            "controller_accepted": False,
+            "verification_status": "EXECUTION_FAILED",
+            "executed": False,
+            "dry_run": False,
+            "error": str(exc),
+        }
     hosts = topology_data.get("hosts", [])
     target_host = next((host for host in hosts if host_ip in host.get("ipAddresses", [])), None)
     if not target_host:
-        return {"status": "HOST_NOT_FOUND", "executed": False}
+        return {
+            "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "HOST_NOT_FOUND",
+            "executed": False,
+            "dry_run": False,
+        }
 
     host_mac = target_host.get("mac")
     locations = target_host.get("locations", [])
     if not host_mac or not locations:
-        return {"status": "INCOMPLETE_HOST_LOCATION", "executed": False}
+        return {
+            "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "INCOMPLETE_HOST_LOCATION",
+            "executed": False,
+            "dry_run": False,
+        }
 
     closest_location = locations[0]
     device_id = closest_location.get("elementId")
@@ -706,46 +834,98 @@ def rate_limit_for_host(host_ip, rate_limit_bps, admin_or_automated="Admin", dry
         "bands": [{"type": "DROP", "rate": rate_kb_per_sec, "burstSize": max(100, int(rate_kb_per_sec // 2))}],
     }
     meter_url = f"{api_info['base_url']}/meters/{device_id}"
-    meter_response = requests.post(meter_url, json=meter_config, auth=api_info["auth"], timeout=10)
-    if meter_response.status_code != 201:
-        return {"status": "EXECUTION_FAILED", "executed": False, "error": meter_response.text}
-
-    meters_response = requests.get(meter_url, auth=api_info["auth"], timeout=10)
-    if meters_response.status_code == 200:
-        meters = meters_response.json().get("meters", [])
-        latest_meter = next(
-            (m for m in meters if m.get("bands", [{}])[0].get("rate") == rate_kb_per_sec),
-            None,
-        )
-        if latest_meter:
-            meter_id = latest_meter["id"]
-            flow_rule = {
-                "priority": 41000,
-                "timeout": 0,
-                "isPermanent": True,
-                "deviceId": device_id,
-                "treatment": {
-                    "instructions": [
-                        {"type": "METER", "meterId": meter_id},
-                        {"type": "OUTPUT", "port": inbound_port},
-                    ]
-                },
-                "selector": {
-                    "criteria": [
-                        {"type": "ETH_TYPE", "ethType": "0x0800"},
-                        {"type": "ETH_DST", "mac": host_mac},
-                    ]
-                },
-            }
-            flow_url = f"{api_info['base_url']}/flows/{device_id}"
-            flow_response = requests.post(flow_url, json=flow_rule, auth=api_info["auth"], timeout=10)
+    try:
+        meter_response = requests.post(meter_url, json=meter_config, auth=api_info["auth"], timeout=10)
+        if meter_response.status_code != 201:
             return {
                 "request_id": generate_request_id(),
-                "status": "RULE_APPLIED" if flow_response.status_code == 201 else "EXECUTION_FAILED",
-                "executed": flow_response.status_code == 201,
+                "timestamp_utc": _utc_now_iso(),
+                "status": "EXECUTION_FAILED",
+                "controller_accepted": False,
+                "controller_status": meter_response.status_code,
+                "verification_status": "EXECUTION_FAILED",
+                "executed": False,
                 "dry_run": False,
+                "error": meter_response.text,
             }
-    return {"status": "EXECUTION_FAILED", "executed": False}
+
+        # Prefer ONOS Location header to identify exact newly created meter ID; fallback to meter list lookup.
+        resolved_meter_id = None
+        location_header = (meter_response.headers or {}).get("Location") or (meter_response.headers or {}).get("location")
+        if location_header:
+            candidate_id = str(location_header).rstrip("/").split("/")[-1]
+            if candidate_id:
+                resolved_meter_id = candidate_id
+
+        if not resolved_meter_id:
+            meters_response = requests.get(meter_url, auth=api_info["auth"], timeout=10)
+            if meters_response.status_code == 200:
+                meters = meters_response.json().get("meters", [])
+                latest_meter = next(
+                    (m for m in reversed(meters) if m.get("bands", [{}])[0].get("rate") == rate_kb_per_sec),
+                    None,
+                )
+                if latest_meter:
+                    resolved_meter_id = latest_meter.get("id")
+
+        if not resolved_meter_id:
+            return {
+                "request_id": generate_request_id(),
+                "timestamp_utc": _utc_now_iso(),
+                "status": "EXECUTION_FAILED",
+                "controller_accepted": True,
+                "verification_status": "METER_ID_UNRESOLVED",
+                "executed": False,
+                "dry_run": False,
+                "error": "ONOS created meter but meter ID could not be resolved for flow binding.",
+            }
+
+        flow_rule = {
+            "priority": 41000,
+            "timeout": 0,
+            "isPermanent": True,
+            "deviceId": device_id,
+            "treatment": {
+                "instructions": [
+                    {"type": "METER", "meterId": resolved_meter_id},
+                    {"type": "OUTPUT", "port": inbound_port},
+                ]
+            },
+            "selector": {
+                "criteria": [
+                    {"type": "ETH_TYPE", "ethType": "0x0800"},
+                    {"type": "ETH_DST", "mac": host_mac},
+                ]
+            },
+        }
+        flow_url = f"{api_info['base_url']}/flows/{device_id}"
+        flow_response = requests.post(flow_url, json=flow_rule, auth=api_info["auth"], timeout=10)
+        accepted = flow_response.status_code == 201
+        return {
+            "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "RULE_APPLIED" if accepted else "EXECUTION_FAILED",
+            "controller_accepted": accepted,
+            "controller_status": flow_response.status_code,
+            "verification_status": "CONTROLLER_ACCEPTED_UNVERIFIED" if accepted else "EXECUTION_FAILED",
+            "device_id": device_id,
+            "meter_id": resolved_meter_id,
+            "rate_limit_bps": rate_bps_int,
+            "rate_kb_per_sec": rate_kb_per_sec,
+            "executed": accepted,
+            "dry_run": False,
+        }
+    except requests.exceptions.RequestException as exc:
+        return {
+            "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "EXECUTION_FAILED",
+            "controller_accepted": False,
+            "verification_status": "EXECUTION_FAILED",
+            "executed": False,
+            "dry_run": False,
+            "error": str(exc),
+        }
 
 
 def calculate_shortest_path(src_device_id, dst_device_id, links):
@@ -796,13 +976,21 @@ def create_point_to_point_intents(
     )
 
 
-def redirect_traffic_full(source_ip, honeypot_ip, admin_or_automated="Admin", dry_run=None, test_only=False):
+def redirect_traffic_full(
+    source_ip,
+    honeypot_ip,
+    admin_or_automated="Admin",
+    dry_run=None,
+    test_only=False,
+    operator_authenticated=None,
+):
     verdict, _ = _evaluate_action_gate(
         "redirect_traffic",
         source_ip,
         admin_or_automated=admin_or_automated,
         dry_run=dry_run,
         test_only=test_only,
+        operator_authenticated=operator_authenticated,
     )
     if not verdict.safety_checks["valid_and_unprotected_target"] or not verdict.safety_checks["not_test_only_alert"]:
         return {
@@ -813,7 +1001,7 @@ def redirect_traffic_full(source_ip, honeypot_ip, admin_or_automated="Admin", dr
             "safety_verdict": verdict.to_dict(),
         }
 
-    mode_tag = " [DRY_RUN]" if verdict.dry_run else ""
+    mode_tag = " [DRY_RUN]" if (verdict.dry_run or not verdict.allowed_to_execute) else ""
     log_action(
         action_type=f"Redirect{mode_tag}",
         reason=f"Redirected traffic from {source_ip} to {honeypot_ip}.{mode_tag}",
@@ -822,22 +1010,43 @@ def redirect_traffic_full(source_ip, honeypot_ip, admin_or_automated="Admin", dr
     )
 
     if verdict.dry_run or not verdict.allowed_to_execute:
+        is_approval_blocked = not verdict.dry_run and not verdict.allowed_to_execute
         return {
             "request_id": generate_request_id(),
-            "status": "DRY_RUN_SIMULATED",
+            "timestamp_utc": _utc_now_iso(),
+            "status": "APPROVAL_REQUIRED" if is_approval_blocked else "DRY_RUN_SIMULATED",
+            "verification_status": "APPROVAL_REQUIRED" if is_approval_blocked else "DRY_RUN_SIMULATED",
             "executed": False,
-            "dry_run": True,
+            "dry_run": verdict.dry_run,
             "defense_mode": verdict.defense_mode,
             "safety_verdict": verdict.to_dict(),
         }
 
-    topology_data = get_topology_data()
+    try:
+        topology_data = get_topology_data()
+    except Exception as exc:
+        return {
+            "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "EXECUTION_FAILED",
+            "controller_accepted": False,
+            "verification_status": "EXECUTION_FAILED",
+            "executed": False,
+            "dry_run": False,
+            "error": str(exc),
+        }
     links = topology_data.get("links", [])
     hosts = topology_data.get("hosts", [])
     source_host = next((host for host in hosts if source_ip in host.get("ipAddresses", [])), None)
     honeypot_host = next((host for host in hosts if honeypot_ip in host.get("ipAddresses", [])), None)
     if not source_host or not honeypot_host:
-        return {"status": "HOST_NOT_FOUND", "executed": False}
+        return {
+            "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "HOST_NOT_FOUND",
+            "executed": False,
+            "dry_run": False,
+        }
 
     src_location = source_host["locations"][0]
     dst_location = honeypot_host["locations"][0]
@@ -848,7 +1057,13 @@ def redirect_traffic_full(source_ip, honeypot_ip, admin_or_automated="Admin", dr
 
     path = calculate_shortest_path(src_device_id, dst_device_id, links)
     if not path:
-        return {"status": "NO_PATH_FOUND", "executed": False}
+        return {
+            "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "NO_PATH_FOUND",
+            "executed": False,
+            "dry_run": False,
+        }
 
     applied = create_point_to_point_intents(
         source_ip=source_ip,
@@ -860,19 +1075,30 @@ def redirect_traffic_full(source_ip, honeypot_ip, admin_or_automated="Admin", dr
     )
     return {
         "request_id": generate_request_id(),
+        "timestamp_utc": _utc_now_iso(),
         "status": "RULE_APPLIED" if applied else "EXECUTION_FAILED",
+        "controller_accepted": bool(applied),
+        "verification_status": "CONTROLLER_ACCEPTED_UNVERIFIED" if applied else "EXECUTION_FAILED",
         "executed": bool(applied),
         "dry_run": False,
     }
 
 
-def redirect_to_intermediate_ovs(source_ip, ovs_id, admin_or_automated="Admin", dry_run=None, test_only=False):
+def redirect_to_intermediate_ovs(
+    source_ip,
+    ovs_id,
+    admin_or_automated="Admin",
+    dry_run=None,
+    test_only=False,
+    operator_authenticated=None,
+):
     verdict, api_info = _evaluate_action_gate(
         "redirect_traffic",
         source_ip,
         admin_or_automated=admin_or_automated,
         dry_run=dry_run,
         test_only=test_only,
+        operator_authenticated=operator_authenticated,
     )
     if not verdict.safety_checks["valid_and_unprotected_target"] or not verdict.safety_checks["not_test_only_alert"]:
         return {
@@ -883,7 +1109,7 @@ def redirect_to_intermediate_ovs(source_ip, ovs_id, admin_or_automated="Admin", 
             "safety_verdict": verdict.to_dict(),
         }
 
-    mode_tag = " [DRY_RUN]" if verdict.dry_run else ""
+    mode_tag = " [DRY_RUN]" if (verdict.dry_run or not verdict.allowed_to_execute) else ""
     log_action(
         action_type=f"Redirect{mode_tag}",
         reason=f"Redirected traffic from {source_ip} to intermediate switch {ovs_id}.{mode_tag}",
@@ -892,16 +1118,31 @@ def redirect_to_intermediate_ovs(source_ip, ovs_id, admin_or_automated="Admin", 
     )
 
     if verdict.dry_run or not verdict.allowed_to_execute:
+        is_approval_blocked = not verdict.dry_run and not verdict.allowed_to_execute
         return {
             "request_id": generate_request_id(),
-            "status": "DRY_RUN_SIMULATED",
+            "timestamp_utc": _utc_now_iso(),
+            "status": "APPROVAL_REQUIRED" if is_approval_blocked else "DRY_RUN_SIMULATED",
+            "verification_status": "APPROVAL_REQUIRED" if is_approval_blocked else "DRY_RUN_SIMULATED",
             "executed": False,
-            "dry_run": True,
+            "dry_run": verdict.dry_run,
             "defense_mode": verdict.defense_mode,
             "safety_verdict": verdict.to_dict(),
         }
 
-    topology_data = get_topology_data()
+    try:
+        topology_data = get_topology_data()
+    except Exception as exc:
+        return {
+            "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "EXECUTION_FAILED",
+            "controller_accepted": False,
+            "verification_status": "EXECUTION_FAILED",
+            "executed": False,
+            "dry_run": False,
+            "error": str(exc),
+        }
     devices = topology_data.get("devices", [])
     links = topology_data.get("links", [])
     hosts = topology_data.get("hosts", [])
@@ -909,7 +1150,13 @@ def redirect_to_intermediate_ovs(source_ip, ovs_id, admin_or_automated="Admin", 
     source_host = next((host for host in hosts if source_ip in host.get("ipAddresses", [])), None)
     intermediate_switch = next((device for device in devices if device["id"] == ovs_id), None)
     if not source_host or not intermediate_switch:
-        return {"status": "TOPOLOGY_ENTITY_NOT_FOUND", "executed": False}
+        return {
+            "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "TOPOLOGY_ENTITY_NOT_FOUND",
+            "executed": False,
+            "dry_run": False,
+        }
 
     source_location = source_host.get("locations", [])[0]
     src_device_id = source_location.get("elementId")
@@ -925,7 +1172,13 @@ def redirect_to_intermediate_ovs(source_ip, ovs_id, admin_or_automated="Admin", 
         None,
     )
     if not link_to_intermediate:
-        return {"status": "NO_DIRECT_LINK", "executed": False}
+        return {
+            "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "NO_DIRECT_LINK",
+            "executed": False,
+            "dry_run": False,
+        }
 
     egress_port = link_to_intermediate["src"]["port"]
     intent = {
@@ -943,16 +1196,33 @@ def redirect_to_intermediate_ovs(source_ip, ovs_id, admin_or_automated="Admin", 
     }
     headers = {"Content-Type": "application/json"}
     url = f"{api_info['base_url']}/intents"
-    response = requests.post(
-        url,
-        headers=headers,
-        data=json.dumps(intent),
-        auth=api_info["auth"],
-        timeout=10,
-    )
-    return {
-        "request_id": generate_request_id(),
-        "status": "RULE_APPLIED" if response.status_code == 201 else "EXECUTION_FAILED",
-        "executed": response.status_code == 201,
-        "dry_run": False,
-    }
+    try:
+        response = requests.post(
+            url,
+            headers=headers,
+            data=json.dumps(intent),
+            auth=api_info["auth"],
+            timeout=10,
+        )
+        accepted = response.status_code == 201
+        return {
+            "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "RULE_APPLIED" if accepted else "EXECUTION_FAILED",
+            "controller_accepted": accepted,
+            "controller_status": response.status_code,
+            "verification_status": "CONTROLLER_ACCEPTED_UNVERIFIED" if accepted else "EXECUTION_FAILED",
+            "executed": accepted,
+            "dry_run": False,
+        }
+    except requests.exceptions.RequestException as exc:
+        return {
+            "request_id": generate_request_id(),
+            "timestamp_utc": _utc_now_iso(),
+            "status": "EXECUTION_FAILED",
+            "controller_accepted": False,
+            "verification_status": "EXECUTION_FAILED",
+            "executed": False,
+            "dry_run": False,
+            "error": str(exc),
+        }

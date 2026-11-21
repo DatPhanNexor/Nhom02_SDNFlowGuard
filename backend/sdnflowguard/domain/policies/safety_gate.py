@@ -220,13 +220,20 @@ def evaluate_safety_gate(
     else:
         lifecycle_state = DefenseLifecycleState.EVIDENCE_CORRELATED.value
 
+    if action_type == "throttle_traffic":
+        rollback_action_name = "remove_meter_and_flow"
+    elif action_type in ("block_ip", "prioritize_traffic"):
+        rollback_action_name = "unblock_ip"
+    elif action_type == "redirect_traffic":
+        rollback_action_name = "remove_intent"
+    elif action_type == "disable_port":
+        rollback_action_name = "enable_port"
+    else:
+        rollback_action_name = "none"
+
     rollback_plan = {
-        "reversible": True,
-        "rollback_action": (
-            "unblock_ip"
-            if action_type in ("block_ip", "throttle_traffic", "redirect_traffic", "prioritize_traffic")
-            else ("enable_port" if action_type == "disable_port" else "none")
-        ),
+        "reversible": rollback_action_name != "none",
+        "rollback_action": rollback_action_name,
         "target_device_id": target_device_id or "of:0000000000000001",
         "target_ip": target_ip,
         "target_port": target_port,

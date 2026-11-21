@@ -16,10 +16,17 @@ from sdnflowguard.domain.services.siem_log_normalizer import (
     normalize_windows_event_log,
 )
 from sdnflowguard.infrastructure.configuration.settings import AppSettings
-from sdnflowguard.interfaces.http.security import check_api_key
-from sdnflowguard.observability.structured_logger import generate_request_id
+from sdnflowguard.interfaces.http.security import (
+    check_api_key,
+    is_operator_authenticated,
+)
+from sdnflowguard.observability.structured_logger import (
+    generate_request_id,
+    get_structured_logger,
+)
 
 clean_api_bp = Blueprint("sdnflowguard_clean_api", __name__)
+logger = get_structured_logger("sdnflowguard.interfaces.http.routes")
 
 
 @clean_api_bp.route("/api/health", methods=["GET"])
@@ -48,12 +55,14 @@ def api_evidence_correlation():
         report = run_step64_evidence_correlation_use_case()
         return jsonify({"status": "SUCCESS", "data": report}), 200
     except Exception as exc:
+        req_id = generate_request_id()
+        logger.error("Evidence correlation endpoint failed (%s): %s", req_id, exc)
         return (
             jsonify(
                 {
                     "status": "ERROR",
-                    "error": str(exc),
-                    "request_id": generate_request_id(),
+                    "error": "Internal error while evaluating evidence correlation.",
+                    "request_id": req_id,
                 }
             ),
             500,
@@ -66,12 +75,14 @@ def api_defense_evaluate():
         result = run_defense_policy_evaluation_use_case()
         return jsonify({"status": "SUCCESS", "data": result}), 200
     except Exception as exc:
+        req_id = generate_request_id()
+        logger.error("Defense policy evaluation endpoint failed (%s): %s", req_id, exc)
         return (
             jsonify(
                 {
                     "status": "ERROR",
-                    "error": str(exc),
-                    "request_id": generate_request_id(),
+                    "error": "Internal error while evaluating defense policy.",
+                    "request_id": req_id,
                 }
             ),
             500,
@@ -94,6 +105,7 @@ def api_defense_safety_check():
         explicit_dry_run=payload.get("dry_run"),
         operator_approved=bool(payload.get("operator_approved", False)),
         manual_operator_override=bool(payload.get("manual_operator_override", True)),
+        operator_authenticated=is_operator_authenticated(request.headers),
         test_only=bool(payload.get("test_only", False)),
         source_ip_attributed=bool(payload.get("source_ip_attributed", False)),
         historical_alert_correlation_verified=bool(

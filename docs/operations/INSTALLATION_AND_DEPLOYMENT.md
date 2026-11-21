@@ -20,16 +20,17 @@
    - `SDNFLOW_ONOS_URL=http://127.0.0.1:8181/onos/v1`
    - `SDNFLOW_ONOS_USER=onos`
    - `SDNFLOW_ONOS_PASSWORD=rocks` *(Local lab credential; configure only in `.env`, never hardcode in source)*
-   - `SDNFLOW_ES_URL=http://127.0.0.1:9200`
-   - `SDNFLOW_LOGSTASH_URL=http://127.0.0.1:18080`
-   - `SDNFLOW_DB_PATH=D:\Project\Nhom02_SDNFlowGuard\database\sdnflowguard.db`
-   - `SDNFLOW_API_KEY=` *(Optional; if set, mutating API endpoints require header `X-API-Key`)*
+   - `SDNFLOW_ELK_URL=http://127.0.0.1:9200`
+   - `SDNFLOW_LOGSTASH_HOST=127.0.0.1`
+   - `SDNFLOW_LOGSTASH_PORT=18080`
+   - `SDNFLOW_DB_PATH=database/sdnflowguard.db`
+   - `SDNFLOW_API_KEY=` *(Required when enabling live `MANUAL_APPROVAL` mutations; pass via `X-SDNFlow-API-Key` or `Authorization: Bearer <key>` header)*
 
 ---
 
 ## 3. Verifying System Health & Running Automated Tests
 
-Run the non-destructive health check and full 79-test suite:
+Run the non-destructive health check and full automated test suite (`91` tests):
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\manage.ps1 -Action check
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test.ps1

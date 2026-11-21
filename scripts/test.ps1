@@ -2,13 +2,15 @@
 .SYNOPSIS
     SDNFlowGuard Master Test Runner & Integrity Verifier.
 .DESCRIPTION
-    Runs Python syntax compilation checks, CLI self-tests, the 79-test automated suite,
-    frontend build verification, and verifies SQLite database immutability.
+    Runs Python syntax compilation checks, CLI self-tests, the full automated test suite
+    (backend/tests), frontend production build verification, zero-bytecode check, and
+    SQLite database immutability verification.
     Enforces PYTHONDONTWRITEBYTECODE=1 and -B so zero .pyc files are generated.
 #>
 [CmdletBinding()]
 param(
-    [switch]$SkipFrontend
+    [switch]$SkipFrontend,
+    [switch]$BuildFrontend
 )
 
 $ErrorActionPreference = "Stop"
@@ -74,16 +76,40 @@ if ($LASTEXITCODE -ne 0) { throw "Automated test suite encountered failures." }
 # 5. Frontend Production Build Check
 Write-Host "`n[4/5] Verifying Frontend Production Build..." -ForegroundColor Cyan
 if (-not $SkipFrontend) {
-    $FrontendIndex = Join-Path $ProjectRoot "frontend\build\index.html"
+    $FrontendDir = Join-Path $ProjectRoot "frontend"
+    $FrontendIndex = Join-Path $FrontendDir "build\index.html"
+    if ($BuildFrontend) {
+        Push-Location $FrontendDir
+        try {
+            & npm.cmd run build
+            if ($LASTEXITCODE -ne 0) { throw "Frontend production build failed." }
+        } finally {
+            Pop-Location
+        }
+    }
     if (Test-Path $FrontendIndex) {
-        Write-Host "  [PASS] Precompiled React production bundle verified ($FrontendIndex)" -ForegroundColor Green
+        $buildTime = (Get-Item $FrontendIndex).LastWriteTimeUtc
+        $newestSrc = Get-ChildItem -Path (Join-Path $FrontendDir "src") -Recurse -File -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+        if ($newestSrc -and $newestSrc.LastWriteTimeUtc -gt $buildTime) {
+            Write-Host "  [WARN] frontend/build/index.html is older than $($newestSrc.Name). Re-run with -BuildFrontend or 'npm run build'." -ForegroundColor Yellow
+        } else {
+            Write-Host "  [PASS] Fresh React production bundle verified ($FrontendIndex)" -ForegroundColor Green
+        }
     } else {
-        Write-Host "  [WARN] frontend/build/index.html not found. (Build container handles build in Docker)" -ForegroundColor Yellow
+        Write-Host "  [WARN] frontend/build/index.html not found. Run with -BuildFrontend or Docker build." -ForegroundColor Yellow
     }
 }
 
-# 6. Database & Evidence Immutability Verification
-Write-Host "`n[5/5] Verifying Database & Checkpoint Integrity..." -ForegroundColor Cyan
+# 6. Database, Bytecode & Checkpoint Immutability Verification
+Write-Host "`n[5/5] Verifying Database, Bytecode & Checkpoint Integrity..." -ForegroundColor Cyan
+$StrayPyc = Get-ChildItem -Path (Join-Path $ProjectRoot "backend") -Recurse -Filter "*.pyc" -ErrorAction SilentlyContinue |
+    Where-Object { $_.FullName -notmatch "[\\/]venv[\\/]" }
+if ($StrayPyc) {
+    throw "Detected $($StrayPyc.Count) stray .pyc files outside backend/venv!"
+}
+Write-Host "  [PASS] Zero .pyc bytecode artifacts outside backend/venv." -ForegroundColor Green
+
 $HashAfter = (Get-FileHash -Path $DbPath -Algorithm SHA256).Hash.ToLower()
 if ($HashBefore -ne $HashAfter) {
     throw "Database SHA-256 changed during tests! Before=$HashBefore After=$HashAfter"

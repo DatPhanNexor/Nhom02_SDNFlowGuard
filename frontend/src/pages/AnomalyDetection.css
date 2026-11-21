@@ -202,4 +202,88 @@
   .scrollable-table tr:hover {
     background-color: #f1f1f1;
   }
+
+/* =========================================================
+   DARK THEME SPECIFIC OVERRIDES FOR ANOMALY DETECTION
+   ========================================================= */
+[data-theme="dark"] .anomaly-detection {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .anomaly-detection h2,
+[data-theme="dark"] .anomaly-detection h3,
+[data-theme="dark"] .anomaly-list h3,
+[data-theme="dark"] .alerts-panel h3 {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .anomaly-list,
+[data-theme="dark"] .alerts-panel {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+  box-shadow: var(--card-shadow);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .anomaly-list p,
+[data-theme="dark"] .alerts-panel p {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .anomaly-list th,
+[data-theme="dark"] .scrollable-table th {
+  background-color: var(--table-header-bg);
+  color: var(--text-primary);
+  border-bottom-color: var(--table-border);
+}
+
+[data-theme="dark"] .anomaly-list td,
+[data-theme="dark"] .scrollable-table td {
+  color: var(--text-primary);
+  border-bottom-color: var(--table-border);
+}
+
+[data-theme="dark"] .anomaly-list tr:hover,
+[data-theme="dark"] .scrollable-table tr:hover {
+  background-color: var(--table-row-hover);
+}
+
+[data-theme="dark"] .scrollable-table tr:nth-child(even) {
+  background-color: var(--table-row-even);
+}
+
+[data-theme="dark"] .modal-content {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+}
+
+[data-theme="dark"] .modal-content h3 {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .modal-content label {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .modal-content input {
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  border-color: var(--input-border);
+}
+
+[data-theme="dark"] .modal-actions button:last-child {
+  background-color: var(--bg-surface-subtle);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+}
+
+[data-theme="dark"] .investigate-btn {
+  background-color: #0284c7;
+  color: #ffffff;
+  border-color: #0369a1;
+}
+
   

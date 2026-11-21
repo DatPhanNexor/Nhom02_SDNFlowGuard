@@ -36,6 +36,11 @@ def generate_request_id() -> str:
     return f"req-{uuid.uuid4().hex[:12]}"
 
 
+def get_structured_logger(name: str = "sdnflowguard") -> logging.Logger:
+    """Return a named Python logger without performing file I/O at import time."""
+    return logging.getLogger(name)
+
+
 class StructuredAuditLogger:
     """Structured audit logger that never writes on import time."""
 

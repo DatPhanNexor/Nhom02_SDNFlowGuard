@@ -10,10 +10,11 @@
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\backup_database.ps1
    ```
-3. Run the automated test suite (`61` tests across Unit, Integration, Contracts, Safety, and E2E):
+3. Run the automated test suite (`91` tests across Unit, Integration, Contracts, Safety, and E2E):
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test.ps1
    ```
+   *(Pass `-BuildFrontend` to rebuild the React bundle before verifying.)*
 
 ---
 
@@ -55,27 +56,40 @@ D:\Project\Nhom02_SDNFlowGuard\backend\venv\Scripts\python.exe -B D:\Project\Nho
 
 ---
 
-## 3. Scenario B — Live SDN + ELK Lab Demonstration (When Docker & Mininet Are Running)
+## 3. Scenario B — Live SDN + ELK Lab Demonstration (Demos 01–06)
 
-1. Start Docker stack:
+1. Start the canonical 6-container Docker stack from project root (includes `ONOS_APPS=drivers,openflow,gui2,fwd,acl`):
    ```powershell
-   cd D:\Project\Nhom02_SDNFlowGuard\infrastructure
-   docker compose up -d
+   cd D:\Project\Nhom02_SDNFlowGuard
+   .\scripts\manage.ps1 up
+   .\scripts\manage.ps1 status
    ```
-2. Run ONOS Port Collector to stream live port counters into Logstash -> Elasticsearch:
+   > **ONOS Atomix/Raft Recovery Note:** If `http://127.0.0.1:8181/onos/v1/devices` returns HTTP `503` (`ServiceException: Service factory returned null`) after a Windows/Docker Desktop restart, recreate only the stateless ONOS container cleanly (Elasticsearch data volume is untouched):
+   > ```powershell
+   > docker compose up -d --force-recreate onos
+   > ```
+2. **Demo 01 — Normal SDN Topology & Connectivity (WSL2 Ubuntu):**
+   ```bash
+   sudo python3 /mnt/d/Project/Nhom02_SDNFlowGuard/infrastructure/mininet/sdnflowguard_lab_topo.py --topo single --hosts 3
+   ```
+   Verify `pingall` reports `0%` packet loss and switch `of:0000000000000001` + hosts `10.0.0.1..3` appear on `http://localhost:3000`.
+3. **Demo 02 — Live Telemetry & ELK Ingestion:**
    ```powershell
    cd D:\Project\Nhom02_SDNFlowGuard\backend\collectors
    D:\Project\Nhom02_SDNFlowGuard\backend\venv\Scripts\python.exe -B onos_port_elk_collector.py --cycles 12 --interval 10
    ```
-3. Run Overlap Alert Monitor V2 in dry-run or test-publish mode:
+4. **Demo 03 — Rule-Based High-PPS Anomaly Detection & Alerting:**
    ```powershell
    D:\Project\Nhom02_SDNFlowGuard\backend\venv\Scripts\python.exe -B sdn_overlap_alert_monitor_v2.py --cycles 3 --poll-seconds 5 --threshold-pps 4 --consecutive 2
    ```
-4. Run Defense Policy Engine with live ONOS + Elasticsearch + Step 64 evidence:
+5. **Demo 04 — Step 63/64 Source Evidence Corroboration & Defense Policy:**
    ```powershell
    cd D:\Project\Nhom02_SDNFlowGuard\backend\defense
    D:\Project\Nhom02_SDNFlowGuard\backend\venv\Scripts\python.exe -B sdn_defense_policy.py --evidence evidence\ingress_icmp_20261101_014645.json
    ```
-5. **Controlled Active Block & Rollback Verification (Lab Only):**
-   - Only when explicitly demonstrating active blocking on Mininet (`h1 ping h2`), set `SDNFLOW_DEFENSE_MODE=MANUAL_APPROVAL`, uncheck Dry-Run in **Manual Traffic Control**, block `10.0.0.1/32`, verify rule presence on ONOS (`GET /onos/v1/acl/rules` and `GET /onos/v1/flows/of:0000000000000001`), observe ping drop in Mininet, and immediately click **Unblock / Rollback** to restore connectivity.
+6. **Demo 05 — Controlled Active Block / Rate Limit (Authenticated Lab Only):**
+   - Configure both `SDNFLOW_DEFENSE_MODE=MANUAL_APPROVAL` and a strong `SDNFLOW_API_KEY` in `.env`.
+   - Uncheck Dry-Run in **Manual Traffic Control** (supplying the session operator key in `sessionStorage` or via `X-SDNFlow-API-Key` header in `curl`/Postman), submit a block for `10.0.0.1/32`, verify `verification_status: "RULE_INSTALLED"` via ONOS read-back (`GET /onos/v1/acl/rules`), and confirm ping drop in Mininet (`h1 ping -c 3 h2`).
+7. **Demo 06 — Reversible Rollback & Connectivity Recovery:**
+   - Call `POST /api/defense/rollback` (with `X-SDNFlow-API-Key` header) or click **Unblock / Rollback**, verify `status: "ROLLBACK_COMPLETED"` and `verification_result: "ROLLBACK_VERIFIED"`, and confirm `h1 ping -c 3 h2` recovers to `0%` packet loss.
 

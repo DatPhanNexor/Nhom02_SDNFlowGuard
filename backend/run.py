@@ -43,11 +43,17 @@ from sdnflowguard.infrastructure.configuration.settings import AppSettings  # no
 from sdnflowguard.interfaces.http.routes import clean_api_bp  # noqa: E402
 from sdnflowguard.interfaces.http.security import (  # noqa: E402
     check_api_key,
+    is_operator_authenticated,
     validate_ip_input,
     validate_rate_input,
 )
+from sdnflowguard.observability.structured_logger import (  # noqa: E402
+    generate_request_id,
+    get_structured_logger,
+)
 
 app = Flask(__name__)
+logger = get_structured_logger("sdnflowguard.run")
 report_generator = ReportGenerator()
 PDF_DIRECTORY = str(BACKEND_ROOT / "generated_reports")
 
@@ -507,7 +513,9 @@ def get_report():
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
     except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+        req_id = generate_request_id()
+        logger.error("Failed to generate report (%s): %s", req_id, exc)
+        return jsonify({"error": "Internal error generating report.", "request_id": req_id}), 500
 
 
 @app.route("/api/download-pdf", methods=["GET"])
@@ -524,7 +532,9 @@ def download_pdf():
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
     except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+        req_id = generate_request_id()
+        logger.error("Failed to generate PDF report (%s): %s", req_id, exc)
+        return jsonify({"error": "Internal error generating PDF report.", "request_id": req_id}), 500
 
 
 @app.route("/api/get-documents-by-ip", methods=["POST"])
@@ -547,7 +557,9 @@ def get_documents():
         results = get_documents_by_ip(elk_host, username, password, ip_address)
         return jsonify({"data": results}), 200
     except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+        req_id = generate_request_id()
+        logger.error("Elasticsearch IP lookup failed (%s): %s", req_id, exc)
+        return jsonify({"error": "Internal error querying Elasticsearch documents.", "request_id": req_id}), 500
 
 
 @app.route("/api/service-status", methods=["GET"])
@@ -559,7 +571,9 @@ def fetch_service_status():
         service_status = get_service_status(elk_ip, onos_controller_ip)
         return jsonify({"data": service_status}), 200
     except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+        req_id = generate_request_id()
+        logger.error("Service status probe failed (%s): %s", req_id, exc)
+        return jsonify({"error": "Internal error checking service status.", "request_id": req_id}), 500
 
 
 @app.route("/api/logstash/pipeline-status", methods=["GET"])
@@ -569,7 +583,9 @@ def fetch_logstash_pipeline_status():
         pipeline_stats = get_logstash_pipeline_stats()
         return jsonify({"data": pipeline_stats}), 200
     except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+        req_id = generate_request_id()
+        logger.error("Logstash pipeline status failed (%s): %s", req_id, exc)
+        return jsonify({"error": "Internal error querying Logstash pipeline status.", "request_id": req_id}), 500
 
 
 @app.route("/api/ignore", methods=["POST"])
@@ -590,7 +606,9 @@ def ignore_event():
     except ValidationError as exc:
         return jsonify({"error": exc.message}), 400
     except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+        req_id = generate_request_id()
+        logger.error("Ignore event failed (%s): %s", req_id, exc)
+        return jsonify({"error": "Internal error ignoring event.", "request_id": req_id}), 500
 
 
 @app.route("/api/get-actions", methods=["GET"])
@@ -600,7 +618,9 @@ def fetch_actions():
         actions = get_actions()
         return jsonify({"data": actions}), 200
     except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+        req_id = generate_request_id()
+        logger.error("Fetch actions failed (%s): %s", req_id, exc)
+        return jsonify({"error": "Internal error fetching actions.", "request_id": req_id}), 500
 
 
 @app.route("/api/get-anomalies", methods=["GET"])
@@ -610,17 +630,24 @@ def fetch_anomalies():
         anomalies = get_anomalies()
         return jsonify({"data": anomalies}), 200
     except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+        req_id = generate_request_id()
+        logger.error("Fetch anomalies failed (%s): %s", req_id, exc)
+        return jsonify({"error": "Internal error fetching anomalies.", "request_id": req_id}), 500
 
 
 @app.route("/api/save-flows", methods=["POST"])
 def save_flow_data():
     """Save flow data to the database by fetching from the ONOS controller."""
+    authorized, auth_err = check_api_key(request.headers)
+    if not authorized:
+        return jsonify({"error": auth_err}), 401
     try:
         log_flows_to_database()
         return jsonify({"message": "Flows fetched and saved successfully"}), 200
     except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+        req_id = generate_request_id()
+        logger.error("Save flows failed (%s): %s", req_id, exc)
+        return jsonify({"error": "Failed to fetch or save ONOS flows.", "request_id": req_id}), 502
 
 
 @app.route("/api/live-flows", methods=["GET"])
@@ -736,7 +763,9 @@ def fetch_flow_data():
         flows = get_flows()
         return jsonify({"data": flows}), 200
     except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+        req_id = generate_request_id()
+        logger.error("Fetch flows failed (%s): %s", req_id, exc)
+        return jsonify({"error": "Internal error fetching stored flows.", "request_id": req_id}), 500
 
 
 @app.route("/api/save-settings", methods=["POST"])
@@ -766,7 +795,9 @@ def save_system_settings():
         save_settings(settings_payload)
         return jsonify({"message": "Settings saved successfully"}), 200
     except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+        req_id = generate_request_id()
+        logger.error("Save settings failed (%s): %s", req_id, exc)
+        return jsonify({"error": "Internal error saving system settings.", "request_id": req_id}), 500
 
 
 @app.route("/api/get-settings", methods=["GET"])
@@ -776,7 +807,9 @@ def fetch_system_settings():
         settings = get_settings()
         return jsonify({"data": settings}), 200
     except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+        req_id = generate_request_id()
+        logger.error("Fetch settings failed (%s): %s", req_id, exc)
+        return jsonify({"error": "Internal error fetching system settings.", "request_id": req_id}), 500
 
 
 @app.route("/api/block", methods=["POST"])
@@ -815,6 +848,7 @@ def block():
     except (ValidationError, ValueError) as exc:
         return jsonify({"error": str(exc.message if isinstance(exc, ValidationError) else str(exc))}), 400
 
+    operator_auth = is_operator_authenticated(request.headers)
     result = block_ip(
         src_ip=src_ip,
         dst_ip=dst_ip,
@@ -827,12 +861,17 @@ def block():
         dst_port=data.get("dstPort"),
         dry_run=data.get("dry_run"),
         test_only=bool(data.get("test_only", False)),
-        operator_authenticated=authorized,
+        operator_authenticated=operator_auth,
     )
     if isinstance(result, dict):
         status = result.get("status")
         if status == "REJECTED_BY_SAFETY_GATE":
             return jsonify({"error": f"Rejected by Safety Gate for {src_ip or dst_ip}", **result}), 403
+        if status == "APPROVAL_REQUIRED":
+            return jsonify({
+                "error": f"Authenticated operator approval required to enforce block for {src_ip or dst_ip}",
+                **result,
+            }), 403
         if status == "VALIDATION_ERROR":
             return jsonify({"error": result.get("error", "Validation error"), **result}), 400
         if status == "EXECUTION_FAILED":
@@ -903,6 +942,7 @@ def allow():
     except (ValidationError, ValueError) as exc:
         return jsonify({"error": str(exc.message if isinstance(exc, ValidationError) else str(exc))}), 400
 
+    operator_auth = is_operator_authenticated(request.headers)
     result = allow_ip(
         src_ip=src_ip,
         dst_ip=dst_ip,
@@ -913,7 +953,16 @@ def allow():
         src_port=data.get("srcPort"),
         dst_port=data.get("dstPort"),
         dry_run=data.get("dry_run"),
+        operator_authenticated=operator_auth,
     )
+    if isinstance(result, dict):
+        status = result.get("status")
+        if status in ("REJECTED_BY_SAFETY_GATE", "APPROVAL_REQUIRED"):
+            return jsonify({"error": f"Allow action blocked by Safety Gate ({status})", **result}), 403
+        if status == "VALIDATION_ERROR":
+            return jsonify({"error": result.get("error", "Validation error"), **result}), 400
+        if status == "EXECUTION_FAILED":
+            return jsonify({"error": result.get("error", "ONOS allow rule execution failed"), **result}), 502
     is_dry = isinstance(result, dict) and result.get("dry_run")
     msg = (
         f"[DRY RUN] Simulated allow traffic for {src_ip} to {dst_ip}"
@@ -944,16 +993,25 @@ def apply_rate_limit():
     except ValidationError as exc:
         return jsonify({"error": exc.message}), 400
 
+    operator_auth = is_operator_authenticated(request.headers)
     result = rate_limit_for_host(
         host_ip=host_ip,
         rate_limit_bps=parsed_rate,
         admin_or_automated=admin_or_automated,
         dry_run=data.get("dry_run"),
         test_only=bool(data.get("test_only", False)),
-        operator_authenticated=authorized,
+        operator_authenticated=operator_auth,
     )
-    if isinstance(result, dict) and result.get("status") == "REJECTED_BY_SAFETY_GATE":
-        return jsonify({"error": f"Rejected by Safety Gate for {host_ip}", **result}), 403
+    if isinstance(result, dict):
+        status = result.get("status")
+        if status in ("REJECTED_BY_SAFETY_GATE", "APPROVAL_REQUIRED"):
+            return jsonify({"error": f"Rejected by Safety Gate for {host_ip} ({status})", **result}), 403
+        if status == "VALIDATION_ERROR":
+            return jsonify({"error": result.get("error", "Validation error"), **result}), 400
+        if status in ("HOST_NOT_FOUND", "INCOMPLETE_HOST_LOCATION"):
+            return jsonify({"error": f"Target host {host_ip} not found in active ONOS topology", **result}), 404
+        if status == "EXECUTION_FAILED":
+            return jsonify({"error": result.get("error", "Rate limit execution failed in ONOS"), **result}), 502
 
     is_dry = isinstance(result, dict) and result.get("dry_run")
     msg = (
@@ -983,15 +1041,23 @@ def redirect():
     except ValidationError as exc:
         return jsonify({"error": exc.message}), 400
 
+    operator_auth = is_operator_authenticated(request.headers)
     result = redirect_traffic_full(
         source_ip=src_ip_address,
         honeypot_ip=redirect_ip_address,
         admin_or_automated="Admin",
         dry_run=data.get("dry_run"),
         test_only=bool(data.get("test_only", False)),
+        operator_authenticated=operator_auth,
     )
-    if isinstance(result, dict) and result.get("status") == "REJECTED_BY_SAFETY_GATE":
-        return jsonify({"error": f"Rejected by Safety Gate for {src_ip_address}", **result}), 403
+    if isinstance(result, dict):
+        status = result.get("status")
+        if status in ("REJECTED_BY_SAFETY_GATE", "APPROVAL_REQUIRED"):
+            return jsonify({"error": f"Rejected by Safety Gate for {src_ip_address} ({status})", **result}), 403
+        if status in ("HOST_NOT_FOUND", "NO_PATH_FOUND"):
+            return jsonify({"error": f"Redirect topology path unavailable ({status})", **result}), 404
+        if status == "EXECUTION_FAILED":
+            return jsonify({"error": result.get("error", "Redirect intent execution failed"), **result}), 502
 
     is_dry = isinstance(result, dict) and result.get("dry_run")
     msg = (
@@ -1023,14 +1089,22 @@ def redirect_to_honeypot():
     if not honeypot_ip:
         return jsonify({"error": "Honeypot IP not configured in settings"}), 500
 
+    operator_auth = is_operator_authenticated(request.headers)
     result = redirect_traffic_full(
         source_ip=src_ip,
         honeypot_ip=honeypot_ip,
         admin_or_automated="Admin",
         dry_run=data.get("dry_run"),
+        operator_authenticated=operator_auth,
     )
-    if isinstance(result, dict) and result.get("status") == "REJECTED_BY_SAFETY_GATE":
-        return jsonify({"error": f"Rejected by Safety Gate for {src_ip}", **result}), 403
+    if isinstance(result, dict):
+        status = result.get("status")
+        if status in ("REJECTED_BY_SAFETY_GATE", "APPROVAL_REQUIRED"):
+            return jsonify({"error": f"Rejected by Safety Gate for {src_ip} ({status})", **result}), 403
+        if status in ("HOST_NOT_FOUND", "NO_PATH_FOUND"):
+            return jsonify({"error": f"Honeypot redirect topology path unavailable ({status})", **result}), 404
+        if status == "EXECUTION_FAILED":
+            return jsonify({"error": result.get("error", "Honeypot redirect execution failed"), **result}), 502
 
     is_dry = isinstance(result, dict) and result.get("dry_run")
     msg = (
@@ -1063,6 +1137,7 @@ def unblock():
     except ValidationError as exc:
         return jsonify({"error": exc.message}), 400
 
+    operator_auth = is_operator_authenticated(request.headers)
     result = unblock_ip(
         src_ip=src_ip,
         dst_ip=dst_ip,
@@ -1071,10 +1146,11 @@ def unblock():
         prefix_length=prefix_length,
         dry_run=data.get("dry_run"),
         return_structured=True,
+        operator_authenticated=operator_auth,
     )
     if isinstance(result, dict):
         status = result.get("status")
-        if status == "REJECTED_BY_SAFETY_GATE":
+        if status in ("REJECTED_BY_SAFETY_GATE", "APPROVAL_REQUIRED"):
             return jsonify({"error": "Rejected by Safety Gate", **result}), 403
         if status == "VALIDATION_ERROR":
             return jsonify({"error": result.get("error", "Validation error"), **result}), 400
@@ -1100,10 +1176,16 @@ def api_defense_rollback():
     except ValidationError as exc:
         return jsonify({"error": exc.message}), 400
 
-    structured_res = unblock_ip(src_ip=clean_ip, dry_run=data.get("dry_run"), return_structured=True)
+    operator_auth = is_operator_authenticated(request.headers)
+    structured_res = unblock_ip(
+        src_ip=clean_ip,
+        dry_run=data.get("dry_run"),
+        return_structured=True,
+        operator_authenticated=operator_auth,
+    )
     if isinstance(structured_res, dict):
         status = structured_res.get("status")
-        if status == "REJECTED_BY_SAFETY_GATE":
+        if status in ("REJECTED_BY_SAFETY_GATE", "APPROVAL_REQUIRED"):
             return jsonify({"error": "Rollback rejected by Safety Gate", "result": structured_res}), 403
         if status == "VALIDATION_ERROR":
             return jsonify({"error": structured_res.get("error", "Validation error"), "result": structured_res}), 400

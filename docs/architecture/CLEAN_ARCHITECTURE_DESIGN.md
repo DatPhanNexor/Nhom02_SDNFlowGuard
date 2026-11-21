@@ -62,11 +62,11 @@
 - Orchestrates domain services and infrastructure gateways through explicit use cases (`EvaluateEvidenceCorrelationUseCase`, `EvaluateDefensePolicyUseCase`, `ProposeOrExecuteDefenseActionUseCase`, `NormalizeSiemLogsUseCase`).
 
 ### 2.3. Infrastructure Layer (`backend/sdnflowguard/infrastructure/`)
-- **`AppSettings` (`configuration/settings.py`):** Centralizes environment variable loading (`SDNFLOW_DEFENSE_MODE`, `SDNFLOW_ONOS_URL`, `SDNFLOW_ES_URL`, `SDNFLOW_LOGSTASH_URL`, `SDNFLOW_DB_PATH`, `SDNFLOW_API_KEY`, etc.) without hardcoded secrets.
+- **`AppSettings` (`configuration/settings.py`):** Centralizes environment variable loading (`SDNFLOW_DEFENSE_MODE`, `SDNFLOW_ONOS_URL`, `SDNFLOW_ELK_URL`, `SDNFLOW_LOGSTASH_HOST`, `SDNFLOW_LOGSTASH_PORT`, `SDNFLOW_DB_PATH`, `SDNFLOW_API_KEY`, etc.) without hardcoded secrets.
 - **`SQLiteRepository` (`persistence/sqlite_repository.py`):** Thread-safe SQLite access using context managers and parameterized SQL queries while supporting `SDNFLOW_DB_PATH` overrides for isolated testing.
 - **`ONOSClient` (`onos/onos_client.py`):** Lazily resolves credentials at call time (eliminating import-time side effects) and provides flow rule verification (`verify_ip_flow_rule_present`).
 
 ### 2.4. Interfaces Layer (`backend/sdnflowguard/interfaces/http/` & `backend/run.py`)
-- Exposes Flask Blueprint `/api/defense/*`, `/api/siem/*`, and `/api/health` alongside all 23 legacy routes in `backend/run.py`.
-- Enforces optional API key protection (`X-API-Key` header when `SDNFLOW_API_KEY` is set) on mutating endpoints.
+- Exposes Flask Blueprint `/api/defense/*`, `/api/siem/*`, and `/api/health` alongside all legacy routes in `backend/run.py`.
+- Enforces API key validation (`check_api_key` via `X-SDNFlow-API-Key` or `Authorization: Bearer`) on all mutating endpoints, and strict `is_operator_authenticated()` separation before live `MANUAL_APPROVAL` SDN enforcement.
 

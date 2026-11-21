@@ -45,7 +45,7 @@ jobs:
           python -B backend/defense/onos_host_evidence_correlator.py --self-test
           python -B backend/defense/sdn_defense_policy.py --self-test
 
-      - name: Run Automated Unittest Suite (79 tests)
+      - name: Run Automated Unittest Suite
         run: |
           python -B -m unittest discover -s backend/tests -v
 

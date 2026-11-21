@@ -13,6 +13,34 @@ from sdnflowguard.infrastructure.configuration.settings import AppSettings
 DEVICE_ID_REGEX = re.compile(r"^of:[0-9a-fA-F]{16}$")
 
 
+def _extract_provided_api_key(headers: Any) -> str:
+    """Extract operator API key from X-SDNFlow-API-Key or Bearer Authorization header."""
+    if not headers:
+        return ""
+    provided = headers.get("X-SDNFlow-API-Key") or ""
+    if not provided:
+        auth_header = headers.get("Authorization") or ""
+        if auth_header.lower().startswith("bearer "):
+            provided = auth_header[7:].strip()
+    return str(provided).strip()
+
+
+def is_operator_authenticated(headers: Any) -> bool:
+    """Return True ONLY when SDNFLOW_API_KEY is configured and matched in constant time.
+
+    Unlike check_api_key(), an unconfigured SDNFLOW_API_KEY NEVER counts as
+    authenticated operator credentials for live SDN mutations.
+    """
+    settings = AppSettings.from_env()
+    configured_key = settings.api_key
+    if not configured_key:
+        return False
+    provided = _extract_provided_api_key(headers)
+    if not provided:
+        return False
+    return hmac.compare_digest(str(provided), str(configured_key))
+
+
 def check_api_key(headers: Any) -> tuple[bool, str | None]:
     """Validate X-SDNFlow-API-Key header when SDNFLOW_API_KEY is configured."""
     settings = AppSettings.from_env()
@@ -20,12 +48,7 @@ def check_api_key(headers: Any) -> tuple[bool, str | None]:
     if not configured_key:
         return True, None
 
-    provided = headers.get("X-SDNFlow-API-Key") or ""
-    if not provided:
-        auth_header = headers.get("Authorization") or ""
-        if auth_header.lower().startswith("bearer "):
-            provided = auth_header[7:].strip()
-
+    provided = _extract_provided_api_key(headers)
     if not provided or not hmac.compare_digest(str(provided), str(configured_key)):
         return False, "Unauthorized: valid X-SDNFlow-API-Key header is required."
     return True, None
