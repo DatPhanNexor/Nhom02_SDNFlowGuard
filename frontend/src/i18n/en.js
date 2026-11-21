@@ -256,6 +256,14 @@ export const en = {
     hostTooltip: 'End Host',
     switchTooltip: 'SDN Switch',
     portLabel: 'Port',
+    zoomIn: 'Zoom In',
+    zoomOut: 'Zoom Out',
+    fitScreen: 'Fit Screen',
+    togglePhysics: 'Toggle Physics',
+    legendSwitch: 'SDN Switch',
+    legendHost: 'End Host',
+    legendTrunk: 'Trunk Link (Core ⇄ Edge)',
+    legendHostLink: 'Access Link (Host)',
   },
 
   // Anomaly Detection Page

@@ -256,6 +256,14 @@ export const vi = {
     hostTooltip: 'Thiết bị đầu cuối (Host)',
     switchTooltip: 'Bộ chuyển mạch SDN (Switch)',
     portLabel: 'Cổng',
+    zoomIn: 'Phóng to',
+    zoomOut: 'Thu nhỏ',
+    fitScreen: 'Vừa khung nhìn',
+    togglePhysics: 'Bật/Tắt hiệu ứng vật lý',
+    legendSwitch: 'Bộ chuyển mạch SDN (Switch)',
+    legendHost: 'Thiết bị đầu cuối (Host)',
+    legendTrunk: 'Liên kết Trunk (Core ⇄ Edge)',
+    legendHostLink: 'Liên kết Cổng Access (Host)',
   },
 
   // Anomaly Detection Page

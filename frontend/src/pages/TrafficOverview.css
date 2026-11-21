@@ -1,25 +1,59 @@
-/* TrafficOverview.css - Network Engineering Grade Topology Styles */
+/* =========================================================
+   TrafficOverview.css - Enterprise NOC/SOC SDN Topology & Flows
+   ========================================================= */
 
 .traffic-overview {
   padding: 24px;
-  background-color: #f8fafc;
+  background-color: var(--bg-page, #f8fafc);
+  color: var(--text-primary, #0f172a);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  min-height: 100vh;
+  min-height: 100%;
+  box-sizing: border-box;
 }
 
-/* Controls Bar */
+.traffic-overview-container {
+  max-width: 1720px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* Header */
+.traffic-overview-header {
+  margin-bottom: 2px;
+}
+
+.traffic-overview-title {
+  margin: 0 0 6px 0;
+  color: var(--text-primary, #0f172a);
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.traffic-overview-subtitle {
+  margin: 0;
+  color: var(--text-secondary, #64748b);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Top Telemetry Controls Bar */
 .topology-controls-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
-  background: #ffffff;
+  background: var(--card-bg, #ffffff);
   padding: 12px 18px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  margin-bottom: 18px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border-radius: 10px;
+  border: 1px solid var(--card-border, #e2e8f0);
+  box-shadow: var(--card-shadow, 0 1px 3px rgba(0, 0, 0, 0.05));
+  box-sizing: border-box;
 }
 
 .topology-status-group {
@@ -37,6 +71,7 @@
   border-radius: 9999px;
   font-size: 12px;
   font-weight: 700;
+  user-select: none;
 }
 
 .controller-status-pill.online {
@@ -57,6 +92,8 @@
   border-radius: 50%;
   background-color: #22c55e;
   animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  display: inline-block;
+  flex-shrink: 0;
 }
 
 .controller-status-pill.offline .pulsing-dot {
@@ -71,18 +108,44 @@
   }
   50% {
     opacity: 0.4;
-    transform: scale(1.2);
+    transform: scale(1.25);
   }
+}
+
+.topology-filter-container {
+  display: inline-flex;
+  background: var(--bg-surface-subtle, #f1f5f9);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.topology-filter-btn {
+  padding: 4px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-secondary, #64748b);
+  transition: all 0.15s ease;
+}
+
+.topology-filter-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(2, 132, 199, 0.25);
 }
 
 .topology-stat-pill {
   padding: 4px 10px;
   border-radius: 6px;
-  background-color: #f1f5f9;
-  color: #334155;
+  background-color: var(--bg-surface-subtle, #f1f5f9);
+  color: var(--text-primary, #334155);
   font-size: 12px;
   font-weight: 600;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color, #e2e8f0);
 }
 
 .topology-actions-group {
@@ -94,7 +157,7 @@
 
 .last-updated-text {
   font-size: 12px;
-  color: #64748b;
+  color: var(--text-secondary, #64748b);
   font-weight: 500;
 }
 
@@ -133,45 +196,166 @@
 }
 
 .topology-error-banner {
-  padding: 10px 14px;
+  padding: 12px 16px;
   background-color: #fef2f2;
   border: 1px solid #fecaca;
+  border-left: 4px solid #ef4444;
   border-radius: 8px;
   color: #b91c1c;
   font-size: 13px;
+}
+
+/* =========================================================
+   Universal Enterprise Card Container (.traffic-card)
+   ========================================================= */
+.traffic-card {
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--card-border, #e2e8f0);
+  border-radius: 10px;
+  padding: 20px 22px;
+  box-shadow: var(--card-shadow, 0 1px 3px rgba(0, 0, 0, 0.05));
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card Header Bar */
+.card-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
-/* Topology Canvas Section */
-.topology-section {
-  background: #ffffff;
-  padding: 20px;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  margin-bottom: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+.card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.section-title {
-  margin: 0 0 14px 0;
-  color: #0f172a;
+.card-title {
+  margin: 0;
+  color: var(--text-primary, #0f172a);
   font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.card-subtitle-inline {
+  margin: 0;
+  color: var(--text-secondary, #64748b);
+  font-size: 13px;
+}
+
+.card-badge-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background-color: var(--bg-surface-subtle, #f1f5f9);
+  color: var(--text-secondary, #475569);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.card-meta-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.meta-timestamp {
+  font-size: 12px;
+  color: var(--text-secondary, #64748b);
+  font-weight: 500;
+}
+
+.auto-refresh-pill {
+  font-size: 11px;
+  font-weight: 600;
+  color: #0284c7;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  font-size: 11.5px;
   font-weight: 700;
 }
 
-.section-subtitle {
-  margin: -8px 0 16px 0;
-  color: #64748b;
-  font-size: 13px;
+.status-pill.status-online {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.status-pill.status-loading {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.status-pill.status-offline {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* =========================================================
+   Topology Card: Canvas & Toolbar & Legend
+   ========================================================= */
+.topology-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.canvas-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  background: var(--bg-surface-subtle, #f1f5f9);
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 6px;
+  color: var(--text-primary, #334155);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.canvas-tool-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.canvas-tool-btn.tool-active {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #7dd3fc;
 }
 
 .topology-canvas-wrapper {
   position: relative;
   width: 100%;
-  height: 480px;
-  border: 1px solid #e2e8f0;
+  height: 540px;
+  border: 1px solid var(--card-border, #e2e8f0);
   border-radius: 8px;
-  background: #f8fafc;
+  background: var(--bg-surface-subtle, #f8fafc);
   overflow: hidden;
 }
 
@@ -180,6 +364,62 @@
   height: 100%;
 }
 
+.topology-legend-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  margin-top: 12px;
+  background: var(--bg-surface-subtle, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 6px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-secondary, #475569);
+  font-weight: 500;
+}
+
+.legend-indicator {
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.legend-indicator.indicator-switch {
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+  background: #0f172a;
+  border: 1.5px solid #38bdf8;
+}
+
+.legend-indicator.indicator-host {
+  width: 12px;
+  height: 10px;
+  border-radius: 2px;
+  background: #0284c7;
+}
+
+.legend-indicator.indicator-trunk {
+  width: 18px;
+  height: 3px;
+  background: #0284c7;
+  border-radius: 1px;
+}
+
+.legend-indicator.indicator-access {
+  width: 18px;
+  height: 0;
+  border-top: 2px dashed #0284c7;
+}
+
+/* Topology Overlay Elements */
 .topology-empty-overlay {
   position: absolute;
   top: 0;
@@ -203,14 +443,14 @@
 
 .topology-empty-overlay h4 {
   margin: 0 0 8px 0;
-  color: #0f172a;
+  color: var(--text-primary, #0f172a);
   font-size: 1.15rem;
   font-weight: 700;
 }
 
 .topology-empty-overlay p {
   margin: 0 0 12px 0;
-  color: #64748b;
+  color: var(--text-secondary, #64748b);
   font-size: 13px;
   max-width: 540px;
   line-height: 1.5;
@@ -232,6 +472,29 @@
   word-break: break-all;
 }
 
+.mininet-tip {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-secondary, #64748b);
+}
+
+.offline-switches-btn {
+  margin-top: 10px;
+  padding: 6px 14px;
+  background: var(--bg-surface-subtle, #f1f5f9);
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 6px;
+  color: #0284c7;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.15s ease;
+}
+
+.offline-switches-btn:hover {
+  border-color: #0284c7;
+}
+
 .topology-hosts-notice {
   position: absolute;
   bottom: 14px;
@@ -247,245 +510,325 @@
   z-index: 4;
 }
 
-/* Stored Flows Table Section */
-.flow-table-section {
-  background: #ffffff;
-  padding: 20px;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  margin-top: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.flow-table-empty {
-  padding: 30px;
-  text-align: center;
-  color: #64748b;
-  background: #f8fafc;
-  border-radius: 8px;
-  border: 1px dashed #cbd5e1;
-}
-
-.flow-table-wrapper {
+/* =========================================================
+   NOC Flow Table & Chip Engineering
+   ========================================================= */
+.table-responsive-wrapper {
   overflow-x: auto;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--table-border, #e2e8f0);
 }
 
-.flow-table {
+.noc-flow-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-}
-
-.flow-table th {
-  background: #f8fafc;
-  color: #475569;
-  font-weight: 600;
   text-align: left;
-  padding: 10px 12px;
-  border-bottom: 2px solid #e2e8f0;
+}
+
+.noc-flow-table thead tr {
+  background: var(--table-header-bg, #f8fafc);
+  border-bottom: 2px solid var(--table-border, #e2e8f0);
+}
+
+.noc-flow-table th {
+  padding: 10px 14px;
+  font-weight: 600;
+  color: var(--text-secondary, #475569);
+  white-space: nowrap;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.noc-flow-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--table-border, #e2e8f0);
+  color: var(--text-primary, #0f172a);
+  vertical-align: middle;
   white-space: nowrap;
 }
 
-.flow-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid #e2e8f0;
-  color: #0f172a;
-  white-space: nowrap;
+.noc-flow-table tbody tr:nth-child(even) {
+  background-color: var(--table-row-even, rgba(248, 250, 252, 0.6));
 }
 
-.flow-table tr:hover td {
-  background-color: #f8fafc;
+.noc-flow-table tbody tr:hover {
+  background-color: var(--table-row-hover, #f1f5f9);
 }
 
-.flow-pill {
+.noc-flow-table .col-num {
+  text-align: right;
+}
+
+.noc-flow-table .font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+}
+
+/* Specialized Table Cell Chips */
+.device-id-chip {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #0369a1;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: -0.01em;
+}
+
+.flow-code-chip {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  color: var(--text-primary, #0f172a);
+  background: var(--bg-surface-subtle, #f1f5f9);
+  border: 1px solid var(--border-color, #e2e8f0);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.app-id-tag {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.app-id-tag.app-id-normal {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.app-id-tag.app-id-acl {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.state-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+}
+
+.state-badge.state-added {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.state-badge.state-pending {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.output-ports-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.port-chip {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.port-chip.port-normal {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.port-chip.port-controller {
+  background: #ede9fe;
+  color: #5b21b6;
+  border: 1px solid #ddd6fe;
+}
+
+.proto-pill {
   display: inline-block;
   padding: 2px 8px;
   border-radius: 12px;
   font-size: 11px;
   font-weight: 700;
-}
-
-.flow-pill.info {
   background: #e0f2fe;
   color: #0284c7;
 }
 
-.flow-pill.success {
-  background: #dcfce7;
-  color: #166534;
+.dimmed-dash {
+  color: #94a3b8;
+  font-weight: 600;
 }
 
-.flow-pill.neutral {
-  background: #f1f5f9;
-  color: #475569;
+.table-empty-cell {
+  text-align: center;
+  padding: 30px 16px;
+  color: var(--text-secondary, #64748b);
+  font-size: 13.5px;
 }
 
-/* Traffic Overview Header */
-.traffic-overview-header {
-  margin-bottom: 20px;
+.table-empty-box {
+  padding: 30px;
+  text-align: center;
+  color: var(--text-secondary, #64748b);
+  background: var(--bg-surface-subtle, #f8fafc);
+  border-radius: 8px;
+  border: 1px dashed var(--border-color, #cbd5e1);
 }
 
-.traffic-overview-title {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 1.6rem;
-  font-weight: 700;
+.card-footer-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary, #64748b);
+  margin-top: 14px;
 }
 
-.traffic-overview-subtitle {
-  margin: 4px 0 0 0;
-  color: var(--text-secondary);
+.card-footer-note .info-icon {
   font-size: 14px;
+  flex-shrink: 0;
 }
 
-.topology-filter-container {
-  display: inline-flex;
-  background: #e2e8f0;
-  border-radius: 6px;
-  padding: 2px;
-}
-
-.topology-filter-btn {
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  background: transparent;
-  color: #475569;
-  transition: all 0.15s ease;
-}
-
-.topology-filter-btn.active {
-  background: #0f172a;
-  color: #ffffff;
-}
-
-.mininet-tip {
-  margin-top: 8px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.offline-switches-btn {
-  margin-top: 10px;
-  padding: 6px 14px;
-  background: var(--bg-surface-subtle);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  color: #0284c7;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.15s ease;
-}
-
-.offline-switches-btn:hover {
-  border-color: #0284c7;
+/* Global / scoped override: Never let Bootstrap turn code elements pink */
+.traffic-overview code {
+  color: inherit !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 /* =========================================================
    DARK THEME SPECIFIC OVERRIDES FOR TRAFFIC OVERVIEW
    ========================================================= */
 [data-theme="dark"] .traffic-overview {
-  background-color: var(--bg-page);
-  color: var(--text-primary);
+  background-color: var(--bg-page, #0b1120);
+  color: var(--text-primary, #f8fafc);
 }
 
-[data-theme="dark"] .traffic-overview-title {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .traffic-overview-subtitle {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .topology-controls-bar,
-[data-theme="dark"] .topology-section,
-[data-theme="dark"] .traffic-details {
-  background: var(--card-bg);
-  border-color: var(--card-border);
-  box-shadow: var(--card-shadow);
-}
-
-[data-theme="dark"] .section-title {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .section-subtitle {
-  color: var(--text-secondary);
+[data-theme="dark"] .traffic-card,
+[data-theme="dark"] .topology-controls-bar {
+  background: var(--card-bg, #111827);
+  border-color: var(--card-border, #1f2937);
+  box-shadow: var(--card-shadow, 0 2px 6px rgba(0, 0, 0, 0.4));
 }
 
 [data-theme="dark"] .topology-canvas-wrapper {
-  background: var(--bg-surface-subtle);
-  border-color: var(--card-border);
+  background: #0b1120;
+  border-color: #1f2937;
+}
+
+[data-theme="dark"] .topology-legend-bar {
+  background: #0f172a;
+  border-color: #1e293b;
 }
 
 [data-theme="dark"] .topology-empty-overlay {
-  background: rgba(17, 24, 39, 0.95);
-  color: var(--text-primary);
+  background: rgba(11, 17, 32, 0.96);
+  color: #f8fafc;
 }
 
-[data-theme="dark"] .topology-empty-overlay h4 {
-  color: var(--text-primary);
+[data-theme="dark"] .table-responsive-wrapper {
+  border-color: #1f2937;
 }
 
-[data-theme="dark"] .topology-empty-overlay p {
-  color: var(--text-secondary);
+[data-theme="dark"] .noc-flow-table thead tr {
+  background: #0f172a;
+  border-bottom-color: #1f2937;
 }
 
-[data-theme="dark"] .topology-filter-container {
-  background: var(--bg-surface-subtle);
-  border: 1px solid var(--border-color);
+[data-theme="dark"] .noc-flow-table th {
+  color: #94a3b8;
 }
 
-[data-theme="dark"] .topology-filter-btn {
-  color: var(--text-secondary);
+[data-theme="dark"] .noc-flow-table td {
+  border-bottom-color: #1e293b;
+  color: #f8fafc;
 }
 
-[data-theme="dark"] .topology-filter-btn.active {
-  background: #0284c7;
+[data-theme="dark"] .noc-flow-table tbody tr:nth-child(even) {
+  background-color: rgba(15, 23, 42, 0.5);
+}
+
+[data-theme="dark"] .noc-flow-table tbody tr:hover {
+  background-color: #1e293b;
+}
+
+[data-theme="dark"] .device-id-chip {
+  background: #0c4a6e;
+  color: #38bdf8;
+  border-color: #0369a1;
+}
+
+[data-theme="dark"] .flow-code-chip {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .app-id-tag.app-id-normal {
+  background: #1e293b;
+  color: #cbd5e1;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .app-id-tag.app-id-acl {
+  background: #450a0a;
+  color: #fca5a5;
+  border-color: #7f1d1d;
+}
+
+[data-theme="dark"] .port-chip.port-normal {
+  background: #1e293b;
+  color: #cbd5e1;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .port-chip.port-controller {
+  background: #2e1065;
+  color: #c4b5fd;
+  border-color: #4c1d95;
+}
+
+[data-theme="dark"] .proto-pill {
+  background: #0c4a6e;
+  color: #38bdf8;
+}
+
+[data-theme="dark"] .canvas-tool-btn {
+  background: #1e293b;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .canvas-tool-btn:hover {
+  background: #334155;
   color: #ffffff;
 }
 
-[data-theme="dark"] .topology-stat-pill {
-  background-color: var(--bg-surface-subtle);
-  color: var(--text-secondary);
-  border-color: var(--border-color);
+[data-theme="dark"] .canvas-tool-btn.tool-active {
+  background: #0369a1;
+  color: #ffffff;
+  border-color: #38bdf8;
 }
 
-[data-theme="dark"] .last-updated-text {
-  color: var(--text-secondary);
+[data-theme="dark"] .table-empty-box {
+  background: #0f172a;
+  border-color: #1e293b;
 }
-
-[data-theme="dark"] .traffic-details h3 {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .topology-stat-pill.neutral {
-  background: var(--bg-surface-subtle);
-  color: var(--text-secondary);
-  border-color: var(--border-color);
-}
-
-[data-theme="dark"] .flow-table th {
-  background: var(--table-header-bg);
-  color: var(--text-primary);
-  border-bottom-color: var(--table-border);
-}
-
-[data-theme="dark"] .flow-table td {
-  color: var(--text-primary);
-  border-bottom-color: var(--table-border);
-}
-
-[data-theme="dark"] .flow-table tr:hover td {
-  background-color: var(--table-row-hover);
-}
-
-[data-theme="dark"] .flow-pill.neutral {
-  background: var(--bg-surface-subtle);
-  color: var(--text-secondary);
-}
-

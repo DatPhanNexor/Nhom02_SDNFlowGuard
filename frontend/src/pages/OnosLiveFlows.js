@@ -25,7 +25,7 @@ function OnosLiveFlows() {
         if (!mounted) return;
 
         setFlows(
-          Array.isArray(response.data.data)
+          Array.isArray(response.data?.data)
             ? response.data.data
             : []
         );
@@ -35,7 +35,7 @@ function OnosLiveFlows() {
       } catch (error) {
         if (!mounted) return;
 
-        console.error('ONOS live flows:', error);
+        console.error('ONOS live flows fetch error:', error);
         setStatus('error');
         setFlows([]);
       }
@@ -52,89 +52,142 @@ function OnosLiveFlows() {
   }, [language]);
 
   return (
-    <section className="traffic-details" style={{ marginBottom: 24 }}>
-      <h3 style={{ margin: '0 0 8px 0', color: '#0f172a', fontSize: '1.15rem', fontWeight: 700 }}>
-        {t('trafficOverview.liveFlowsTitle')}
-      </h3>
+    <div className="traffic-card live-flows-card">
+      {/* Professional Card Header */}
+      <div className="card-header-bar">
+        <div className="card-title-group">
+          <h3 className="card-title">
+            {t('trafficOverview.liveFlowsTitle')}
+          </h3>
+          <span className={`status-pill ${status === 'online' ? 'status-online' : status === 'loading' ? 'status-loading' : 'status-offline'}`}>
+            <span className="pulsing-dot" />
+            {status === 'online'
+              ? t('dashboard.onosConnected')
+              : status === 'loading'
+                ? t('common.loadingData')
+                : t('dashboard.onosUnavailable')}
+          </span>
+          <span className="card-badge-count">
+            {flows.length} {t('common.records')}
+          </span>
+        </div>
 
-      <p style={{ fontSize: 13, color: '#64748b', marginBottom: 14 }}>
-        {status === 'online'
-          ? `${t('dashboard.onosConnected')} | ${flows.length} ${t('common.records')} | ${t('common.lastUpdated')}: ${updatedAt} | ${t('common.autoRefresh', { seconds: 5 })}`
-          : status === 'loading'
-            ? t('common.loadingData')
-            : t('dashboard.onosUnavailable')}
-      </p>
+        <div className="card-meta-group">
+          {updatedAt && (
+            <span className="meta-timestamp">
+              ⏱️ {t('trafficOverview.lastUpdated')} {updatedAt}
+            </span>
+          )}
+          <span className="auto-refresh-pill">
+            🔄 {t('trafficOverview.autoRefresh')}
+          </span>
+        </div>
+      </div>
 
-      <div style={{ overflowX: 'auto' }}>
-        <table>
+      {/* Responsive Flow Table Container */}
+      <div className="table-responsive-wrapper">
+        <table className="noc-flow-table">
           <thead>
             <tr>
-              <th>{t('trafficOverview.tableHeaders.deviceId')}</th>
-              <th>{t('trafficOverview.tableHeaders.sourceIp')}</th>
-              <th>{t('trafficOverview.tableHeaders.destinationIp')}</th>
-              <th>{t('trafficOverview.tableHeaders.appId')}</th>
-              <th>{t('trafficOverview.tableHeaders.state')}</th>
-              <th>{t('trafficOverview.tableHeaders.packets')}</th>
-              <th>{t('trafficOverview.tableHeaders.bytes')}</th>
-              <th>{language === 'vi' ? 'Thời gian sống (s)' : 'Lifetime (s)'}</th>
-              <th>{t('trafficOverview.tableHeaders.output')}</th>
+              <th style={{ minWidth: '130px' }}>{t('trafficOverview.tableHeaders.deviceId')}</th>
+              <th style={{ minWidth: '140px' }}>{t('trafficOverview.tableHeaders.sourceIp')}</th>
+              <th style={{ minWidth: '140px' }}>{t('trafficOverview.tableHeaders.destinationIp')}</th>
+              <th style={{ minWidth: '120px' }}>{t('trafficOverview.tableHeaders.appId')}</th>
+              <th style={{ minWidth: '85px' }}>{t('trafficOverview.tableHeaders.state')}</th>
+              <th className="col-num" style={{ minWidth: '95px' }}>{t('trafficOverview.tableHeaders.packets')}</th>
+              <th className="col-num" style={{ minWidth: '105px' }}>{t('trafficOverview.tableHeaders.bytes')}</th>
+              <th className="col-num" style={{ minWidth: '110px' }}>{language === 'vi' ? 'Thời gian sống (s)' : 'Lifetime (s)'}</th>
+              <th style={{ minWidth: '120px' }}>{t('trafficOverview.tableHeaders.output')}</th>
             </tr>
           </thead>
 
           <tbody>
             {flows.length === 0 ? (
               <tr>
-                <td colSpan={9} style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
+                <td colSpan={9} className="table-empty-cell">
                   {status === 'error'
                     ? (language === 'vi' ? 'Không thể kết nối đến ONOS REST API.' : 'Cannot connect to the ONOS API.')
                     : t('trafficOverview.noLiveFlows')}
                 </td>
               </tr>
             ) : (
-              flows.map((flow) => (
-                <tr key={`${flow.device_id}-${flow.id}`}>
-                  <td><code>{flow.device_id || '-'}</code></td>
-                  <td><code>{flow.source_ip || flow.source_mac || '-'}</code></td>
-                  <td><code>{flow.destination_ip || flow.destination_mac || '-'}</code></td>
-                  <td>
-                    <span style={{
-                      padding: '2px 6px',
-                      borderRadius: 4,
-                      background: flow.app_id?.includes('acl') ? '#fee2e2' : '#f1f5f9',
-                      color: flow.app_id?.includes('acl') ? '#991b1b' : '#334155',
-                      fontWeight: 600,
-                      fontSize: 11
-                    }}>
-                      {flow.app_id || '-'}
-                    </span>
-                  </td>
-                  <td>
-                    <span style={{
-                      padding: '2px 6px',
-                      borderRadius: 4,
-                      background: flow.state === 'ADDED' ? '#dcfce7' : '#fef3c7',
-                      color: flow.state === 'ADDED' ? '#166534' : '#92400e',
-                      fontWeight: 600,
-                      fontSize: 11
-                    }}>
-                      {flow.state || '-'}
-                    </span>
-                  </td>
-                  <td>{Number(flow.packets ?? 0).toLocaleString()}</td>
-                  <td>{Number(flow.bytes ?? 0).toLocaleString()}</td>
-                  <td>{flow.life_seconds ?? 0}s</td>
-                  <td><code>{(flow.output_ports || []).join(', ') || '-'}</code></td>
-                </tr>
-              ))
+              flows.map((flow) => {
+                const isAcl = flow.app_id?.toLowerCase().includes('acl');
+                const isAdded = flow.state === 'ADDED';
+                const srcIp = flow.source_ip || flow.source_mac;
+                const dstIp = flow.destination_ip || flow.destination_mac;
+                const outputPorts = Array.isArray(flow.output_ports) ? flow.output_ports : [];
+
+                return (
+                  <tr key={`${flow.device_id}-${flow.id}`}>
+                    <td>
+                      <span className="device-id-chip" title={flow.device_id}>
+                        {flow.device_id || '—'}
+                      </span>
+                    </td>
+                    <td>
+                      {srcIp ? (
+                        <span className="flow-code-chip">{srcIp}</span>
+                      ) : (
+                        <span className="dimmed-dash">—</span>
+                      )}
+                    </td>
+                    <td>
+                      {dstIp ? (
+                        <span className="flow-code-chip">{dstIp}</span>
+                      ) : (
+                        <span className="dimmed-dash">—</span>
+                      )}
+                    </td>
+                    <td>
+                      <span className={`app-id-tag ${isAcl ? 'app-id-acl' : 'app-id-normal'}`}>
+                        {flow.app_id || '—'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`state-badge ${isAdded ? 'state-added' : 'state-pending'}`}>
+                        {flow.state || '—'}
+                      </span>
+                    </td>
+                    <td className="col-num font-mono">
+                      {Number(flow.packets ?? 0).toLocaleString()}
+                    </td>
+                    <td className="col-num font-mono">
+                      {Number(flow.bytes ?? 0).toLocaleString()}
+                    </td>
+                    <td className="col-num font-mono">
+                      {flow.life_seconds ?? 0}s
+                    </td>
+                    <td>
+                      {outputPorts.length > 0 ? (
+                        <div className="output-ports-group">
+                          {outputPorts.map((port, pIdx) => (
+                            <span
+                              key={pIdx}
+                              className={`port-chip ${port === 'CONTROLLER' ? 'port-controller' : 'port-normal'}`}
+                            >
+                              {port}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="dimmed-dash">—</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
 
-      <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 12, marginBottom: 0 }}>
-        {t('trafficOverview.liveFlowsNotice')}
-      </p>
-    </section>
+      {/* Footnote Notice */}
+      <div className="card-footer-note">
+        <span className="info-icon">ℹ️</span>
+        <span>{t('trafficOverview.liveFlowsNotice')}</span>
+      </div>
+    </div>
   );
 }
 

@@ -103,18 +103,19 @@ function buildGraphElements(data, language, isDark) {
       label: `Switch ${switchNum}${offlineTag}\n(${shortId})`,
       shape: 'image',
       image: isAvailable ? SWITCH_ICON_ONLINE : SWITCH_ICON_OFFLINE,
-      size: 32,
+      size: 38,
       title: tooltip,
       font: {
         color: isAvailable ? (isDark ? '#f8fafc' : '#0f172a') : (isDark ? '#94a3b8' : '#64748b'),
-        size: 11,
+        size: 12,
         face: 'monospace',
         multi: true,
+        bold: true,
         background: isDark ? '#172033' : '#ffffff',
         strokeWidth: 2,
         strokeColor: isAvailable ? (isDark ? '#334155' : '#e0f2fe') : (isDark ? '#1e293b' : '#e2e8f0'),
       },
-      margin: 10,
+      margin: 12,
     });
   });
 
@@ -139,7 +140,7 @@ function buildGraphElements(data, language, isDark) {
       label: `${primaryIp}\n${mac}`,
       shape: 'image',
       image: HOST_ICON,
-      size: 26,
+      size: 30,
       title: tooltip,
       font: {
         color: isDark ? '#f8fafc' : '#0f172a',
@@ -150,7 +151,7 @@ function buildGraphElements(data, language, isDark) {
         strokeWidth: 2,
         strokeColor: isDark ? '#334155' : '#e0f2fe',
       },
-      margin: 8,
+      margin: 10,
     });
 
     // Host-to-Switch Edges (Dashed)
@@ -233,6 +234,7 @@ function TrafficOverview() {
   const [lastUpdated, setLastUpdated] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [flowData, setFlowData] = useState([]);
+  const [physicsActive, setPhysicsActive] = useState(true);
 
   // Fetch Topology from Backend Gateway
   const fetchTopology = useCallback(async (isManual = false) => {
@@ -350,7 +352,6 @@ function TrafficOverview() {
     const { nodes, edges } = buildGraphElements(filteredTopologyData, language, isDark);
 
     if (nodes.length === 0) {
-      // Empty topology: destroy existing network if any
       if (networkInstanceRef.current) {
         networkInstanceRef.current.destroy();
         networkInstanceRef.current = null;
@@ -373,16 +374,18 @@ function TrafficOverview() {
         shadow: false,
       },
       physics: {
+        enabled: physicsActive,
         stabilization: {
           enabled: true,
-          iterations: 120,
+          iterations: 150,
+          fit: true,
         },
         barnesHut: {
-          gravitationalConstant: -2800,
-          springLength: 110,
+          gravitationalConstant: -4200,
+          springLength: 170,
           springConstant: 0.04,
           damping: 0.09,
-          centralGravity: 0.3,
+          centralGravity: 0.18,
         },
       },
       interaction: {
@@ -397,10 +400,16 @@ function TrafficOverview() {
       networkInstanceRef.current.setData({ nodes, edges });
     } else if (networkRef.current) {
       networkInstanceRef.current = new Network(networkRef.current, { nodes, edges }, options);
+      // Auto-fit once upon initialization
+      networkInstanceRef.current.once('stabilizationIterationsDone', () => {
+        if (networkInstanceRef.current) {
+          networkInstanceRef.current.fit({ animation: false });
+        }
+      });
     }
 
     lastTopologyHashRef.current = newHash;
-  }, [filteredTopologyData, language, filterMode, isDark]);
+  }, [filteredTopologyData, language, filterMode, isDark, physicsActive]);
 
   // Clean unmount
   useEffect(() => {
@@ -412,195 +421,340 @@ function TrafficOverview() {
     };
   }, []);
 
+  // Zoom and pan control handlers
+  const handleZoomIn = () => {
+    if (networkInstanceRef.current) {
+      const scale = networkInstanceRef.current.getScale();
+      networkInstanceRef.current.moveTo({ scale: scale * 1.25, animation: { duration: 250 } });
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (networkInstanceRef.current) {
+      const scale = networkInstanceRef.current.getScale();
+      networkInstanceRef.current.moveTo({ scale: scale * 0.8, animation: { duration: 250 } });
+    }
+  };
+
+  const handleFitScreen = () => {
+    if (networkInstanceRef.current) {
+      networkInstanceRef.current.fit({
+        animation: { duration: 400, easingFunction: 'easeInOutQuad' },
+      });
+    }
+  };
+
+  const handleTogglePhysics = () => {
+    setPhysicsActive((prev) => {
+      const next = !prev;
+      if (networkInstanceRef.current) {
+        networkInstanceRef.current.setOptions({ physics: { enabled: next } });
+      }
+      return next;
+    });
+  };
+
   const totalVisibleSwitches = filteredTopologyData.devices.length;
   const totalVisibleHosts = filteredTopologyData.hosts.length;
   const totalVisibleLinks = filteredTopologyData.links.length;
 
   return (
     <div className="traffic-overview">
-      <div className="traffic-overview-header">
-        <h2 className="traffic-overview-title">
-          {t('trafficOverview.title')}
-        </h2>
-        <p className="traffic-overview-subtitle">
-          {language === 'vi'
-            ? 'Giám sát tôpô mạng SDN thời gian thực, trạng thái thiết bị chuyển mạch và vết luồng OpenFlow'
-            : 'Real-time SDN network topology monitoring, switch states, and OpenFlow forwarding traces'}
-        </p>
-      </div>
+      <div className="traffic-overview-container">
+        {/* Header */}
+        <div className="traffic-overview-header">
+          <h2 className="traffic-overview-title">
+            {t('trafficOverview.title')}
+          </h2>
+          <p className="traffic-overview-subtitle">
+            {language === 'vi'
+              ? 'Giám sát tôpô mạng SDN thời gian thực, trạng thái thiết bị chuyển mạch và vết luồng OpenFlow'
+              : 'Real-time SDN network topology monitoring, switch states, and OpenFlow forwarding traces'}
+          </p>
+        </div>
 
-      {/* Top Telemetry Control & Status Bar */}
-      <div className="topology-controls-bar">
-        <div className="topology-status-group">
-          <span className={`controller-status-pill ${controllerStatus === 'ONLINE' ? 'online' : 'offline'}`}>
-            <span className="pulsing-dot" />
-            {controllerStatus === 'ONLINE' ? t('trafficOverview.controllerOnline') : t('trafficOverview.controllerOffline')}
-          </span>
+        {/* Top Telemetry Control & Status Bar */}
+        <div className="topology-controls-bar">
+          <div className="topology-status-group">
+            <span className={`controller-status-pill ${controllerStatus === 'ONLINE' ? 'online' : 'offline'}`}>
+              <span className="pulsing-dot" />
+              {controllerStatus === 'ONLINE' ? t('trafficOverview.controllerOnline') : t('trafficOverview.controllerOffline')}
+            </span>
 
-          {/* Filter Mode Toggle */}
-          <div className="topology-filter-container">
-            <button
-              type="button"
-              onClick={() => setFilterMode('active_only')}
-              className={`topology-filter-btn ${filterMode === 'active_only' ? 'active' : ''}`}
-              title={language === 'vi' ? 'Chỉ hiển thị các Switch đang kết nối hoạt động' : 'Show only active connected switches'}
-            >
-              {language === 'vi' ? 'Thiết bị hoạt động' : 'Active Only'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilterMode('all')}
-              className={`topology-filter-btn ${filterMode === 'all' ? 'active' : ''}`}
-              title={language === 'vi' ? 'Hiển thị tất cả Switch (kể cả ngoại tuyến)' : 'Show all switches including offline'}
-            >
-              {language === 'vi' ? 'Tất cả thiết bị' : 'All Devices'}
-            </button>
-          </div>
+            {/* Filter Mode Toggle */}
+            <div className="topology-filter-container">
+              <button
+                type="button"
+                onClick={() => setFilterMode('active_only')}
+                className={`topology-filter-btn ${filterMode === 'active_only' ? 'active' : ''}`}
+                title={language === 'vi' ? 'Chỉ hiển thị các Switch đang kết nối hoạt động' : 'Show only active connected switches'}
+              >
+                {language === 'vi' ? 'Thiết bị hoạt động' : 'Active Only'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterMode('all')}
+                className={`topology-filter-btn ${filterMode === 'all' ? 'active' : ''}`}
+                title={language === 'vi' ? 'Hiển thị tất cả Switch (kể cả ngoại tuyến)' : 'Show all switches including offline'}
+              >
+                {language === 'vi' ? 'Tất cả thiết bị' : 'All Devices'}
+              </button>
+            </div>
 
-          <span className="topology-stat-pill">
-            🟢 {onlineSwitchesCount} {language === 'vi' ? 'Trực tuyến' : 'Online'}
-            {offlineSwitchesCount > 0 && ` | ⚪ ${offlineSwitchesCount} ${language === 'vi' ? 'Ngoại tuyến' : 'Offline'}`}
-          </span>
-
-          <span className="topology-stat-pill">
-            🖥️ {totalVisibleHosts} {t('trafficOverview.hostsCount')}
-          </span>
-
-          {totalVisibleLinks > 0 && (
             <span className="topology-stat-pill">
-              🔗 {totalVisibleLinks} {t('trafficOverview.linksCount')}
+              🟢 {onlineSwitchesCount} {language === 'vi' ? 'Trực tuyến' : 'Online'}
+              {offlineSwitchesCount > 0 && ` | ⚪ ${offlineSwitchesCount} ${language === 'vi' ? 'Ngoại tuyến' : 'Offline'}`}
             </span>
-          )}
-        </div>
 
-        <div className="topology-actions-group">
-          {lastUpdated && (
-            <span className="last-updated-text">
-              ⏱️ {t('trafficOverview.lastUpdated')} {lastUpdated}
+            <span className="topology-stat-pill">
+              🖥️ {totalVisibleHosts} {t('trafficOverview.hostsCount')}
             </span>
-          )}
-          <span className="auto-refresh-badge">
-            🔄 {t('trafficOverview.autoRefresh')}
-          </span>
-          <button
-            type="button"
-            className="refresh-btn"
-            onClick={() => fetchTopology(true)}
-            disabled={isRefreshing}
-          >
-            {isRefreshing ? '⏳...' : `🔄 ${t('trafficOverview.refreshNow')}`}
-          </button>
-        </div>
-      </div>
 
-      {topologyError && (
-        <div className="topology-error-banner" role="alert">
-          ⚠️ {topologyError}
-        </div>
-      )}
-
-      {/* Network Topology Visualizer Canvas */}
-      <div className="topology-section">
-        <h3 className="section-title">{t('trafficOverview.topologySection')}</h3>
-
-        <div className="topology-canvas-wrapper">
-          <div ref={networkRef} className="topology-canvas" />
-
-          {/* Empty State Overlay when no switches are visible */}
-          {totalVisibleSwitches === 0 && (
-            <div className="topology-empty-overlay">
-              <div className="empty-icon">🌐</div>
-              <h4>{t('trafficOverview.noSwitchesTitle')}</h4>
-              <p>{t('trafficOverview.noSwitchesDesc')}</p>
-              <pre className="mininet-code-block">
-sudo mn --topo single,3 --controller=remote,ip=127.0.0.1,port=6653 --switch ovsk,protocols=OpenFlow13
-              </pre>
-              <p className="mininet-tip">
-                💡 {language === 'vi'
-                  ? 'Sau khi Mininet kết nối, gõ "pingall" trong terminal Mininet để kích hoạt cơ chế khám phá Host.'
-                  : 'After Mininet connects, run "pingall" in the Mininet CLI to trigger host discovery.'}
-              </p>
-              {offlineSwitchesCount > 0 && filterMode === 'active_only' && (
-                <button
-                  type="button"
-                  onClick={() => setFilterMode('all')}
-                  className="offline-switches-btn"
-                >
-                  {language === 'vi'
-                    ? `Xem ${offlineSwitchesCount} Switch ngoại tuyến đã lưu vết`
-                    : `View ${offlineSwitchesCount} offline switches recorded`}
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Info Pill when switches are connected but no hosts discovered */}
-          {totalVisibleSwitches > 0 && totalVisibleHosts === 0 && (
-            <div className="topology-hosts-notice">
-              ℹ️ {t('trafficOverview.noHostsNotice')}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Real-time ONOS Flow Rules Table */}
-      <OnosLiveFlows />
-
-      {/* Stored Flow Rules Table (SQLite History) */}
-      <div className="flow-table-section">
-        <h3 className="section-title">{t('trafficOverview.storedFlowsTitle')}</h3>
-        <p className="section-subtitle">
-          {language === 'vi'
-            ? 'Cơ sở dữ liệu lưu trữ lịch sử các phiên lưu lượng mạng đã được ghi nhận vào SQLite.'
-            : 'Persistent SQLite database log of historical network flow sessions.'}
-        </p>
-
-        {flowData.length === 0 ? (
-          <div className="flow-table-empty">
-            <p>{t('trafficOverview.noStoredFlows')}</p>
+            {totalVisibleLinks > 0 && (
+              <span className="topology-stat-pill">
+                🔗 {totalVisibleLinks} {t('trafficOverview.linksCount')}
+              </span>
+            )}
           </div>
-        ) : (
-          <div className="flow-table-wrapper">
-            <table className="flow-table">
-              <thead>
-                <tr>
-                  <th>{t('trafficOverview.tableHeaders.sourceIp')}</th>
-                  <th>{t('trafficOverview.tableHeaders.destinationIp')}</th>
-                  <th>{t('trafficOverview.tableHeaders.protocol')}</th>
-                  <th>{t('trafficOverview.tableHeaders.priority')}</th>
-                  <th>{t('trafficOverview.tableHeaders.appId')}</th>
-                  <th>{t('trafficOverview.tableHeaders.deviceId')}</th>
-                  <th>{t('trafficOverview.tableHeaders.bytes')}</th>
-                  <th>{t('trafficOverview.tableHeaders.duration')}</th>
-                  <th>{t('trafficOverview.tableHeaders.packets')}</th>
-                  <th>{t('trafficOverview.tableHeaders.state')}</th>
-                  <th>{t('trafficOverview.tableHeaders.output')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {flowData.map((flow, index) => (
-                  <tr key={index}>
-                    <td><code>{flow.source_ip || '-'}</code></td>
-                    <td><code>{flow.destination_ip || '-'}</code></td>
-                    <td><span className="flow-pill info">{flow.protocol || '-'}</span></td>
-                    <td>{flow.priority ?? '-'}</td>
-                    <td><code>{flow.app_id || '-'}</code></td>
-                    <td><code>{flow.device_id || '-'}</code></td>
-                    <td>{Number(flow.bytes || 0).toLocaleString()}</td>
-                    <td>{flow.duration || '-'}</td>
-                    <td>{Number(flow.packets || 0).toLocaleString()}</td>
-                    <td>
-                      <span className={`flow-pill ${flow.state === 'ADDED' || flow.state === 'ACTIVE' ? 'success' : 'neutral'}`}>
-                        {flow.state || 'ACTIVE'}
-                      </span>
-                    </td>
-                    <td><code>{flow.output_port || '-'}</code></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+
+          <div className="topology-actions-group">
+            {lastUpdated && (
+              <span className="last-updated-text">
+                ⏱️ {t('trafficOverview.lastUpdated')} {lastUpdated}
+              </span>
+            )}
+            <span className="auto-refresh-badge">
+              🔄 {t('trafficOverview.autoRefresh')}
+            </span>
+            <button
+              type="button"
+              className="refresh-btn"
+              onClick={() => fetchTopology(true)}
+              disabled={isRefreshing}
+            >
+              {isRefreshing ? '⏳...' : `🔄 ${t('trafficOverview.refreshNow')}`}
+            </button>
+          </div>
+        </div>
+
+        {topologyError && (
+          <div className="topology-error-banner" role="alert">
+            ⚠️ {topologyError}
           </div>
         )}
+
+        {/* Network Topology Visualizer Card */}
+        <div className="traffic-card topology-card">
+          <div className="card-header-bar">
+            <div className="card-title-group">
+              <h3 className="card-title">{t('trafficOverview.topologySection')}</h3>
+              <span className="card-badge-count">
+                {totalVisibleSwitches} {t('trafficOverview.switchesCount')} · {totalVisibleHosts} {t('trafficOverview.hostsCount')}
+              </span>
+            </div>
+
+            {/* Canvas Zoom & View Controls Toolbar */}
+            <div className="topology-toolbar">
+              <button
+                type="button"
+                className="canvas-tool-btn"
+                onClick={handleZoomIn}
+                title={t('trafficOverview.zoomIn')}
+                aria-label={t('trafficOverview.zoomIn')}
+              >
+                🔍+
+              </button>
+              <button
+                type="button"
+                className="canvas-tool-btn"
+                onClick={handleZoomOut}
+                title={t('trafficOverview.zoomOut')}
+                aria-label={t('trafficOverview.zoomOut')}
+              >
+                🔍−
+              </button>
+              <button
+                type="button"
+                className="canvas-tool-btn"
+                onClick={handleFitScreen}
+                title={t('trafficOverview.fitScreen')}
+                aria-label={t('trafficOverview.fitScreen')}
+              >
+                ⛶ {t('trafficOverview.fitScreen')}
+              </button>
+              <button
+                type="button"
+                className={`canvas-tool-btn ${physicsActive ? 'tool-active' : ''}`}
+                onClick={handleTogglePhysics}
+                title={t('trafficOverview.togglePhysics')}
+                aria-label={t('trafficOverview.togglePhysics')}
+              >
+                ⚡ {physicsActive ? (language === 'vi' ? 'Vật lý: BẬT' : 'Physics: ON') : (language === 'vi' ? 'Vật lý: TẮT' : 'Physics: OFF')}
+              </button>
+            </div>
+          </div>
+
+          <div className="topology-canvas-wrapper">
+            <div ref={networkRef} className="topology-canvas" />
+
+            {/* Empty State Overlay when no switches are visible */}
+            {totalVisibleSwitches === 0 && (
+              <div className="topology-empty-overlay">
+                <div className="empty-icon">🌐</div>
+                <h4>{t('trafficOverview.noSwitchesTitle')}</h4>
+                <p>{t('trafficOverview.noSwitchesDesc')}</p>
+                <pre className="mininet-code-block">
+sudo mn --topo single,3 --controller=remote,ip=127.0.0.1,port=6653 --switch ovsk,protocols=OpenFlow13
+                </pre>
+                <p className="mininet-tip">
+                  💡 {language === 'vi'
+                    ? 'Sau khi Mininet kết nối, gõ "pingall" trong terminal Mininet để kích hoạt cơ chế khám phá Host.'
+                    : 'After Mininet connects, run "pingall" in the Mininet CLI to trigger host discovery.'}
+                </p>
+                {offlineSwitchesCount > 0 && filterMode === 'active_only' && (
+                  <button
+                    type="button"
+                    onClick={() => setFilterMode('all')}
+                    className="offline-switches-btn"
+                  >
+                    {language === 'vi'
+                      ? `Xem ${offlineSwitchesCount} Switch ngoại tuyến đã lưu vết`
+                      : `View ${offlineSwitchesCount} offline switches recorded`}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Info Pill when switches are connected but no hosts discovered */}
+            {totalVisibleSwitches > 0 && totalVisibleHosts === 0 && (
+              <div className="topology-hosts-notice">
+                ℹ️ {t('trafficOverview.noHostsNotice')}
+              </div>
+            )}
+          </div>
+
+          {/* Interactive Topology Legend Bar */}
+          <div className="topology-legend-bar">
+            <div className="legend-item">
+              <span className="legend-indicator indicator-switch" />
+              <span className="legend-label">{t('trafficOverview.legendSwitch')}</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-indicator indicator-host" />
+              <span className="legend-label">{t('trafficOverview.legendHost')}</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-indicator indicator-trunk" />
+              <span className="legend-label">{t('trafficOverview.legendTrunk')}</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-indicator indicator-access" />
+              <span className="legend-label">{t('trafficOverview.legendHostLink')}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Real-time ONOS Flow Rules Table Card */}
+        <OnosLiveFlows />
+
+        {/* Stored Flow Rules Table Card (SQLite History) */}
+        <div className="traffic-card stored-flows-card">
+          <div className="card-header-bar">
+            <div className="card-title-group">
+              <h3 className="card-title">{t('trafficOverview.storedFlowsTitle')}</h3>
+              <span className="card-badge-count">
+                {flowData.length} {t('common.records')}
+              </span>
+            </div>
+            <p className="card-subtitle-inline">
+              {language === 'vi'
+                ? 'Cơ sở dữ liệu lưu trữ lịch sử các phiên lưu lượng mạng đã được ghi nhận vào SQLite.'
+                : 'Persistent SQLite database log of historical network flow sessions.'}
+            </p>
+          </div>
+
+          {flowData.length === 0 ? (
+            <div className="table-empty-box">
+              <p>{t('trafficOverview.noStoredFlows')}</p>
+            </div>
+          ) : (
+            <div className="table-responsive-wrapper">
+              <table className="noc-flow-table">
+                <thead>
+                  <tr>
+                    <th style={{ minWidth: '130px' }}>{t('trafficOverview.tableHeaders.sourceIp')}</th>
+                    <th style={{ minWidth: '130px' }}>{t('trafficOverview.tableHeaders.destinationIp')}</th>
+                    <th style={{ minWidth: '90px' }}>{t('trafficOverview.tableHeaders.protocol')}</th>
+                    <th className="col-num" style={{ minWidth: '80px' }}>{t('trafficOverview.tableHeaders.priority')}</th>
+                    <th style={{ minWidth: '120px' }}>{t('trafficOverview.tableHeaders.appId')}</th>
+                    <th style={{ minWidth: '130px' }}>{t('trafficOverview.tableHeaders.deviceId')}</th>
+                    <th className="col-num" style={{ minWidth: '100px' }}>{t('trafficOverview.tableHeaders.bytes')}</th>
+                    <th className="col-num" style={{ minWidth: '95px' }}>{t('trafficOverview.tableHeaders.duration')}</th>
+                    <th className="col-num" style={{ minWidth: '95px' }}>{t('trafficOverview.tableHeaders.packets')}</th>
+                    <th style={{ minWidth: '90px' }}>{t('trafficOverview.tableHeaders.state')}</th>
+                    <th style={{ minWidth: '110px' }}>{t('trafficOverview.tableHeaders.output')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {flowData.map((flow, index) => {
+                    const isAdded = flow.state === 'ADDED' || flow.state === 'ACTIVE';
+                    return (
+                      <tr key={index}>
+                        <td>
+                          {flow.source_ip ? (
+                            <span className="flow-code-chip">{flow.source_ip}</span>
+                          ) : (
+                            <span className="dimmed-dash">—</span>
+                          )}
+                        </td>
+                        <td>
+                          {flow.destination_ip ? (
+                            <span className="flow-code-chip">{flow.destination_ip}</span>
+                          ) : (
+                            <span className="dimmed-dash">—</span>
+                          )}
+                        </td>
+                        <td>
+                          <span className="proto-pill">{flow.protocol || '—'}</span>
+                        </td>
+                        <td className="col-num font-mono">{flow.priority ?? '—'}</td>
+                        <td>
+                          <span className="app-id-tag app-id-normal">{flow.app_id || '—'}</span>
+                        </td>
+                        <td>
+                          <span className="device-id-chip" title={flow.device_id}>
+                            {flow.device_id || '—'}
+                          </span>
+                        </td>
+                        <td className="col-num font-mono">
+                          {Number(flow.bytes || 0).toLocaleString()}
+                        </td>
+                        <td className="col-num font-mono">{flow.duration || '0s'}</td>
+                        <td className="col-num font-mono">
+                          {Number(flow.packets || 0).toLocaleString()}
+                        </td>
+                        <td>
+                          <span className={`state-badge ${isAdded ? 'state-added' : 'state-pending'}`}>
+                            {flow.state || 'ACTIVE'}
+                          </span>
+                        </td>
+                        <td>
+                          {flow.output_port ? (
+                            <span className={`port-chip ${flow.output_port === 'CONTROLLER' ? 'port-controller' : 'port-normal'}`}>
+                              {flow.output_port}
+                            </span>
+                          ) : (
+                            <span className="dimmed-dash">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
