@@ -265,72 +265,92 @@ function ManualTrafficControl() {
 
       case 'rate-limit':
         return (
-          <div style={{ background: 'var(--bg-surface-subtle)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)' }}>
-            <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
-              {t('manualControl.endpointSection')}
-            </h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
-              <div className="form-group">
-                <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
-                  {t('manualControl.hostIp')}
-                </label>
-                <input
-                  type="text"
-                  placeholder="vd: 10.0.0.1"
-                  value={hostIp}
-                  onChange={(e) => setHostIp(e.target.value)}
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
-                />
-              </div>
-              <div className="form-group">
-                <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
-                  {t('manualControl.rateLimitValue')}
-                </label>
-                <input
-                  type="number"
-                  placeholder={t('manualControl.rateLimitPlaceholder')}
-                  value={rateLimitBps}
-                  onChange={(e) => setRateLimitBps(e.target.value)}
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
-                />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div style={{ background: 'var(--bg-surface-subtle)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)' }}>
+              <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
+                {t('manualControl.endpointSection')}
+              </h4>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
+                <div className="form-group">
+                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
+                    {t('manualControl.hostIp')}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="vd: 10.0.0.1"
+                    value={hostIp}
+                    onChange={(e) => setHostIp(e.target.value)}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
+                  />
+                </div>
               </div>
             </div>
-            <p style={{ margin: '10px 0 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
-              ℹ️ {t('manualControl.rateLimitNote')}
-            </p>
+
+            <div style={{ background: 'var(--bg-surface-subtle)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)' }}>
+              <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
+                {t('manualControl.rateLimitSection')}
+              </h4>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
+                <div className="form-group">
+                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
+                    {t('manualControl.rateLimitValue')}
+                  </label>
+                  <input
+                    type="number"
+                    placeholder={t('manualControl.rateLimitPlaceholder')}
+                    value={rateLimitBps}
+                    onChange={(e) => setRateLimitBps(e.target.value)}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
+                  />
+                </div>
+              </div>
+              <p style={{ margin: '10px 0 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
+                ℹ️ {t('manualControl.rateLimitNote')}
+              </p>
+            </div>
           </div>
         );
 
       case 'redirect':
         return (
-          <div style={{ background: 'var(--bg-surface-subtle)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)' }}>
-            <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
-              {t('manualControl.endpointSection')}
-            </h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
-              <div className="form-group">
-                <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
-                  {t('manualControl.sourceIp')}
-                </label>
-                <input
-                  type="text"
-                  placeholder={t('manualControl.sourceIpPlaceholder')}
-                  value={formData.srcIp || ''}
-                  onChange={(e) => handleInputChange('srcIp', e.target.value)}
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
-                />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div style={{ background: 'var(--bg-surface-subtle)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)' }}>
+              <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
+                {t('manualControl.endpointSection')}
+              </h4>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
+                <div className="form-group">
+                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
+                    {t('manualControl.sourceIp')}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder={t('manualControl.sourceIpPlaceholder')}
+                    value={formData.srcIp || ''}
+                    onChange={(e) => handleInputChange('srcIp', e.target.value)}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
+                  />
+                </div>
               </div>
-              <div className="form-group">
-                <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
-                  {t('manualControl.redirectIp')}
-                </label>
-                <input
-                  type="text"
-                  placeholder="vd: 10.0.0.6 (Honeypot)"
-                  value={redirectIp}
-                  onChange={(e) => setRedirectIp(e.target.value)}
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
-                />
+            </div>
+
+            <div style={{ background: 'var(--bg-surface-subtle)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)' }}>
+              <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
+                {t('manualControl.redirectSection')}
+              </h4>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
+                <div className="form-group">
+                  <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
+                    {t('manualControl.redirectIp')}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="vd: 10.0.0.6 (Honeypot)"
+                    value={redirectIp}
+                    onChange={(e) => setRedirectIp(e.target.value)}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -339,37 +359,53 @@ function ManualTrafficControl() {
       case 'unblock':
       case 'rollback':
         return (
-          <div style={{ background: 'var(--bg-surface-subtle)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)' }}>
-            <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
-              {t('manualControl.endpointSection')}
-            </h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
-              <div className="form-group">
-                <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
-                  {t('manualControl.sourceIp')}
-                </label>
-                <input
-                  type="text"
-                  placeholder={t('manualControl.sourceIpPlaceholder')}
-                  value={formData.srcIp || ''}
-                  onChange={(e) => handleInputChange('srcIp', e.target.value)}
-                  style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
-                />
-              </div>
-              {action === 'unblock' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div style={{ background: 'var(--bg-surface-subtle)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)' }}>
+              <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
+                {t('manualControl.endpointSection')}
+              </h4>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
                 <div className="form-group">
                   <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
-                    {t('manualControl.destinationIp')} ({language === 'vi' ? 'Tùy chọn' : 'Optional'})
+                    {t('manualControl.sourceIp')}
                   </label>
                   <input
                     type="text"
-                    placeholder={t('manualControl.destinationIpPlaceholder')}
-                    value={formData.dstIp || ''}
-                    onChange={(e) => handleInputChange('dstIp', e.target.value)}
+                    placeholder={t('manualControl.sourceIpPlaceholder')}
+                    value={formData.srcIp || ''}
+                    onChange={(e) => handleInputChange('srcIp', e.target.value)}
                     style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                   />
                 </div>
-              )}
+              </div>
+            </div>
+
+            <div style={{ background: 'var(--bg-surface-subtle)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)' }}>
+              <h4 style={{ margin: '0 0 12px 0', color: 'var(--text-primary)', fontSize: 14, fontWeight: 700 }}>
+                {t('manualControl.rollbackScopeSection')}
+              </h4>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
+                {action === 'unblock' ? (
+                  <div className="form-group">
+                    <label style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, display: 'block', color: 'var(--text-secondary)' }}>
+                      {t('manualControl.destinationIp')} ({language === 'vi' ? 'Tùy chọn' : 'Optional'})
+                    </label>
+                    <input
+                      type="text"
+                      placeholder={t('manualControl.destinationIpPlaceholder')}
+                      value={formData.dstIp || ''}
+                      onChange={(e) => handleInputChange('dstIp', e.target.value)}
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
+                    />
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                    {language === 'vi'
+                      ? 'Hoàn tác toàn bộ quy tắc ACL và khôi phục chuyển tiếp mặc định qua OpenFlow 1.3 Controller.'
+                      : 'Reverts candidate ACL rule and restores default forwarding through OpenFlow 1.3 Controller.'}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         );
@@ -464,42 +500,6 @@ function ManualTrafficControl() {
         </p>
       </div>
 
-      {/* Safety Gate Warning & DRY_RUN Toggle */}
-      <div
-        style={{
-          background: dryRun ? '#ecfdf5' : '#fffbeb',
-          borderLeft: `5px solid ${dryRun ? '#10b981' : '#f59e0b'}`,
-          padding: '14px 18px',
-          borderRadius: 8,
-          marginBottom: 20,
-          border: '1px solid var(--border-color)',
-        }}
-      >
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            fontWeight: 700,
-            cursor: 'pointer',
-            color: dryRun ? '#065f46' : '#92400e',
-            fontSize: 14,
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={dryRun}
-            onChange={(e) => setDryRun(e.target.checked)}
-            style={{ width: 18, height: 18, cursor: 'pointer' }}
-          />
-          <span>
-            {dryRun
-              ? t('manualControl.dryRunActiveNotice')
-              : t('manualControl.liveEnforcementNotice')}
-          </span>
-        </label>
-      </div>
-
       {statusMessage && (
         <div
           style={{
@@ -543,6 +543,45 @@ function ManualTrafficControl() {
           {renderFields()}
         </div>
 
+        {/* 4. Safety Gate & Execution Mode */}
+        <div
+          style={{
+            background: dryRun ? 'var(--bg-surface-subtle)' : '#fffbeb',
+            borderLeft: `5px solid ${dryRun ? '#0d9488' : '#f59e0b'}`,
+            padding: '14px 18px',
+            borderRadius: 8,
+            marginBottom: 20,
+            border: `1px solid ${dryRun ? 'var(--border-color)' : '#fde68a'}`,
+          }}
+        >
+          <h4 style={{ margin: '0 0 10px 0', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
+            {t('manualControl.safetySection')}
+          </h4>
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              color: dryRun ? 'var(--text-primary)' : '#92400e',
+              fontSize: 13.5,
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={dryRun}
+              onChange={(e) => setDryRun(e.target.checked)}
+              style={{ width: 18, height: 18, cursor: 'pointer' }}
+            />
+            <span>
+              {dryRun
+                ? t('manualControl.dryRunActiveNotice')
+                : t('manualControl.liveEnforcementNotice')}
+            </span>
+          </label>
+        </div>
+
         {/* 5. Policy Preview Card */}
         <div style={{ background: 'var(--bg-surface-subtle)', padding: 14, borderRadius: 8, border: '1px solid var(--border-color)', marginBottom: 20 }}>
           <h4 style={{ margin: '0 0 8px 0', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
@@ -550,7 +589,16 @@ function ManualTrafficControl() {
           </h4>
           <div style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div><strong>{t('manualControl.selectedAction')}</strong> <code style={{ color: '#0284c7' }}>{action.toUpperCase()}</code></div>
-            <div><strong>{t('manualControl.targetSubject')}</strong> <code>{formData.srcIp || hostIp || (language === 'vi' ? 'Chưa chỉ định' : 'Not specified')}</code></div>
+            <div>
+              <strong>{t('manualControl.targetSubject')}</strong>{' '}
+              {formData.srcIp || hostIp ? (
+                <code style={{ color: '#0284c7', fontWeight: 600 }}>{formData.srcIp || hostIp}</code>
+              ) : (
+                <code style={{ color: '#e11d48', fontWeight: 600 }}>
+                  {language === 'vi' ? 'Chưa chỉ định (Cần nhập IP)' : 'Not specified (IP required)'}
+                </code>
+              )}
+            </div>
             <div><strong>{t('manualControl.safetyStatus')}</strong> <span style={{ fontWeight: 600, color: dryRun ? '#0d9488' : '#e11d48' }}>{dryRun ? 'DRY_RUN (SIMULATED)' : 'LIVE_ENFORCEMENT'}</span></div>
           </div>
         </div>
