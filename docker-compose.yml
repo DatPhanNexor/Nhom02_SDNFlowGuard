@@ -25,6 +25,7 @@ services:
     mem_limit: 160m
     mem_reservation: 64m
     environment:
+      - TZ=Asia/Ho_Chi_Minh
       - SDNFLOW_FLASK_HOST=0.0.0.0
       - SDNFLOW_FLASK_PORT=5000
       - SDNFLOW_ONOS_URL=http://onos:8181/onos/v1

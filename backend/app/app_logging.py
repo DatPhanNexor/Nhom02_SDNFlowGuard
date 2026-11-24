@@ -49,9 +49,9 @@ def filter_flows(raw_flows):
             out_port = "Unknown"
 
             for criterion in flow.get("selector", {}).get("criteria", []):
-                if criterion.get("type") == "IPV4_SRC":
+                if criterion.get("type") in ("IPV4_SRC", "IPV6_SRC"):
                     source_ip = criterion.get("ip", "Unknown")
-                elif criterion.get("type") == "IPV4_DST":
+                elif criterion.get("type") in ("IPV4_DST", "IPV6_DST"):
                     destination_ip = criterion.get("ip", "Unknown")
                 elif criterion.get("type") == "ETH_TYPE":
                     eth_type = criterion.get("ethType", "Unknown")

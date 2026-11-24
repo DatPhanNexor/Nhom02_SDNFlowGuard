@@ -15,6 +15,7 @@ for p in (str(BACKEND_ROOT), str(APP_DIR)):
         sys.path.insert(0, p)
 
 from app.app_logging import log_flows_to_database  # noqa: E402
+from app.flow_parser import parse_onos_flow  # noqa: E402
 from app.chatbot import handle_chatbot_request  # noqa: E402
 from app.controller_actions import (  # noqa: E402
     allow_ip,
@@ -505,10 +506,28 @@ def chatbot():
 
 
 @app.route("/api/get-report", methods=["GET"])
+@app.route("/api/report-preview", methods=["GET"])
 def get_report():
     try:
-        report_type = request.args.get("report_type", "anomalies")
-        report_data = report_generator.generate_report(report_type)
+        report_type = request.args.get("report_type") or request.args.get("dataset") or "anomalies"
+        start_date = request.args.get("start_date")
+        end_date = request.args.get("end_date")
+        time_range = request.args.get("time_range")
+        severity = request.args.get("severity")
+        action_type = request.args.get("action_type")
+        source_ip = request.args.get("source_ip")
+        initiation_source = request.args.get("initiation_source")
+
+        report_data = report_generator.generate_report(
+            report_type=report_type,
+            start_date=start_date,
+            end_date=end_date,
+            time_range=time_range,
+            severity=severity,
+            action_type=action_type,
+            source_ip=source_ip,
+            initiation_source=initiation_source,
+        )
         return jsonify(report_data), 200
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
@@ -519,14 +538,41 @@ def get_report():
 
 
 @app.route("/api/download-pdf", methods=["GET"])
+@app.route("/api/generate-report", methods=["GET"])
 def download_pdf():
     try:
-        report_type = request.args.get("report_type", "anomalies")
-        pdf_content = report_generator.generate_pdf_report(report_type)
+        report_type = request.args.get("report_type") or request.args.get("dataset") or "anomalies"
+        start_date = request.args.get("start_date")
+        end_date = request.args.get("end_date")
+        time_range = request.args.get("time_range")
+        severity = request.args.get("severity")
+        action_type = request.args.get("action_type")
+        source_ip = request.args.get("source_ip")
+        initiation_source = request.args.get("initiation_source")
+
+        pdf_content = report_generator.generate_pdf_report(
+            report_type=report_type,
+            start_date=start_date,
+            end_date=end_date,
+            time_range=time_range,
+            severity=severity,
+            action_type=action_type,
+            source_ip=source_ip,
+            initiation_source=initiation_source,
+        )
+
+        if start_date and end_date:
+            time_tag = f"{start_date[:10]}_to_{end_date[:10]}"
+        elif time_range:
+            time_tag = time_range
+        else:
+            time_tag = "last_30d"
+
+        download_name = f"SDNFlowGuard_{report_type}_report_{time_tag}.pdf"
         return send_file(
             io.BytesIO(pdf_content),
             as_attachment=True,
-            download_name=f"{report_type}_report_monthly.pdf",
+            download_name=download_name,
             mimetype="application/pdf",
         )
     except ValueError as exc:
@@ -668,34 +714,7 @@ def get_live_flows():
         response.raise_for_status()
 
         raw_flows = response.json().get("flows", [])
-        data = []
-        for flow in raw_flows:
-            criteria = {
-                item.get("type"): item
-                for item in flow.get("selector", {}).get("criteria", [])
-            }
-            outputs = [
-                item.get("port")
-                for item in flow.get("treatment", {}).get("instructions", [])
-                if item.get("type") == "OUTPUT"
-            ]
-            data.append(
-                {
-                    "id": flow.get("id"),
-                    "device_id": flow.get("deviceId"),
-                    "app_id": flow.get("appId"),
-                    "state": flow.get("state"),
-                    "priority": flow.get("priority"),
-                    "source_ip": criteria.get("IPV4_SRC", {}).get("ip"),
-                    "destination_ip": criteria.get("IPV4_DST", {}).get("ip"),
-                    "source_mac": criteria.get("ETH_SRC", {}).get("mac"),
-                    "destination_mac": criteria.get("ETH_DST", {}).get("mac"),
-                    "packets": flow.get("packets", 0),
-                    "bytes": flow.get("bytes", 0),
-                    "life_seconds": flow.get("life", 0),
-                    "output_ports": outputs,
-                }
-            )
+        data = [parse_onos_flow(flow) for flow in raw_flows]
         return jsonify({"source": "ONOS", "count": len(data), "data": data}), 200
     except (requests.RequestException, ValueError, TypeError) as exc:
         return jsonify({"error": str(exc)}), 502

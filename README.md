@@ -7,300 +7,406 @@
 </h1>
 
 <p align="center">
-  <strong>Software-Defined Network Security & Monitoring Platform</strong>
+  <strong>Automated Software-Defined Network Defense & Security Monitoring Platform</strong>
 </p>
 
 <p align="center">
-  Nền tảng giám sát và phòng thủ mạng SDN tích hợp ONOS Controller, OpenFlow 1.3 và ELK Stack.
+  Nghiên cứu và triển khai phòng thủ mạng tự động qua SDN tích hợp giám sát bằng ELK Stack.
 </p>
 
 ---
 
-## 1. Tổng quan dự án
+## 1. Project Overview
 
-**SDNFlowGuard** là giải pháp giám sát an ninh mạng và điều khiển phòng thủ tự động trên nền tảng mạng điều khiển bằng phần mềm (Software-Defined Networking - SDN). Hệ thống tích hợp trực tiếp với bộ điều khiển **ONOS Controller 2.7** qua giao thức chuẩn **OpenFlow 1.3** và hệ sinh thái phân tích tập trung **ELK Stack (Elasticsearch, Logstash, Kibana)**.
+**SDNFlowGuard** là giải pháp phòng thủ an ninh mạng tự động và giám sát tập trung trên kiến trúc mạng điều khiển bằng phần mềm (Software-Defined Networking - SDN). Dự án được thiết kế và triển khai nhằm giải quyết bài toán phát hiện sớm, đối soát bằng chứng pháp chứng số và ngăn chặn các cuộc tấn công mạng (như ICMP/TCP SYN Flood, Port Scanning) trong các môi trường mạng quy mô phòng lab và trung tâm dữ liệu.
 
-SDNFlowGuard cho phép các kỹ sư mạng quan sát toàn diện trạng thái chuyển mạch, tự động phân tích và đối soát bằng chứng gói tin, đồng thời thiết lập chính sách kiểm soát luồng thông minh qua cơ chế phòng hộ nhiều tầng (**Multi-layer Safety Gate**), ngăn ngừa rủi ro gián đoạn hạ tầng mạng trọng yếu.
-
----
-
-## 2. Tính năng kỹ thuật nổi bật
-
-- **Giám sát mạng SDN & Trực quan hóa Tôpô:** Tự động phát hiện thiết bị mạng (switches), cổng giao tiếp (ports), máy trạm (hosts) và các quy tắc luồng (flow rules) đang hoạt động thông qua REST API của ONOS.
-- **Phân tích Telemetry & Phát hiện bất thường:** Module Collector liên tục đối soát mẫu lưu lượng theo chu kỳ trượt nanosecond, nhận diện các chuỗi tăng đột biến tốc độ gói tin (high-PPS anomaly streaks).
-- **Đối soát bằng chứng gói tin (Step 63/64 Evidence Correlation):** Trích xuất thông tin định danh L2/L3 (IP/MAC nguồn, nhãn thời gian UTC) từ mẫu gói tin và đối chiếu chéo với bảng trạng thái thiết bị thực tế của ONOS nhằm loại trừ hiện tượng giả mạo địa chỉ (IP/MAC spoofing).
-- **Điều khiển lưu lượng linh hoạt:** Cung cấp cơ chế tạo và thực thi quy tắc OpenFlow Access Control List (ACL) đa dạng: Chặn địa chỉ IP vi phạm (`DENY`), bóp băng thông qua OpenFlow Meter (`RATE_LIMIT`), và chuyển hướng luồng kiểm tra (`REDIRECT`).
-- **Cổng an toàn nhiều tầng (Safety Gate & DRY_RUN):**
-  - Mặc định khởi chạy ở chế độ **`DRY_RUN`**, chỉ mô phỏng tác động và tính toán trước quy tắc mà không can thiệp luồng thực tế.
-  - Tự động từ chối mọi yêu cầu thao tác nhắm vào các địa chỉ mạng trọng yếu: Default Gateway (`10.0.0.254`), DNS công cộng (`8.8.8.8`, `1.1.1.1`), dải Loopback (`127.0.0.0/8`), Multicast (`224.0.0.0/4`), và các dải mạng con chứa hạ tầng (CIDR Overlap Protection).
-  - Ngăn chặn client chưa xác thực tự ý chiếm quyền phê duyệt của quản trị viên (`operator_approved`).
-- **Hệ thống giám sát ELK Stack tập trung:** Pipeline Logstash tiếp nhận telemetry qua HTTP webhook, Elasticsearch lưu trữ chỉ mục sự kiện an ninh, và Kibana cung cấp dashboard đồ họa trực quan hóa lưu lượng theo thời gian thực.
-- **Nhật ký quyết định & Khả năng hoàn tác an toàn (Rollback):** Lưu trữ toàn bộ lịch sử can thiệp mạng vào cơ sở dữ liệu SQLite, cho phép người vận hành hoàn tác nhanh chóng các quy tắc đã triển khai khi tình huống khẩn cấp kết thúc.
-- **Giao diện Dashboard song ngữ & Trợ lý vận hành SDN:** Giao diện điều hành React 18 hỗ trợ chuyển ngữ mượt mà giữa Tiếng Việt và Tiếng Anh, tích hợp Trợ lý hỏi đáp vận hành mạng (SDN Operations Assistant) hoạt động hoàn toàn ở chế độ chỉ đọc (Read-only Guardrail).
+Hệ thống tích hợp trực tiếp với bộ điều khiển **ONOS Controller 2.7.0 LTS** qua giao thức chuẩn **OpenFlow 1.3** và nền tảng thu thập, lưu trữ, trực quan hóa phân tán **ELK Stack (Elasticsearch, Logstash, Kibana)**.
 
 ---
 
-## 3. Kiến trúc hệ thống
+## 2. Problem Statement & Research Motivation
 
-Kiến trúc SDNFlowGuard được tổ chức chuẩn hóa theo mô hình phân tách 3 mặt phẳng mạng kết hợp với mặt phẳng quan sát:
+Trong các hạ tầng mạng truyền thống, việc phát hiện và ngăn chặn tấn công mạng thường phân mảnh tại từng thiết bị tường lửa (Firewall) hoặc thiết bị phát hiện xâm nhập (IDS/IPS) riêng lẻ, dẫn đến độ trễ phản ứng cao và nguy cơ chặn nhầm các dịch vụ cốt lõi.
+
+Kiến trúc SDN mang lại khả năng lập trình hóa toàn diện mặt phẳng điều khiển (Control Plane), cho phép thu thập trạng thái mạng tập trung và cài đặt luật luồng động xuống mặt phẳng dữ liệu (Data Plane). Tuy nhiên, nếu thiếu cơ chế kiểm chứng nguồn gốc gói tin và cổng bảo vệ an toàn (Safety Gate), việc tự động hóa phòng thủ có thể bị kẻ tấn công khai thác qua kỹ thuật giả mạo IP/MAC (Spoofing) để kích hoạt cơ chế tự ngắt mạng (Self-Inflicted Denial of Service).
+
+---
+
+## 3. System Objectives
+
+1. **Giám sát tập trung thời gian thực:** Thu thập các chỉ số thông lượng gói tin (RX/TX packets, bytes, PPS) từ các switch OpenFlow qua ONOS REST API và lưu trữ chỉ mục trong Elasticsearch.
+2. **Đối soát bằng chứng số đa tầng (Step 63/64 Forensic Corroboration):** Trích xuất thông tin định danh L2/L3 từ mẫu bắt gói tcpdump và đối chiếu chéo với bảng host attachment của switch để xác thực nguồn tấn công.
+3. **Cơ chế phòng thủ an toàn (Multi-layer Safety Gate):** Vận hành mặc định ở chế độ **`DRY_RUN`**, mô phỏng và xem trước cấu trúc luật OpenFlow JSON mà không làm gián đoạn hạ tầng mạng; bảo vệ tuyệt đối các địa chỉ Gateway, DNS, Loopback và dải CIDR hạ tầng.
+4. **Nhật ký kiểm toán & Hoàn tác (Audit Trail & Rollback):** Lưu trữ 100% lịch sử các quyết định can thiệp vào SQLite cục bộ và hỗ trợ thu hồi luật luồng tức thời khi sự cố kết thúc.
+5. **Trợ lý vận hành an ninh (SDN Assistant):** Tích hợp chatbot hỏi đáp song ngữ hỗ trợ kỹ sư SOC/NOC tra cứu dữ liệu thời gian thực trong chế độ chỉ đọc an toàn (Read-Only Guardrail).
+
+---
+
+## 4. System Architecture
+
+Hệ thống tuân thủ kiến trúc phân tách 4 mặt phẳng tiêu chuẩn:
 
 ```text
 +---------------------------------------------------------------------------------------+
 | APPLICATION & MANAGEMENT PLANE                                                        |
 |   - React 18 Operations Dashboard (Port 3000)                                         |
-|   - Nginx Reverse Proxy (Port 3000 -> 5000)                                           |
-|   - Flask REST API Backend (Port 5000)                                                |
-|   - SQLite Database (database/sdnflowguard.db)                                        |
+|   - Nginx Reverse Proxy (Port 3000 -> Backend Port 5000)                              |
+|   - Flask REST API Backend (Port 5000, Clean Architecture)                            |
+|   - SQLite Audit Repository (database/sdnflowguard.db)                                |
 +-------------------------------------------+-------------------------------------------+
-                                            | REST API (/onos/v1/*)
+                                            | Northbound REST API (/onos/v1/*)
                                             v
 +---------------------------------------------------------------------------------------+
 | CONTROL PLANE                                                                         |
-|   - ONOS SDN Controller 2.7.0 (Web UI & REST: Port 8181)                              |
+|   - ONOS SDN Controller 2.7.0 LTS (Web GUI & REST: Port 8181)                         |
 |   - OpenFlow 1.3 Southbound Driver (Binary TCP: Port 6653)                            |
+|   - Multi-layer Safety Gate Policy Engine & Step 64 Evidence Correlator               |
 +-------------------------------------------+-------------------------------------------+
                                             | OpenFlow 1.3 Protocol (TCP 6653)
                                             v
 +---------------------------------------------------------------------------------------+
 | DATA PLANE                                                                            |
-|   - Open vSwitch (OVS in WSL2 / Linux Host)                                           |
-|   - Virtual Network Topology / Mininet (Hosts: h1, h2, h3...)                         |
+|   - Open vSwitch (OVS 3.7.1 in Linux WSL2 Ubuntu Kernel)                              |
+|   - Mininet Emulated Topology (6 Switches: s1-s6, 9 Hosts: h1-h9, 10 Directed Links)   |
 +-------------------------------------------+-------------------------------------------+
                                             | Telemetry & Alert Webhook (HTTP POST)
                                             v
 +---------------------------------------------------------------------------------------+
 | OBSERVABILITY PLANE                                                                   |
-|   - Logstash Telemetry Ingestion (Port 18080)                                         |
-|   - Elasticsearch Indexing Engine (Port 9200)                                         |
+|   - Logstash Telemetry Ingestion Pipeline (Port 18080)                                |
+|   - Elasticsearch Indexing Engine (Port 9200, sdnflowguard-events-*)                  |
 |   - Kibana Visual Analytics Dashboard (Port 5601)                                     |
 +---------------------------------------------------------------------------------------+
 ```
 
-### Danh mục dịch vụ Docker Compose (`sdnflowguard-netsec`)
+---
 
-| Dịch vụ (Service) | Tên Container | Cổng ánh xạ (Host:Container) | Vai trò chức năng trong hệ thống |
-| :--- | :--- | :---: | :--- |
-| `frontend` | `sdnflowguard-frontend` | `3000:3000` | Giao diện điều hành React 18 phục vụ qua Nginx reverse proxy. |
-| `backend` | `sdnflowguard-backend` | `5000:5000` | Cung cấp REST API, thực thi Safety Gate, đối soát bằng chứng và xử lý quyết định. |
-| `onos` | `sdnflowguard-onos` | `8181:8181`<br>`6653:6653` | Bộ điều khiển SDN: REST API/UI quản trị (`8181`) và kênh OpenFlow 1.3 (`6653`). |
-| `elasticsearch` | `sdnflowguard-elasticsearch` | `9200:9200` | Lưu trữ chỉ mục phân tán và tra cứu lịch sử sự kiện an ninh mạng. |
-| `logstash` | `sdnflowguard-logstash` | `18080:8080` | Pipeline tiếp nhận dữ liệu telemetry từ collector qua HTTP webhook. |
-| `kibana` | `sdnflowguard-kibana` | `5601:5601` | Nền tảng phân tích và biểu diễn trực quan dữ liệu sự kiện an ninh. |
+## 5. Technology Stack
+
+- **SDN Controller:** ONOS Controller 2.7.0 LTS (Java 11, Apache Karaf OSGi, JVM G1GC cgroup `1400m`).
+- **Southbound Protocol:** OpenFlow 1.3 (TCP 6653).
+- **Data Plane Switching:** Open vSwitch (OVS) 3.7.1, Mininet 2.3.0 trên nền WSL2 Linux.
+- **Backend Application:** Python 3.10+, Flask REST API, SQLite 3, Requests, PyTest/Unittest.
+- **Frontend Dashboard:** React 18 SPA, React Router v6, Lucide Icons, Nginx reverse proxy.
+- **Observability Stack:** Elasticsearch 7.17.x, Logstash 7.17.x, Kibana 7.17.x.
+- **Containerization & Orchestration:** Docker Desktop 4.25+, Docker Compose V2.
+- **Operational Automation:** PowerShell 7 / Windows PowerShell 5.1.
 
 ---
 
-## 4. Yêu cầu hệ thống
+## 6. SDN Network Topology
 
-| Thành phần | Yêu cầu tối thiểu (Lab Mode) | Khuyến nghị sản xuất / Demo chuẩn |
-| :--- | :--- | :--- |
-| **Hệ điều hành** | Windows 10/11 64-bit (hỗ trợ WSL2) | Windows 11 64-bit với WSL2 Ubuntu 22.04 / 24.04 LTS |
-| **Bộ nhớ RAM** | 8 GB RAM (chạy chế độ `-SkipKibana`) | 16 GB RAM (chạy đồng thời 6/6 container dịch vụ) |
-| **CPU & Bộ nhớ lưu trữ** | 4 Cores vật lý, 15 GB SSD khả dụng | 6 Cores / 12 Threads, 25 GB SSD NVMe khả dụng |
-| **Phần mềm điều khiển** | Docker Desktop 4.25+ (WSL2 Backend) | Docker Desktop phiên bản mới nhất, Docker Compose V2 |
-| **Môi trường giả lập mạng** | WSL2 Linux kernel có hỗ trợ OVS | `openvswitch-switch`, `mininet` cài đặt bên trong WSL2 |
-| **Môi trường kiểm thử máy host** | Python 3.10.x 64-bit (trên Windows) | Khuyến nghị sử dụng venv chuẩn tại `backend/venv` |
+Mô hình thực nghiệm phân tầng chuẩn gồm 6 switches OpenFlow, 9 hosts và 10 liên kết có hướng kết nối về ONOS:
+
+```text
+                  [ Core Switch s1 ] <====== Directed Link ======> [ Core Switch s2 ]
+                     /          \                                     /          \
+                    /            \                                   /            \
+          [ Dist Switch s3 ]   [ Dist Switch s4 ]          [ Dist Switch s5 ]   [ Dist Switch s6 ]
+             /     \                 |                        /     \                 |
+          (h1)     (h2)             (h3)                    (h4)     (h5)            (h6)
+      10.0.0.1   10.0.0.2         10.0.0.3                10.0.0.4 10.0.0.5        10.0.0.6
+```
+- **Hosts mở rộng (h7, h8, h9):** Phân bổ tại các phân đoạn mạng kiểm thử mở rộng.
+- **Độ tin cậy liên lạc:** Đã kiểm chứng 100% full-mesh ICMP ping (72/72 cặp có hướng thành công, 0% packet loss).
 
 ---
 
-## 5. Hướng dẫn cài đặt và khởi động nhanh
+## 7. Core Features
 
-### Bước 1: Sao chép mã nguồn dự án
+- **SDN Topology Discovery & Live Flow Monitoring:** Tự động phát hiện 6 switches, 9 hosts, 10 directed links và phân tích tiêu chí khớp gói (Match Criteria) của toàn bộ 24 flow rules đang nạp trên controller.
+- **Nanosecond Sliding-Window Telemetry Pipeline:** Module Collector định kỳ lấy mẫu thống kê cổng, tính toán tốc độ gói tin (PPS), phát hiện chuỗi lưu lượng bất thường và đẩy vào ELK Stack.
+- **Step 63/64 Forensic Evidence Correlation:** Trích xuất thông tin IP/MAC và nhãn thời gian UTC từ mẫu bắt gói tcpdump, đối chiếu với dữ liệu định danh host của ONOS để xác thực nguồn tấn công.
+- **Multi-layer Safety Gate & Safe DRY_RUN Enforcement:**
+  - Vận hành an toàn mặc định ở chế độ **`DRY_RUN`**, chỉ mô phỏng tác động và xuất bản xem trước JSON mà không ngắt luồng thực tế.
+  - Tự động bảo vệ Default Gateway (`10.0.0.254`), DNS Server (`8.8.8.8`, `1.1.1.1`), Loopback (`127.0.0.0/8`), Multicast (`224.0.0.0/4`) và các dải mạng con hạ tầng.
+  - Ngăn chặn client chưa xác thực tự ý chiếm quyền phê duyệt của quản trị viên (`operator_approved`).
+- **Audit Center & Multi-page A4 PDF Reporting Engine:** Trích xuất báo cáo an ninh số liệu thực tế theo múi giờ `Asia/Ho_Chi_Minh (UTC+07:00)` với bảng biểu phân trang tự động bằng Python thuần.
+- **Read-Only Bilingual SDN Operations Assistant:** Trợ lý ảo tích hợp trực tiếp trên Dashboard, hỗ trợ song ngữ (Tiếng Việt & English), tra cứu trạng thái mạng thời gian thực từ ONOS và bị khóa chặt ở chế độ chỉ đọc.
+
+---
+
+## 8. Monitoring & Telemetry Pipeline
+
+```text
+[ Open vSwitch / Mininet ]
+           | (Port Counters: RX/TX Packets & Bytes)
+           v
+[ ONOS Controller 2.7 REST API (:8181/onos/v1/statistics) ]
+           |
+           v
+[ SDN Telemetry Collector (backend/collectors/sdn_overlap_alert_monitor_v2.py) ]
+           | (Sliding window PPS calculation & anomaly streaks)
+           v
+[ Logstash HTTP Ingestion Pipeline (:18080) ]
+           |
+           v
+[ Elasticsearch Cluster (:9200, Index: sdnflowguard-events-*) ]
+           |
+           v
+[ Kibana Visual Dashboard (:5601) ] & [ Flask Backend API (:5000) ]
+```
+
+---
+
+## 9. Security Policy & Safety Gate
+
+Thuật toán Safety Gate kiểm soát chặt chẽ mọi chính sách phòng thủ trước khi phát sinh tương tác với ONOS:
+
+1. **`DRY_RUN` Mode (Mặc định an toàn):** Mọi hành động can thiệp (`Block`, `Rate Limit`, `Redirect`) được gắn nhãn `[DRY_RUN] (SIMULATED)`, tạo bản xem trước JSON OpenFlow chuẩn xác và yêu cầu quản trị viên phê duyệt.
+2. **Protected Infrastructure Assets (Bảo vệ tuyệt đối):**
+   - Default Gateway: `10.0.0.254`
+   - Core DNS Resolvers: `8.8.8.8`, `1.1.1.1`
+   - Local Loopback: `127.0.0.0/8`, `::1`
+   - Multicast & Unspecified: `224.0.0.0/4`, `0.0.0.0/8`
+   - Subnet CIDR Overlap Protection (ngăn chặn chặn dải IP bao trùm gateway/controller).
+3. **Rollback Verification:** Khi người vận hành kích hoạt hoàn tác, hệ thống xóa luật trên controller và xác thực lại trạng thái flow table.
+
+---
+
+## 10. SDN Assistant (Operations AI Assistant)
+
+Trợ lý thông minh SDN Assistant được tích hợp tại góc phải Dashboard:
+- **Nguyên tắc an toàn:** Hoạt động **100% READ-ONLY**, từ chối mọi yêu cầu thay đổi cấu hình mạng qua chat.
+- **Cơ chế xử lý:** Phân loại ý định song ngữ (Vietnamese / English), trích xuất dữ liệu trực tiếp từ ONOS REST API và CSDL SQLite.
+- **Xử lý câu hỏi tổng hợp:** Trả lời chi tiết trạng thái ONOS Controller, số switch, host, link và đánh giá tình trạng vận hành theo thời gian thực.
+
+---
+
+## 11. Setup and Deployment
+
+### 1. Sao chép mã nguồn:
 ```powershell
 git clone https://github.com/DatPhanNexor/Nhom02_SDNFlowGuard.git
 cd Nhom02_SDNFlowGuard
 ```
 
-### Bước 2: Kiểm tra tiền điều kiện môi trường
-Chạy script kiểm tra để xác nhận Docker, cổng mạng và các thư mục cấu hình đã sẵn sàng:
+### 2. Thiết lập biến môi trường:
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\manage.ps1 check
+Copy-Item .env.example .env
 ```
 
-### Bước 3: Khởi động hệ thống Docker
-Khởi động cụm dịch vụ hoàn chỉnh (6 container):
+### 3. Kiểm tra tiền điều kiện hệ thống:
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\manage.ps1 up
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\manage.ps1 check
 ```
-> **Mẹo tối ưu RAM:** Với máy có bộ nhớ RAM $\le$ 8 GB, thêm cờ `-SkipKibana` để bỏ qua Kibana, tiết kiệm ngay khoảng 550 MB RAM:
+
+### 4. Khởi động toàn bộ 6 container microservices:
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\manage.ps1 up
+```
+> **Chế độ Low-RAM ($\le$ 8 GB RAM):** Sử dụng cờ `-SkipKibana` để tiết kiệm ~550 MB RAM:
 > ```powershell
-> powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\manage.ps1 up -SkipKibana
+> powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\manage.ps1 up -SkipKibana
 > ```
 
-### Bước 4: Kiểm tra trạng thái hoạt động của các dịch vụ
+### 5. Mở Dashboard điều hành:
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\manage.ps1 status
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\manage.ps1 open
 ```
-Đảm bảo tất cả container báo trạng thái `Up (healthy)` hoặc `Up`.
+Truy cập giao diện tại: **`http://127.0.0.1:3000`**.
 
-### Bước 5: Mở Dashboard quản trị mạng
+### 6. Dừng hệ thống an toàn:
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\manage.ps1 open
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\manage.ps1 down
 ```
-Trình duyệt web mặc định sẽ tự động mở trang điều hành tại: **[http://127.0.0.1:3000](http://127.0.0.1:3000)**.
-
-### Bước 6: Dừng hệ thống khi kết thúc phiên làm việc
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\manage.ps1 down
-```
-*Lệnh này giải phóng an toàn bộ nhớ và tài nguyên mà vẫn giữ nguyên 100% dữ liệu SQLite và chỉ mục Elasticsearch.*
 
 ---
 
-## 6. Danh mục dịch vụ và cổng truy cập
+## 12. Service Endpoints & Ports
 
-| Dịch vụ | Địa chỉ truy cập / Endpoint | Giao thức | Ghi chú vận hành quan trọng |
+| Dịch vụ | Địa chỉ truy cập / Endpoint | Giao thức | Ghi chú vận hành |
 | :--- | :--- | :---: | :--- |
 | **SDNFlowGuard Dashboard** | **[http://127.0.0.1:3000](http://127.0.0.1:3000)** | HTTP | Bảng điều khiển trung tâm React 18 qua Nginx reverse proxy. |
 | **Backend REST API** | **[http://127.0.0.1:5000/api/health](http://127.0.0.1:5000/api/health)** | HTTP | Endpoint kiểm tra sức khỏe hệ thống và phân phối dữ liệu JSON. |
 | **ONOS Web Management UI** | **[http://127.0.0.1:8181/onos/ui](http://127.0.0.1:8181/onos/ui)** | HTTP | **Bắt buộc nhập `/onos/ui`**. Tài khoản mặc định: `onos` / `rocks`. |
-| **ONOS OpenFlow Southbound** | **`tcp://127.0.0.1:6653`** | OpenFlow 1.3 TCP | Cổng giao tiếp nhị phân dành riêng cho Switch/Mininet. **Không mở bằng trình duyệt**. |
+| **ONOS OpenFlow Southbound** | **`tcp://127.0.0.1:6653`** | OpenFlow 1.3 TCP | Cổng socket nhị phân dành cho switch. **Không mở bằng trình duyệt**. |
 | **Elasticsearch API** | **[http://127.0.0.1:9200](http://127.0.0.1:9200)** | HTTP | Chỉ mục cơ sở dữ liệu sự kiện an ninh mạng. |
 | **Kibana Analytics** | **[http://127.0.0.1:5601](http://127.0.0.1:5601)** | HTTP | Trực quan hóa và phân tích sâu các chỉ số lưu lượng ELK. |
-| **Logstash Telemetry Webhook** | **[http://127.0.0.1:18080](http://127.0.0.1:18080)** | HTTP | Tiếp nhận sự kiện qua POST; khi mở bằng GET sẽ trả về chữ `ok` (Elastic probe chuẩn). |
+| **Logstash Telemetry Webhook** | **[http://127.0.0.1:18080](http://127.0.0.1:18080)** | HTTP | Tiếp nhận sự kiện qua POST; mở bằng GET sẽ trả về `ok`. |
 
 ---
 
-## 7. Thực nghiệm giả lập mạng với Mininet & OpenFlow
+## 13. System Operation & Demonstration Runbook
 
-Để mô phỏng môi trường mạng SDN thực tế có lưu lượng và switch kết nối về ONOS Controller:
-
-### 1. Khởi động Open vSwitch trong WSL2 Ubuntu:
+### Kịch bản thực nghiệm Mininet trong WSL2 Ubuntu:
 ```bash
+# 1. Khởi động Open vSwitch
 sudo service openvswitch-switch start
-```
 
-### 2. Khởi tạo tôpô Mininet kết nối về ONOS:
-```bash
-sudo mn --topo single,3 --controller=remote,ip=127.0.0.1,port=6653 --switch ovsk,protocols=OpenFlow13
-```
-> *Lưu ý về mạng WSL2:* Nếu WSL2 ở chế độ mạng NAT không truy cập được trực tiếp `127.0.0.1`, hãy thay thế bằng địa chỉ IP của Windows Host lấy qua lệnh:
-> ```bash
-> ip route show | grep default | awk '{print $3}'
-> ```
+# 2. Khởi tạo tôpô 6 switch kết nối về ONOS
+sudo mn --custom ./infrastructure/mininet/topo_6switches.py --topo custom_topo --controller=remote,ip=127.0.0.1,port=6653 --switch ovsk,protocols=OpenFlow13
 
-### 3. Kiểm tra lưu lượng nội bộ mạng:
-Trong dấu nhắc lệnh Mininet CLI, thực hiện kiểm tra thông mạch giữa các máy trạm:
-```text
+# 3. Kiểm tra thông mạch toàn phần (Full-Mesh ICMP)
 mininet> pingall
+
+# 4. Đo thông lượng TCP cơ sở bằng iPerf
+mininet> iperf h1 h9
 ```
 
-### 4. Xác nhận kết quả trên Dashboard:
-- Truy cập ONOS UI (`http://127.0.0.1:8181/onos/ui`): Switch `of:0000000000000001` cùng 3 máy trạm (`10.0.0.1`, `10.0.0.2`, `10.0.0.3`) hiển thị trực quan trên bản đồ tôpô.
-- Truy cập SDNFlowGuard Dashboard (`http://127.0.0.1:3000`): Dữ liệu gói tin, tốc độ lưu lượng cổng và các bản ghi Flow Rule được cập nhật theo thời gian thực.
+---
+
+## 14. Demo Screenshots & Proofs (29/29 Verified Images)
+
+Dưới đây là bộ ảnh minh chứng thực nghiệm đầy đủ (29 ảnh PNG) được trích xuất trực tiếp từ hệ thống đang vận hành:
+
+### A. System Overview & Infrastructure
+
+| Thành phần & Figure ID | Hình ảnh minh chứng thực nghiệm |
+| :--- | :--- |
+| **Hình 4.1:** Sáu container SDNFlowGuard vận hành ổn định trên Docker Desktop | ![Hình 4.1](screenshots/Hinh_4.1_Docker_06_Containers.png)<br>*Hình 4.1: Trạng thái 6 container microservices (backend, frontend, onos, elasticsearch, logstash, kibana) hoạt động ổn định trên Docker Desktop.* |
+| **Hình 4.2:** Khởi động hệ thống và kiểm tra 7 cổng dịch vụ | ![Hình 4.2](screenshots/Hinh_4.2_KhoiDong_KiemTra_CongDichVu.png)<br>*Hình 4.2: Kết quả kiểm tra tính sẵn sàng và các cổng dịch vụ hạ tầng mạng qua lệnh manage.ps1 check (Overall Status: READY).* |
+| **Hình 4.3:** Health Check hệ thống và quy mô tôpô mạng SDN | ![Hình 4.3](screenshots/Hinh_4.3_HealthCheck_Topology_ONOS.png)<br>*Hình 4.3: Kết quả kiểm tra sức khỏe hệ thống và trạng thái kết nối mạng SDN (6 Switch, 9 Host, 10 Directed Links).* |
+| **Hình 4.6:** Bảng điều khiển trung tâm (Dashboard) và thông lượng cổng switch RX/TX | ![Hình 4.6](screenshots/Hinh_4.6_Dashboard_RX_TX.png)<br>*Hình 4.6: Giao diện Trung tâm Giám sát (Dashboard) hiển thị thông lượng gói tin tức thời trên cổng switch và biểu đồ lưu lượng.* |
+
+### B. SDN Network Monitoring
+
+| Thành phần & Figure ID | Hình ảnh minh chứng thực nghiệm |
+| :--- | :--- |
+| **Hình 4.4:** Sơ đồ tôpô mạng SDN đa switch phân tầng trích xuất từ ONOS | ![Hình 4.4](screenshots/Hinh_4.4_Topo_6Switch_9Host.png)<br>*Hình 4.4: Sơ đồ tôpô mạng SDN đa switch phân tầng trích xuất thời gian thực từ ONOS Controller (6 switch, 9 host, 10 directed links).* |
+| **Hình 4.5:** Danh sách 24 luật luồng OpenFlow 1.3 và Match Criteria | ![Hình 4.5](screenshots/Hinh_4.5_ONOS_24_OpenFlowRules.png)<br>*Hình 4.5: Danh sách 24 luật luồng OpenFlow 1.3 và tiêu chí khớp gói (Match Criteria) được nạp trên các thiết bị chuyển mạch.* |
+
+### C. Security Monitoring & Forensic Audit
+
+| Thành phần & Figure ID | Hình ảnh minh chứng thực nghiệm |
+| :--- | :--- |
+| **Hình 4.7:** Khám phá dữ liệu Elasticsearch (Kibana Discover) với 145 bản ghi | ![Hình 4.7](screenshots/Hinh_4.7_Kibana_145_Events_Telemetry.png)<br>*Hình 4.7: Giao diện Kibana Discover truy vấn 145 bản ghi dữ liệu giám sát telemetry và cảnh báo an ninh trên cụm Elasticsearch.* |
+| **Hình 4.8:** Phát hiện bất thường và đối chiếu bằng chứng nhận dạng host (Step 64) | ![Hình 4.8](screenshots/Hinh_4.8_Anomaly_Host_Correlation.png)<br>*Hình 4.8: Phân hệ phát hiện bất thường và đối chiếu bằng chứng gói tin với định danh host trên tôpô switch ONOS.* |
+| **Hình 4.10:** Nhật ký kiểm toán quyết định phòng thủ (Decision Logs) | ![Hình 4.10](screenshots/Hinh_4.10_DecisionLogs_93_Actions.png)<br>*Hình 4.10: Phân hệ nhật ký kiểm toán (Decision Logs) lưu vết 93 quyết định phòng thủ mạng (89 lịch sử + 4 quyết định 23/11/2026).* |
+| **Hình 4.13:** Trung tâm Báo cáo An ninh & Kiểm toán SOC (Reports & Audit Center) | ![Hình 4.13](screenshots/Hinh_4.13_Reports_93_DefenseActions.png)<br>*Hình 4.13: Trung tâm Báo cáo An ninh & Kiểm toán SOC hiển thị 93 quyết định can thiệp (All Time) và 4 quyết định (Last 30 Days).* |
+| **Hình 4.14:** Báo cáo sự kiện an ninh lịch sử (Security Events & Anomalies) | ![Hình 4.14](screenshots/Hinh_4.14_Reports_08_HistoricalEvents.png)<br>*Hình 4.14: Báo cáo sự kiện an ninh lịch sử (Security Events & Anomalies) hiển thị 8 sự kiện mẫu giai đoạn 2024–2025.* |
+
+### D. Network Defense & Safety Gate
+
+| Thành phần & Figure ID | Hình ảnh minh chứng thực nghiệm |
+| :--- | :--- |
+| **Hình 4.9:** Đánh giá chính sách ngăn chặn địa chỉ IP 10.0.0.2/32 trong DRY_RUN | ![Hình 4.9](screenshots/Hinh_4.9_SafetyGate_Block_Simulation.png)<br>*Hình 4.9: Đánh giá chính sách ngăn chặn địa chỉ IP 10.0.0.2/32 qua Safety Gate trong chế độ mô phỏng DRY_RUN an toàn.* |
+| **Hình 4.11:** Giao diện cấu hình chính sách can thiệp thủ công (Manual Control) | ![Hình 4.11](screenshots/Hinh_4.11_ManualControl_DRY_RUN.png)<br>*Hình 4.11: Giao diện điều khiển luồng lưu lượng thủ công (Manual Traffic Control) với cảnh báo chế độ DRY_RUN và Safety Gate.* |
+| **Hình 4.12:** Phản hồi kiểm toán từ Backend API và xem trước cấu trúc luật OpenFlow | ![Hình 4.12](screenshots/Hinh_4.12_Backend_OpenFlow_Preview.png)<br>*Hình 4.12: Cấu trúc dữ liệu JSON phản hồi từ Backend API và bản xem trước luật OpenFlow 1.3 trước khi áp dụng.* |
+| **Hình 4.16:** Giao diện cấu hình tham số hệ thống (System Settings) | ![Hình 4.16](screenshots/Hinh_4.16_Settings_Detection_SafetyGate.png)<br>*Hình 4.16: Giao diện cấu hình hệ thống (System Settings) gồm chế độ phát hiện, địa chỉ IP và tham số Safety Gate.* |
+| **Hình 4.22:** Kiểm định chính sách bảo vệ hạ tầng trọng yếu của Safety Gate | ![Hình 4.22](screenshots/Hinh_4.22_SafetyGate_ProtectedGateway_9Tests.png)<br>*Hình 4.22: Kiểm định chính sách bảo vệ hạ tầng trọng yếu của Safety Gate (9 bài kiểm thử bảo vệ Gateway/DNS/Loopback).* |
+| **Hình 4.23:** Kiểm thử cơ chế hoàn tác chính sách phòng thủ (Rollback Rule) | ![Hình 4.23](screenshots/Hinh_4.23_Rollback_Simulation_DRY_RUN.png)<br>*Hình 4.23: Kiểm thử cơ chế hoàn tác chính sách phòng thủ (Rollback Defense Rule) trong chế độ mô phỏng DRY_RUN.* |
+
+### E. Network Performance, Telemetry & Verification (10 Ảnh Mở Rộng)
+
+<details>
+<summary><strong>Xem chi tiết các hình ảnh thực nghiệm hiệu năng mạng và báo cáo PDF (Click để mở)</strong></summary>
+
+| Thành phần & Figure ID | Hình ảnh minh chứng thực nghiệm |
+| :--- | :--- |
+| **Hình 4.15(a):** Báo cáo kiểm toán A4 PDF — Trang 1 | ![Hình 4.15a](screenshots/Hinh_4.15.1_AuditPDF_Trang_1.png)<br>*Hình 4.15(a): Báo cáo kiểm toán A4 PDF — Trang 1: Tiêu đề báo cáo, KPI tổng quan và các bản ghi can thiệp đầu tiên.* |
+| **Hình 4.15(b):** Báo cáo kiểm toán A4 PDF — Trang 2 | ![Hình 4.15b](screenshots/Hinh_4.15.2_AuditPDF_Trang_2.png)<br>*Hình 4.15(b): Báo cáo kiểm toán A4 PDF — Trang 2: Chi tiết các bản ghi can thiệp phân dòng zebra shading.* |
+| **Hình 4.15(c):** Báo cáo kiểm toán A4 PDF — Trang 3 | ![Hình 4.15c](screenshots/Hinh_4.15.3_AuditPDF_Trang_3.png)<br>*Hình 4.15(c): Báo cáo kiểm toán A4 PDF — Trang 3: Các bản ghi can thiệp cuối cùng và chữ ký pháp chứng chân trang.* |
+| **Hình 4.17:** Thực nghiệm kiểm chứng truyền thông cơ sở (Baseline ICMP) | ![Hình 4.17](screenshots/Hinh_4.17_Mininet_Ping_h1_h2.png)<br>*Hình 4.17: Thực nghiệm kiểm chứng truyền thông cơ sở (Baseline ICMP) giữa Host h1 (10.0.0.1) và Host h2 (10.0.0.2).* |
+| **Hình 4.18:** Kiểm thử kết nối toàn phần Full-Mesh ICMP giữa 9 host (72/72) | ![Hình 4.18](screenshots/Hinh_4.18_Mininet_PingFullMesh_72_72.png)<br>*Hình 4.18: Kết quả kiểm thử kết nối toàn phần Full-Mesh ICMP giữa 9 host (72/72 cặp có hướng thành công, 0% packet loss).* |
+| **Hình 4.19:** Đo thông lượng TCP bằng iPerf từ Host h1 đến Host h9 | ![Hình 4.19](screenshots/Hinh_4.19_Mininet_iPerf_TCP_h1_h9.png)<br>*Hình 4.19: Đo thông lượng TCP bằng iPerf từ Host h1 đến Host h9 trong môi trường mạng Mininet ảo hóa (~52 Gbit/s).* |
+| **Hình 4.20:** Pipeline tiếp nhận telemetry từ ONOS qua Logstash vào Elasticsearch | ![Hình 4.20](screenshots/Hinh_4.20_ONOS_Logstash_Elasticsearch_38.png)<br>*Hình 4.20: Pipeline tiếp nhận telemetry từ ONOS qua Logstash vào Elasticsearch (38 sự kiện telemetry ghi nhận).* |
+| **Hình 4.21:** Kết quả phân tích của bộ phát hiện bất thường PPS (PPS Detector) | ![Hình 4.21](screenshots/Hinh_4.21_PPSDetector_Normal_UnitTests.png)<br>*Hình 4.21: Kết quả phân tích của bộ phát hiện bất thường PPS (PPS Detector) trong điều kiện lưu lượng bình thường và unit tests.* |
+| **Hình 4.24:** Bảng tổng kết xác minh toàn vẹn hệ thống (System Verification) | ![Hình 4.24](screenshots/Hinh_4.24_SystemVerification_READY_6S9H.png)<br>*Hình 4.24: Bảng tổng kết xác minh toàn vẹn hệ thống (System Verification Summary: 6 Switch, 9 Host, Overall Status READY).* |
+
+</details>
+
+### F. SDN Assistant Demonstration (3 Ảnh Trợ Lý Ảo)
+
+| Thành phần & Figure ID | Hình ảnh minh chứng thực nghiệm |
+| :--- | :--- |
+| **Hình 4.25(a):** Giao diện Trợ lý vận hành an ninh SDN Assistant (Read-Only) | ![Hình 4.25a](screenshots/Hinh_4.25_Assistant_ReadOnly_UI.png)<br>*Hình 4.25(a): Giao diện Trợ lý vận hành an ninh SDN Assistant hoạt động theo nguyên tắc Read-Only an toàn.* |
+| **Hình 4.25(b):** Trợ lý SDN Assistant xử lý truy vấn trạng thái ONOS bằng tiếng Anh | ![Hình 4.25b](screenshots/Hinh_4.26.1_Assistant_English_ONOS_Query.png)<br>*Hình 4.25(b): Trợ lý SDN Assistant xử lý truy vấn trạng thái ONOS Controller bằng tiếng Anh.* |
+| **Hình 4.25(c):** Phản hồi chi tiết của SDN Assistant về 6 switch từ ONOS REST API | ![Hình 4.25c](screenshots/Hinh_4.26.2_Assistant_ONOS_6Switch_REST.png)<br>*Hình 4.25(c): Phản hồi chi tiết của SDN Assistant về 6 switch kết nối thời gian thực từ ONOS REST API.* |
 
 ---
 
-## 8. Hướng dẫn sử dụng các phân hệ Dashboard
+## 15. Testing & Verification
 
-1. **Tổng quan (Dashboard):** Hiển thị thẻ tóm tắt sức khỏe của 6 container dịch vụ, thống kê tổng số thiết bị, cổng mạng và biểu đồ tổng hợp lưu lượng.
-2. **Giám sát lưu lượng (Traffic Overview):** Quan sát bản đồ trực quan tôpô ONOS, bảng chi tiết cổng switch và các quy tắc luồng OpenFlow đang được nạp trên thiết bị.
-3. **Phát hiện bất thường (Anomaly Detection):** Theo dõi các cảnh báo lưu lượng vượt ngưỡng (PPS Spike Alerts), phân tích biểu đồ biến động băng thông theo chu kỳ trượt.
-4. **Điều khiển lưu lượng (Traffic Control):** Thiết lập quy tắc phòng thủ (Chặn IP, Bóp băng thông, Chuyển hướng). Trong chế độ `DRY_RUN`, hệ thống hiển thị bản xem trước JSON OpenFlow chuẩn xác mà không can thiệp luồng thực tế.
-5. **Nhật ký quyết định (Decision Logs):** Tra cứu toàn bộ lịch sử các quyết định can thiệp mạng đã ghi nhận, phân tích điểm rủi ro và cung cấp nút **Hoàn tác (Rollback)** để hủy quy tắc tức thời.
-6. **Báo cáo an ninh (Reports):** Tổng hợp sự kiện, đánh giá hiệu năng phòng thủ và xuất báo cáo an ninh mạng định dạng tài liệu PDF.
-7. **Cấu hình hệ thống (Settings):** Tra cứu các tham số ngưỡng phát hiện bất thường, thời gian cửa sổ trượt, và danh sách các địa chỉ IP được bảo vệ mặc định.
-8. **Chuyển đổi ngôn ngữ (Bilingual Switcher):** Nút chọn `VI | EN` tại thanh tiêu đề cho phép chuyển đổi ngôn ngữ tức thời trên toàn bộ các trang và bảng biểu.
-9. **Trợ lý vận hành SDN (SDN Assistant):** Khung chat tương tác tích hợp tại góc phải, hỗ trợ tra cứu nhanh trạng thái tôpô, cú pháp lệnh và giải thích cảnh báo (hoạt động 100% ở chế độ chỉ đọc an toàn).
-
----
-
-## 9. Kiểm thử tự động & Xác minh toàn vẹn hệ thống
-
-SDNFlowGuard trang bị bộ kiểm thử toàn diện với **91 bài test tự động** nhằm đảm bảo tính ổn định và tính đúng đắn trước khi phát hành:
+SDNFlowGuard duy trì bộ kiểm thử tự động nghiêm ngặt gồm **107 bài kiểm thử** tích hợp và đơn vị:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\test.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test.ps1
 ```
 
-Quy trình xác minh trải qua 5 cổng kiểm tra nghiêm ngặt:
-
-1. **[1/5] Kiểm tra cú pháp Python in-memory (`scripts/verify_syntax.py`):** Kiểm tra AST và biên dịch bytecode trong bộ nhớ cho toàn bộ 88 tệp mã nguồn Python backend, tuyệt đối không tạo bất kỳ thư mục rác `__pycache__` hay tệp `.pyc` nào trên đĩa.
-2. **[2/5] CLI Self-Tests (4/4 module độc lập):** Xác minh thuật toán Monitor V2, bộ phân tích tcpdump Step 63, đối soát bằng chứng Step 64, và chính sách Defense Policy với 0 cuộc gọi mạng ra bên ngoài.
-3. **[3/5] Bộ kiểm thử tự động Automated Test Suite (91 Tests):**
-   - **Contract Tests (5 tests):** Kiểm chứng tính tương thích của JSON payload gửi sang ONOS REST API và cấu trúc phản hồi cho Frontend.
-   - **Integration Tests (22 tests):** Kiểm tra toàn diện Flask REST API, cơ chế tiếp nhận Webhook, kho lưu trữ SQLite, và tính năng xuất báo cáo.
-   - **Safety Tests (20 tests):** Kiểm tra cơ chế chống tiêm quy tắc độc hại (Anti-Rogue), bảo vệ Gateway/DNS, tách biệt xác thực quản trị viên (`is_operator_authenticated`), xác nhận chế độ `DRY_RUN`, và khả năng tự phục hồi khi tiêm lỗi.
-   - **Unit Tests (43 tests):** Kiểm thử chi tiết từng thuật toán tính điểm rủi ro, phân loại nhật ký SIEM, cửa sổ trượt, parser topology và chính sách phòng thủ.
-   - **End-to-End Pipeline (1 test):** Kiểm tra chu trình khép kín từ lúc nhận mẫu lưu lượng đến khi đối soát bằng chứng Step 64 và kích hoạt Safety Gate.
-4. **[4/5] Kiểm tra Production Bundle Frontend:** Xác thực tính nguyên vẹn và độ mới của bản build React production tại `frontend/build/index.html` (hỗ trợ cờ `-BuildFrontend` để build lại).
-5. **[5/5] Kiểm tra tính bất biến của cơ sở dữ liệu SQLite & zero-bytecode:** Xác thực 0 tệp `.pyc` ngoài `backend/venv` và đối soát mã băm SHA-256 bất biến của `database/sdnflowguard.db`:
-   ```text
-   3909de520f89ea050e7858104c8aa17bddd94d06af9db5ad84652404b9463fe9
-   ```
+### Kết quả kiểm định chất lượng:
+1. **Python Syntax Verification:** 91 tệp Python biên dịch in-memory thành công, **0 lỗi cú pháp**, **0 tệp bytecode (.pyc)** tạo trên đĩa.
+2. **CLI Self-Tests (4/4 PASS):** Monitor V2, Packet Evidence Analyzer, Step 64 Host Correlator, Defense Policy.
+3. **Automated Test Suite (107 Tests PASS):**
+   - Contracts: Elasticsearch & ONOS API schema verification.
+   - Integration: Flask API routes, SQLite CRUD, Webhook ingestion, Chatbot composite query.
+   - Safety: Anti-rogue rules, Gateway/DNS protection, operator authorization guardrails.
+   - Unit: Risk scoring, SIEM normalization, topology parsing, reports date filtering.
+   - End-to-End: Chu trình khép kín telemetry -> forensic correlation -> safety gate.
+4. **Frontend Production Build:** Bản bundle React production tại `frontend/build/index.html` được kiểm chứng mới nhất.
+5. **Database Immutability Check:** Giá trị băm SHA-256 của `database/sdnflowguard.db` không bị suy suyển sau khi chạy kiểm thử (`4be8f31ebdfefc2ab136c0671452375e8d0d8f9ad005901b905a852bc5fa23ac`).
 
 ---
 
-## 10. Cấu trúc thư mục dự án
+## 16. Project Structure
 
 ```text
-Nhom02_SDNFlowGuard/
-├── backend/                       # Mã nguồn Flask API, bộ điều phối phòng thủ và kiểm thử
-│   ├── app/                       # Flask application factory, controller actions, routes, chatbot
-│   ├── collectors/                # Bộ thu thập dữ liệu lưu lượng mạng (Monitor V1 & V2)
-│   ├── defense/                   # Mô-đun phân tích Step 63, đối soát Step 64, và Safety Gate
-│   ├── sdnflowguard/              # Kiến trúc phân lớp miền (Domain models, policies, settings)
-│   ├── tests/                     # 91 bài automated tests (contracts, integration, safety, unit, e2e)
-│   └── requirements.txt           # Danh mục thư viện phụ thuộc Python
-├── frontend/                      # Mã nguồn giao diện người dùng React 18
-│   ├── public/                    # Logo thương hiệu nguyên bản, favicon và index.html
-│   ├── src/                       # Components, Pages, Ngữ cảnh song ngữ (LanguageContext), CSS
-│   └── package.json               # Cấu hình gói và thư viện giao diện React
-├── database/                      # Cơ sở dữ liệu SQLite sdnflowguard.db & bản sao lưu .bak
-├── infrastructure/                # Cấu hình Logstash pipeline và tệp compose phụ trợ
-├── scripts/                       # Bộ công cụ tự động hóa PowerShell & Python
-│   ├── manage.ps1                 # Script quản trị toàn diện hệ thống (up, down, status, check, open...)
-│   ├── test.ps1                   # Master test runner thực thi 5 cổng kiểm tra chất lượng
-│   └── verify_syntax.py           # Công cụ kiểm tra cú pháp Python in-memory, không sinh .pyc
-├── docs/                          # Tài liệu kỹ thuật, kiến trúc và kết quả kiểm thử
-├── screenshots/                   # Hình ảnh tài liệu và logo SDNFlowGuard nguyên bản (260px)
-├── docker-compose.yml             # Tệp cấu hình Docker Compose chuẩn duy nhất cho 6 container
-├── .env.example                   # Mẫu cấu hình biến môi trường an toàn (không chứa mật khẩu thật)
-├── LICENSE                        # Giấy phép phần mềm nguồn mở MIT License
-└── README.md                      # Tài liệu hướng dẫn kỹ thuật chính thức của dự án
+D:\Project\Nhom02_SDNFlowGuard\
+├── backend/                       # Flask REST API, SDN controller actions, and tests
+│   ├── app/                       # Application factory, routes, database adapter, chatbot
+│   ├── collectors/                # Telemetry collector modules (Monitor V1 & V2)
+│   ├── defense/                   # Step 63/64 forensic analysis and Safety Gate
+│   ├── sdnflowguard/              # Clean Architecture domain models & policies
+│   ├── tests/                     # Automated test suite (contracts, integration, safety, unit, e2e)
+│   ├── run.py                     # Backend application entry point
+│   ├── requirements.txt           # Python dependency specification
+│   └── Dockerfile                 # Backend microservice container definition
+├── frontend/                      # React 18 user interface SPA
+│   ├── src/                       # Components, Pages, Theme, Localization (vi/en)
+│   ├── public/                    # Assets, logos, index.html
+│   ├── nginx.conf                 # Nginx reverse proxy configuration
+│   ├── package.json               # Frontend dependencies and npm scripts
+│   └── Dockerfile                 # Frontend microservice container definition
+├── database/                      # SQLite database storage
+│   ├── sdnflowguard.db            # Primary database file (Single Source of Truth)
+│   └── sdnflowguard.db.bak        # Immutable backup snapshot
+├── infrastructure/                # Supporting deployment configurations
+│   ├── mininet/                   # Mininet topology scripts and setup files
+│   └── logstash/                  # Logstash pipeline configuration
+├── screenshots/                   # Verified laboratory screenshots and logo (29 proofs + 1 logo)
+├── scripts/                       # Unified operational automation tools
+│   ├── manage.ps1                 # Full lifecycle stack manager (check, up, down, status...)
+│   ├── test.ps1                   # Master 5-stage test runner and integrity verifier
+│   └── verify_readme_screenshots.py # Script kiểm tra toàn vẹn ảnh README tự động
+├── docs/                          # Comprehensive technical and academic documentation
+│   ├── academic/                  # Academic scope and requirements traceability
+│   ├── architecture/              # System architecture and data flow diagrams
+│   ├── audit/                     # Verification logs and security audits
+│   ├── evidence/                  # Raw experimental data and evidence logs
+│   ├── operations/                # Runbooks and evidence consistency matrices
+│   ├── security/                  # Safety Gate specifications and threat models
+│   └── testing/                   # Test plan, test cases, and test results
+├── .github/workflows/             # Continuous Integration pipeline
+│   └── sdn_flowguard_ci.yml       # GitHub Actions workflow (Python, Node, Docker validation)
+├── docker-compose.yml             # Canonical 6-container Docker Compose configuration
+├── .env.example                   # Environment variable template without secrets
+├── .gitignore                     # Git ignore rules for clean repository
+├── LICENSE                        # Open-source MIT License
+└── README.md                      # Official engineering documentation (This file)
 ```
 
 ---
 
-## 11. Xử lý sự cố thường gặp (Troubleshooting)
+## 17. Troubleshooting Guide
 
-| Tình huống phát sinh | Nguyên nhân gốc rễ | Dấu hiệu nhận biết | Biện pháp xử lý an toàn |
-| :--- | :--- | :--- | :--- |
-| **Lỗi `error during connect` khi chạy PowerShell** | Docker Desktop chưa khởi động hoàn tất hoặc pipe kết nối bị gián đoạn. | Xuất hiện thông báo lỗi đỏ `open //./pipe/docker_engine`. | Mở Docker Desktop, chờ biểu tượng góc dưới chuyển sang màu xanh lá (*Engine running*), sau đó chạy lại lệnh. |
-| **Truy cập cổng 8181 báo `HTTP 403 Forbidden`** | Người dùng truy cập vào thư mục gốc `http://127.0.0.1:8181/` thay vì đường dẫn servlet UI. | Trình duyệt hiển thị trang lỗi 403 của Jetty Server. | **Bắt buộc nhập đúng URL:** `http://127.0.0.1:8181/onos/ui` để mở giao diện quản trị ONOS. |
-| **Truy cập cổng 6653 báo `ERR_EMPTY_RESPONSE`** | Người dùng dùng trình duyệt web để mở cổng kết nối OpenFlow 1.3 của switch. | Trình duyệt không tải được trang và ngắt kết nối ngay lập tức. | Cổng `6653` là kênh socket TCP nhị phân dành riêng cho Switch OpenFlow kết nối về Controller; tuyệt đối không mở bằng trình duyệt web. |
-| **Logstash cổng 18080 chỉ hiển thị chữ `ok`** | Mở webhook endpoint của Logstash bằng phương thức `GET` trên trình duyệt. | Trình duyệt hiển thị trang văn bản trắng với duy nhất một từ `ok`. | Đây là phản hồi probe chuẩn của Elastic HTTP input plugin; webhook nhận dữ liệu qua `POST`. Để xem dữ liệu, hãy truy cập Kibana (`5601`). |
-| **Lỗi PowerShell báo `running scripts is disabled`** | Hệ điều hành Windows áp dụng chính sách ExecutionPolicy giới hạn thực thi script. | Lỗi đỏ `File ... cannot be loaded because running scripts is disabled`. | Luôn thực thi các script kèm cờ bỏ qua chính sách: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\<ten_script>.ps1`. |
-| **Hệ thống chạy chậm hoặc tràn RAM** | Chạy đầy đủ cả 6 container trên máy tính có bộ nhớ hạn chế ($\le$ 8 GB RAM). | Máy tính đơ lag hoặc container bị tắt do cơ chế OOM Killer. | Dừng hệ thống (`manage.ps1 down`) và khởi động lại với chế độ tiết kiệm bộ nhớ: `manage.ps1 up -SkipKibana`. |
-
----
-
-## 12. Ranh giới an ninh & Giới hạn vận hành
-
-- **Chế độ phòng vệ mặc định (DRY_RUN):** Để đảm bảo tính sẵn sàng cao của hạ tầng mạng, SDNFlowGuard mặc định khởi chạy ở chế độ mô phỏng an toàn (`DRY_RUN`). Trong chế độ này, các cảnh báo bất thường và quy tắc kiểm soát lưu lượng chỉ được xuất dưới dạng bản xem trước cấu hình (Staged Proposal) mà không can thiệp luồng dữ liệu thực tế.
-- **Ranh giới bảo vệ hạ tầng (Safety Boundary):** Thuật toán Safety Gate ngăn chặn tuyệt đối việc can thiệp vào Router/Gateway mặc định (`10.0.0.254`), hệ thống máy chủ phân giải tên miền DNS (`8.8.8.8`, `1.1.1.1`), hoặc chặn toàn bộ dải mạng cục bộ (Subnet wide block).
-- **Phạm vi triển khai:** SDNFlowGuard được thiết kế, tối ưu hóa và kiểm chứng phục vụ mục đích nghiên cứu học thuật, phòng thí nghiệm an ninh mạng và các mô hình giả lập mạng ảo hóa SDN. Không sử dụng trực tiếp để điều khiển các hạ tầng mạng vật lý cấp doanh nghiệp khi chưa hoàn thành kiểm toán bảo mật và cấu hình xác thực khóa API chuyên dụng (`SDNFLOW_API_KEY`).
+| Triệu chứng lỗi | Nguyên nhân | Biện pháp xử lý |
+| :--- | :--- | :--- |
+| **`open //./pipe/docker_engine`** | Docker Desktop chưa khởi động hoàn tất. | Mở Docker Desktop, chờ trạng thái xanh lá (*Engine running*), sau đó chạy lại script. |
+| **ONOS UI báo HTTP 403 Forbidden** | Truy cập sai URL gốc `http://127.0.0.1:8181/`. | **Bắt buộc nhập đầy đủ URL:** `http://127.0.0.1:8181/onos/ui` (tài khoản: `onos` / `rocks`). |
+| **Cổng 6653 bị ngắt kết nối trình duyệt** | Cổng OpenFlow 1.3 là socket nhị phân TCP dành riêng cho switch. | Tuyệt đối không mở cổng `6653` bằng trình duyệt web. |
+| **Logstash cổng 18080 hiển thị chữ `ok`** | Mở webhook endpoint qua phương thức GET. | Đây là phản hồi probe chuẩn của Elastic HTTP input. Để xem dữ liệu, hãy truy cập Kibana (`5601`). |
+| **Chính sách PowerShell ExecutionPolicy** | Windows chặn thực thi file script `.ps1`. | Sử dụng cờ Bypass: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\<script>.ps1`. |
 
 ---
 
-## 13. Giấy phép sử dụng & Bản quyền (License)
+## 18. Limitations & Research Boundaries
 
-Dự án được phân phối chính thức dưới giấy phép phần mềm nguồn mở **MIT License**.
+- **Môi trường thí nghiệm ảo hóa:** Băng thông đo được qua iPerf (~52 Gbps) phản ánh thông lượng bộ nhớ nội bộ của nhân Linux WSL2 giữa các container/process mạng Mininet, không phải là thông số của giao tiếp vật lý ngoài thực tế.
+- **Ranh giới thực thi can thiệp mạng:** Hệ thống duy trì chế độ an toàn `DRY_RUN` để bảo vệ mạng lab, việc thực thi `ACTIVE_ENFORCEMENT` được thiết kế có kiểm soát và yêu cầu xác thực API key của quản trị viên.
+- **Phân loại bản ghi Elasticsearch:** Tổng số 145 tài liệu trong Elasticsearch gồm 106 bản ghi đo thông lượng cổng định kỳ (`sdn_port_traffic`), 11 cảnh báo an ninh (`sdn_anomaly_alert`), 5 snapshot tôpô và 4 gói tin probe; không phải là 145 cuộc tấn công mạng riêng biệt.
 
-```text
-MIT License
+---
 
-Copyright (c) 2025 Jia Yang
-Copyright (c) 2026 SDNFlowGuard Research & Development Team
+## 19. References & License
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-```
-
-Chi tiết điều khoản bản quyền xem tại tệp [`LICENSE`](LICENSE).
+Dự án được phân phối chính thức theo giấy phép nguồn mở **MIT License**. Chi tiết điều khoản bản quyền xem tại tệp [`LICENSE`](LICENSE).

@@ -173,7 +173,7 @@ def get_anomalies():
             cursor = conn.cursor()
             cursor.execute(
                 """
-                SELECT timestamp, source_ip, event, score
+                SELECT timestamp, source_ip, event, score, source, destination_ip
                 FROM events
                 ORDER BY timestamp DESC;
                 """
@@ -185,6 +185,8 @@ def get_anomalies():
                     "source_ip": row[1],
                     "event": row[2],
                     "score": row[3],
+                    "source": row[4] if len(row) > 4 else "Unknown",
+                    "destination_ip": row[5] if len(row) > 5 else "0.0.0.0",
                 }
                 for row in rows
             ]

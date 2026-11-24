@@ -357,14 +357,20 @@ switch ($Action) {
             try {
                 $devs = curl.exe -s -u onos:rocks http://127.0.0.1:8181/onos/v1/devices | ConvertFrom-Json
                 $hosts = curl.exe -s -u onos:rocks http://127.0.0.1:8181/onos/v1/hosts | ConvertFrom-Json
-                $devsCount = if ($devs.devices) { $devs.devices.Count } else { 0 }
-                $hostsCount = if ($hosts.hosts) { $hosts.hosts.Count } else { 0 }
+                $devsCount = if ($devs -and $devs.devices) { $devs.devices.Count } else { 0 }
+                $hostsCount = if ($hosts -and $hosts.hosts) { $hosts.hosts.Count } else { 0 }
                 if ($devsCount -ge 6 -and $hostsCount -ge 9) {
                     break
                 }
             } catch { }
         }
-        Write-Host ("  [PASS] ONOS Discovered: {0} Switches, {1} Hosts" -f $devsCount, $hostsCount) -ForegroundColor Green
+        if ($devsCount -ge 6 -and $hostsCount -ge 9) {
+            Write-Host ("  [PASS] ONOS Discovered: {0} Switches, {1} Hosts" -f $devsCount, $hostsCount) -ForegroundColor Green
+        } elseif ($devsCount -eq 0 -and $hostsCount -eq 0) {
+            Write-Host "  [FAIL] ONOS Discovery timed out: 0 Switches, 0 Hosts detected. Verify ONOS REST API and Mininet." -ForegroundColor Red
+        } else {
+            Write-Host ("  [WARN] ONOS Partial Discovery: {0} Switches, {1} Hosts (expected 6 Switches, 9 Hosts)" -f $devsCount, $hostsCount) -ForegroundColor Yellow
+        }
     }
 
     "stop-topo" {
@@ -375,12 +381,33 @@ switch ($Action) {
 
     "status-topo" {
         Write-Host "[TOPOLOGY STATUS] Inspecting Live SDN Dataplane..." -ForegroundColor Cyan
-        $devs = curl.exe -s -u onos:rocks http://127.0.0.1:8181/onos/v1/devices | ConvertFrom-Json
-        $hosts = curl.exe -s -u onos:rocks http://127.0.0.1:8181/onos/v1/hosts | ConvertFrom-Json
-        $links = curl.exe -s -u onos:rocks http://127.0.0.1:8181/onos/v1/links | ConvertFrom-Json
-        Write-Host ("  Active Switches: {0}" -f $devs.devices.Count) -ForegroundColor White
-        Write-Host ("  Active Hosts   : {0}" -f $hosts.hosts.Count) -ForegroundColor White
-        Write-Host ("  Directed Links : {0}" -f $links.links.Count) -ForegroundColor White
+        try {
+            $devsRaw = curl.exe -s -u onos:rocks http://127.0.0.1:8181/onos/v1/devices
+            $hostsRaw = curl.exe -s -u onos:rocks http://127.0.0.1:8181/onos/v1/hosts
+            $linksRaw = curl.exe -s -u onos:rocks http://127.0.0.1:8181/onos/v1/links
+
+            $devs = $devsRaw | ConvertFrom-Json -ErrorAction SilentlyContinue
+            $hosts = $hostsRaw | ConvertFrom-Json -ErrorAction SilentlyContinue
+            $links = $linksRaw | ConvertFrom-Json -ErrorAction SilentlyContinue
+
+            $devsCount = if ($devs -and $devs.devices) { $devs.devices.Count } else { 0 }
+            $hostsCount = if ($hosts -and $hosts.hosts) { $hosts.hosts.Count } else { 0 }
+            $linksCount = if ($links -and $links.links) { $links.links.Count } else { 0 }
+
+            Write-Host ("  Active Switches: {0}" -f $devsCount) -ForegroundColor White
+            Write-Host ("  Active Hosts   : {0}" -f $hostsCount) -ForegroundColor White
+            Write-Host ("  Directed Links : {0}" -f $linksCount) -ForegroundColor White
+
+            if ($devsCount -ge 6 -and $hostsCount -ge 9 -and $linksCount -ge 10) {
+                Write-Host "  [HEALTHY] Full 6-switch reference topology active and discovered." -ForegroundColor Green
+            } elseif ($devsCount -eq 0) {
+                Write-Host "  [WARN] No switches discovered. Check ONOS Controller and Mininet service." -ForegroundColor Red
+            } else {
+                Write-Host "  [WARN] Partial topology discovered. Expected 6 switches, 9 hosts, 10 links." -ForegroundColor Yellow
+            }
+        } catch {
+            Write-Host ("  [ERROR] Failed to query ONOS topology: {0}" -f $_.Exception.Message) -ForegroundColor Red
+        }
     }
 }
 

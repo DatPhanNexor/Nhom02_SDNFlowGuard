@@ -194,6 +194,24 @@ class TestFlaskApiRoutes(unittest.TestCase):
         self.assertIn("Trạng thái Bộ điều khiển ONOS", body["answer"])
         self.assertIn("Cổng điều khiển OpenFlow 1.3", body["answer"])
 
+    def test_chatbot_composite_onos_and_topology_query(self):
+        """Verify regression query asking for ONOS status, switches, hosts, links, and operational status."""
+        query = (
+            "Please check the current status of the ONOS Controller and report how many switches, "
+            "hosts, and network links are currently detected. Briefly explain the operational status "
+            "of the SDN network based on actual real-time data."
+        )
+        res = self.client.post("/api/chatbot", json={"question": query})
+        self.assertEqual(res.status_code, 200)
+        body = res.get_json()
+        ans = body.get("answer", "")
+        self.assertIn("ONOS SDN Controller Status", ans)
+        self.assertIn("Connection State", ans)
+        self.assertIn("Recognized Switches", ans)
+        self.assertIn("Discovered Hosts", ans)
+        self.assertIn("Network Directed Links", ans)
+        self.assertIn("Operational Status", ans)
+
 
 if __name__ == "__main__":
     unittest.main()

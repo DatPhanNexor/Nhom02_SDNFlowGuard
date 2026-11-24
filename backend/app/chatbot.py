@@ -174,6 +174,14 @@ def _handle_controller_status(is_en: bool = False) -> str:
     ts = _get_current_timestamp_str()
     status_label = ctrl["status"]
 
+    topo = get_topology_data()
+    devices = topo.get("devices", [])
+    hosts = topo.get("hosts", [])
+    links = topo.get("links", [])
+    dev_count = len(devices) if devices else ctrl["device_count"]
+    host_count = len(hosts)
+    link_count = len(links)
+
     if is_en:
         if ctrl["available"]:
             return (
@@ -181,15 +189,22 @@ def _handle_controller_status(is_en: bool = False) -> str:
                 f"- **Connection State:** `{status_label}`\n"
                 f"- **Web GUI Administration:** [http://localhost:8181/onos/ui](http://localhost:8181/onos/ui)\n"
                 f"- **OpenFlow 1.3 Control Port:** `TCP 6653` (for Open vSwitch / Mininet)\n"
-                f"- **Recognized Switches:** `{ctrl['device_count']}` device(s)\n"
+                f"- **Recognized Switches:** `{dev_count}` device(s)\n"
+                f"- **Discovered Hosts:** `{host_count}` host(s)\n"
+                f"- **Network Directed Links:** `{link_count}` link(s)\n"
                 f"- **Audit Timestamp:** `{ts}`\n\n"
-                f"📌 **Data Source:** ONOS REST API (`{ctrl['url']}/devices`)\n"
-                f"✅ **Evaluation:** ONOS 2.7.0 LTS Controller is running normally under JVM G1GC with `1400m` cgroup limit."
+                f"📌 **Data Source:** ONOS REST API (`{ctrl['url']}/devices`, `/api/topology`)\n"
+                f"✅ **Operational Status:** Fully operational SDN control plane. "
+                f"ONOS 2.7.0 LTS Controller is running normally under JVM G1GC with `1400m` cgroup limit, "
+                f"actively orchestrating the {dev_count}-switch, {host_count}-host network topology with OpenFlow 1.3."
             )
         return (
             f"### ONOS SDN Controller Status\n\n"
             f"- **Connection State:** `{status_label}`\n"
             f"- **OpenFlow 1.3 Control Port:** `TCP 6653` (for Open vSwitch / Mininet)\n"
+            f"- **Recognized Switches:** `N/A (Controller Offline)`\n"
+            f"- **Discovered Hosts:** `N/A (Controller Offline)`\n"
+            f"- **Network Directed Links:** `N/A (Controller Offline)`\n"
             f"- **Audit Timestamp:** `{ts}`\n\n"
             f"⚠️ **Warning:** Unable to connect to ONOS REST API at `{ctrl['url']}`. "
             f"The container may be starting or experiencing an Atomix port lock conflict. "
@@ -203,15 +218,22 @@ def _handle_controller_status(is_en: bool = False) -> str:
             f"- **Trạng thái kết nối:** `{status_label}`\n"
             f"- **Giao diện quản trị Web (GUI):** [http://localhost:8181/onos/ui](http://localhost:8181/onos/ui)\n"
             f"- **Cổng điều khiển OpenFlow 1.3:** `TCP 6653` (cho Open vSwitch / Mininet)\n"
-            f"- **Số lượng Switch nhận diện:** `{ctrl['device_count']}` thiết bị\n"
+            f"- **Số lượng Switch nhận diện:** `{dev_count}` thiết bị\n"
+            f"- **Số lượng Host kết nối:** `{host_count}` máy trạm\n"
+            f"- **Số lượng Liên kết (Links):** `{link_count}` liên kết có hướng\n"
             f"- **Thời điểm kiểm tra:** `{ts}`\n\n"
-            f"📌 **Nguồn dữ liệu:** ONOS REST API (`{ctrl['url']}/devices`)\n"
-            f"✅ **Đánh giá:** Bộ điều khiển ONOS 2.7.0 LTS đang vận hành ổn định trên nền JVM G1GC với cgroup limit `1400m`."
+            f"📌 **Nguồn dữ liệu:** ONOS REST API (`{ctrl['url']}/devices`, `/api/topology`)\n"
+            f"✅ **Đánh giá vận hành:** Mặt phẳng điều khiển SDN hoạt động ổn định. "
+            f"Bộ điều khiển ONOS 2.7.0 LTS vận hành trên nền JVM G1GC với cgroup limit `1400m`, "
+            f"điều phối thời gian thực mạng tôpô gồm {dev_count} switch và {host_count} host qua giao thức OpenFlow 1.3."
         )
     return (
         f"### Trạng thái Bộ điều khiển ONOS (SDN Controller)\n\n"
         f"- **Trạng thái kết nối:** `{status_label}`\n"
         f"- **Cổng điều khiển OpenFlow 1.3:** `TCP 6653` (cho Open vSwitch / Mininet)\n"
+        f"- **Số lượng Switch nhận diện:** `N/A (Controller Mất kết nối)`\n"
+        f"- **Số lượng Host kết nối:** `N/A (Controller Mất kết nối)`\n"
+        f"- **Số lượng Liên kết (Links):** `N/A (Controller Mất kết nối)`\n"
         f"- **Thời điểm kiểm tra:** `{ts}`\n\n"
         f"⚠️ **Cảnh báo:** Không thể kết nối tới ONOS REST API tại `{ctrl['url']}`. "
         f"Nguyên nhân có thể do container đang khởi động hoặc gặp xung đột lock cổng Atomix. "
@@ -249,7 +271,7 @@ def _handle_topology(is_en: bool = False) -> str:
             f"- **Internal Links:** `{len(links)}` link(s)\n"
             f"- **Audit Timestamp:** `{ts}`\n\n"
             f"📌 **Data Source:** ONOS Topology Subsystem (`/api/topology`)\n"
-            f"ℹ️ **Academic Note:** Laboratory operates on 1 Open vSwitch (`s1`) inside WSL2 Ubuntu connected to ONOS Controller via OpenFlow 1.3."
+            f"ℹ️ **Academic Note:** Laboratory operates on {len(devices)} Open vSwitch devices inside WSL2 Ubuntu connected to ONOS Controller via OpenFlow 1.3."
         )
 
     # Vietnamese
@@ -263,7 +285,7 @@ def _handle_topology(is_en: bool = False) -> str:
         f"- **Tổng số Liên kết (Links):** `{len(links)}` liên kết nội bộ\n"
         f"- **Thời điểm kiểm tra:** `{ts}`\n\n"
         f"📌 **Nguồn dữ liệu:** ONOS Topology Subsystem (`/api/topology`)\n"
-        f"ℹ️ **Ghi chú học thuật:** Lab đang vận hành trên 1 Switch Open vSwitch (`s1`) trong môi trường WSL2 Ubuntu kết nối OpenFlow 1.3 về ONOS Controller."
+        f"ℹ️ **Ghi chú học thuật:** Lab vận hành trên {len(devices)} Switch Open vSwitch trong môi trường WSL2 Ubuntu kết nối OpenFlow 1.3 về ONOS Controller."
     )
 
 
@@ -696,7 +718,13 @@ def handle_chatbot_request(user_question: Any, locale: str = "vi") -> str:
         )
 
     # If locale was not explicitly en, but question is clearly English (e.g., starts with English words)
-    if not is_en and re.search(r"^(what|how|show|is|are|tell|who|why|where|explain|can)\b", q_str.lower()):
+    if not is_en and (
+        re.search(r"^(what|how|show|is|are|tell|who|why|where|explain|can|please|check|report|give|get|list|display)\b", q_str.lower())
+        or (
+            re.search(r"\b(please|controller|switches|hosts|links)\b", q_str.lower())
+            and not re.search(r"[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]", q_str.lower())
+        )
+    ):
         is_en = True
 
     intent = classify_intent(q_str)

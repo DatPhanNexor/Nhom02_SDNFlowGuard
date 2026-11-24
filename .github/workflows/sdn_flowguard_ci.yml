@@ -84,6 +84,10 @@ jobs:
         working-directory: frontend
         run: npm ci --legacy-peer-deps
 
+      - name: Run Frontend Unit & Component Tests
+        working-directory: frontend
+        run: npm test -- --watchAll=false
+
       - name: Build Production Frontend Artifact
         working-directory: frontend
         run: npm run build
