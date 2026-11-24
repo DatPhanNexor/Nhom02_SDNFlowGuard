@@ -39,7 +39,58 @@ class TestFlaskApiRoutes(unittest.TestCase):
         )
         self.client = flask_run.app.test_client()
 
+        # Controlled test fixtures for ONOS Controller & Topology (6 Switches, 9 Hosts, 10 Directed Links)
+        self.mock_topology_fixture = {
+            "devices": [
+                {
+                    "id": f"of:000000000000000{i}",
+                    "available": True,
+                    "hw": "Open vSwitch",
+                    "sw": "3.7.1",
+                    "annotations": {"protocol": "OF_13", "datapathDescription": f"s{i}"},
+                }
+                for i in range(1, 7)
+            ],
+            "hosts": [
+                {
+                    "id": f"00:00:00:00:00:0{i}/None",
+                    "mac": f"00:00:00:00:00:0{i}",
+                    "ipAddresses": [f"10.0.0.{i}"],
+                    "locations": [{"elementId": f"of:000000000000000{(i+1)//2}", "port": "1"}],
+                }
+                for i in range(1, 10)
+            ],
+            "links": [
+                {
+                    "src": {"device": f"of:000000000000000{i}", "port": "2"},
+                    "dst": {"device": f"of:000000000000000{i+1}", "port": "1"},
+                    "state": "ACTIVE",
+                }
+                for i in range(1, 11)
+            ],
+        }
+        self.mock_controller_info_fixture = {
+            "available": True,
+            "status": "UP / ONLINE",
+            "device_count": 6,
+            "devices": self.mock_topology_fixture["devices"],
+            "url": "http://127.0.0.1:8181/onos/v1",
+        }
+
+        self._mock_topo_patcher = patch(
+            "app.chatbot.get_topology_data",
+            return_value=self.mock_topology_fixture,
+        )
+        self._mock_ctrl_patcher = patch(
+            "app.chatbot._get_live_controller_info",
+            return_value=self.mock_controller_info_fixture,
+        )
+        self.mock_get_topology_data = self._mock_topo_patcher.start()
+        self.mock_get_live_controller_info = self._mock_ctrl_patcher.start()
+
     def tearDown(self):
+        self._mock_topo_patcher.stop()
+        self._mock_ctrl_patcher.stop()
         self._env_patcher.stop()
         self._tmpdir.cleanup()
 
@@ -191,8 +242,12 @@ class TestFlaskApiRoutes(unittest.TestCase):
         )
         self.assertEqual(res.status_code, 200)
         body = res.get_json()
-        self.assertIn("Trạng thái Bộ điều khiển ONOS", body["answer"])
-        self.assertIn("Cổng điều khiển OpenFlow 1.3", body["answer"])
+        ans = body.get("answer", "")
+        self.assertIn("Trạng thái Bộ điều khiển ONOS", ans)
+        self.assertIn("Cổng điều khiển OpenFlow 1.3", ans)
+        self.assertIn("6", ans)
+        self.assertIn("9", ans)
+        self.assertIn("10", ans)
 
     def test_chatbot_composite_onos_and_topology_query(self):
         """Verify regression query asking for ONOS status, switches, hosts, links, and operational status."""
@@ -208,9 +263,122 @@ class TestFlaskApiRoutes(unittest.TestCase):
         self.assertIn("ONOS SDN Controller Status", ans)
         self.assertIn("Connection State", ans)
         self.assertIn("Recognized Switches", ans)
+        self.assertIn("`6` device(s)", ans)
         self.assertIn("Discovered Hosts", ans)
+        self.assertIn("`9` host(s)", ans)
         self.assertIn("Network Directed Links", ans)
+        self.assertIn("`10` link(s)", ans)
         self.assertIn("Operational Status", ans)
+
+    def test_chatbot_endpoint_onos_unavailable_connection_error(self):
+        """Scenario B: Simulate ONOS ConnectionError; verify application handles failure without HTTP 500."""
+        self.mock_get_live_controller_info.return_value = {
+            "available": False,
+            "status": "UNAVAILABLE (ConnectionError)",
+            "device_count": 0,
+            "devices": [],
+            "url": "http://127.0.0.1:8181/onos/v1",
+        }
+        self.mock_get_topology_data.side_effect = RuntimeError(
+            "Error fetching topology data: HTTPConnectionPool: Max retries exceeded"
+        )
+
+        # English query
+        res_en = self.client.post(
+            "/api/chatbot",
+            json={"question": "What is the status of ONOS controller?", "locale": "en"},
+        )
+        self.assertEqual(res_en.status_code, 200)
+        ans_en = res_en.get_json().get("answer", "")
+        self.assertIn("UNAVAILABLE (ConnectionError)", ans_en)
+        self.assertIn("N/A (Controller Offline)", ans_en)
+        self.assertIn("Warning", ans_en)
+        self.assertNotIn("Traceback", ans_en)
+
+        # Vietnamese query
+        res_vi = self.client.post(
+            "/api/chatbot",
+            json={"question": "Trạng thái bộ điều khiển", "locale": "vi"},
+        )
+        self.assertEqual(res_vi.status_code, 200)
+        ans_vi = res_vi.get_json().get("answer", "")
+        self.assertIn("UNAVAILABLE (ConnectionError)", ans_vi)
+        self.assertIn("N/A (Controller Mất kết nối)", ans_vi)
+        self.assertIn("Cảnh báo", ans_vi)
+        self.assertNotIn("Traceback", ans_vi)
+
+        # Topology specific query
+        res_topo = self.client.post(
+            "/api/chatbot",
+            json={"question": "Show SDN network topology", "locale": "en"},
+        )
+        self.assertEqual(res_topo.status_code, 200)
+        ans_topo = res_topo.get_json().get("answer", "")
+        self.assertIn("N/A (Controller Offline)", ans_topo)
+        self.assertIn("Warning", ans_topo)
+
+    def test_chatbot_endpoint_onos_timeout_handled_safely(self):
+        """Scenario C: Simulate ONOS Timeout; verify controlled error handling without HTTP 500."""
+        # 1. Total timeout during controller status check
+        self.mock_get_live_controller_info.return_value = {
+            "available": False,
+            "status": "UNAVAILABLE (Timeout)",
+            "device_count": 0,
+            "devices": [],
+            "url": "http://127.0.0.1:8181/onos/v1",
+        }
+        res = self.client.post("/api/chatbot", json={"question": "Check ONOS status", "locale": "en"})
+        self.assertEqual(res.status_code, 200)
+        ans = res.get_json().get("answer", "")
+        self.assertIn("UNAVAILABLE (Timeout)", ans)
+        self.assertIn("N/A (Controller Offline)", ans)
+
+        # 2. Controller is UP, but secondary topology query times out
+        self.mock_get_live_controller_info.return_value = {
+            "available": True,
+            "status": "UP / ONLINE",
+            "device_count": 6,
+            "devices": self.mock_topology_fixture["devices"],
+            "url": "http://127.0.0.1:8181/onos/v1",
+        }
+        self.mock_get_topology_data.side_effect = RuntimeError("Error fetching topology data: Request timed out")
+
+        res_partial = self.client.post(
+            "/api/chatbot",
+            json={"question": "Check ONOS status and switches", "locale": "en"},
+        )
+        self.assertEqual(res_partial.status_code, 200)
+        ans_partial = res_partial.get_json().get("answer", "")
+        self.assertIn("UP / ONLINE", ans_partial)
+        self.assertIn("`6` device(s)", ans_partial)
+
+    def test_chatbot_no_external_network_dependencies(self):
+        """Scenario F: Confirm chatbot integration runs isolated without external network calls."""
+        with patch.dict(os.environ, {"SDNFLOW_ONOS_URL": "http://192.0.2.1:59999/onos/v1"}):
+            res = self.client.post(
+                "/api/chatbot",
+                json={"question": "What is the status of ONOS controller?", "locale": "en"},
+            )
+            self.assertEqual(res.status_code, 200)
+            self.assertIn("ONOS SDN Controller Status", res.get_json().get("answer", ""))
+
+    def test_chatbot_endpoint_state_changing_actions_rejected(self):
+        """Scenario G: Confirm chatbot strictly rejects all state-changing actions under READ-ONLY guardrail."""
+        prohibited_queries = [
+            ("Hãy block ip 10.0.0.2 ngay lập tức", "vi"),
+            ("Block IP 10.0.0.5 now", "en"),
+            ("Delete all flow rules on switch of:0000000000000001", "en"),
+            ("Unblock ip 10.0.0.3 please", "en"),
+            ("Isolate host 10.0.0.9", "en"),
+        ]
+        for query, loc in prohibited_queries:
+            with self.subTest(query=query):
+                res = self.client.post("/api/chatbot", json={"question": query, "locale": loc})
+                self.assertEqual(res.status_code, 200)
+                body = res.get_json()
+                ans = body.get("answer", "")
+                self.assertIn("READ-ONLY", ans)
+                self.assertIn("Manual Traffic Control", ans)
 
 
 if __name__ == "__main__":

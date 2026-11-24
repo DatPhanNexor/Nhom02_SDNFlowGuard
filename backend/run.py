@@ -501,8 +501,13 @@ def chatbot():
         return jsonify({"error": "No question provided"}), 400
     if len(str(user_question)) > 1000:
         return jsonify({"error": "Question exceeds maximum length of 1000 characters."}), 400
-    response = handle_chatbot_request(str(user_question), locale=str(locale))
-    return jsonify({"answer": response}), 200
+    try:
+        response = handle_chatbot_request(str(user_question), locale=str(locale))
+        return jsonify({"answer": response}), 200
+    except Exception as exc:
+        req_id = generate_request_id()
+        logger.error("Chatbot unexpected error (%s): %s", req_id, exc)
+        return jsonify({"error": "Internal assistant error.", "request_id": req_id}), 500
 
 
 @app.route("/api/get-report", methods=["GET"])

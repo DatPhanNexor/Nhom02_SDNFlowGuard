@@ -9,6 +9,7 @@ Supports bilingual responses (Vietnamese and English).
 from __future__ import annotations
 
 import datetime
+import logging
 import os
 import re
 from typing import Any
@@ -26,6 +27,8 @@ except ImportError:
 
 from sdnflowguard.infrastructure.configuration.settings import AppSettings
 
+
+logger = logging.getLogger(__name__)
 
 MAX_QUESTION_LENGTH = 1000
 
@@ -174,10 +177,20 @@ def _handle_controller_status(is_en: bool = False) -> str:
     ts = _get_current_timestamp_str()
     status_label = ctrl["status"]
 
-    topo = get_topology_data()
-    devices = topo.get("devices", [])
-    hosts = topo.get("hosts", [])
-    links = topo.get("links", [])
+    devices: list[Any] = []
+    hosts: list[Any] = []
+    links: list[Any] = []
+
+    if ctrl.get("available"):
+        try:
+            topo = get_topology_data()
+            devices = topo.get("devices", [])
+            hosts = topo.get("hosts", [])
+            links = topo.get("links", [])
+        except Exception as exc:
+            logger.warning("Controller status query could not fetch topology: %s", exc)
+            devices = ctrl.get("devices", [])
+
     dev_count = len(devices) if devices else ctrl["device_count"]
     host_count = len(hosts)
     link_count = len(links)
@@ -242,11 +255,33 @@ def _handle_controller_status(is_en: bool = False) -> str:
 
 
 def _handle_topology(is_en: bool = False) -> str:
-    topo = get_topology_data()
-    devices = topo.get("devices", [])
-    hosts = topo.get("hosts", [])
-    links = topo.get("links", [])
     ts = _get_current_timestamp_str()
+    try:
+        topo = get_topology_data()
+        devices = topo.get("devices", [])
+        hosts = topo.get("hosts", [])
+        links = topo.get("links", [])
+    except Exception as exc:
+        logger.warning("Topology query failed to retrieve data: %s", exc)
+        if is_en:
+            return (
+                f"### Current SDN Network Topology\n\n"
+                f"- **Total Switches (Open vSwitch):** `N/A (Controller Offline)`\n"
+                f"- **Connected Hosts:** `N/A (Controller Offline)`\n"
+                f"- **Internal Links:** `N/A (Controller Offline)`\n"
+                f"- **Audit Timestamp:** `{ts}`\n\n"
+                f"⚠️ **Warning:** Unable to retrieve topology from ONOS Controller. "
+                f"Verify that ONOS REST API (Port 8181) is accessible."
+            )
+        return (
+            f"### Sơ đồ Topo Mạng SDN Hiện tại\n\n"
+            f"- **Tổng số Switch (Open vSwitch):** `N/A (Controller Mất kết nối)`\n"
+            f"- **Tổng số Host kết nối:** `N/A (Controller Mất kết nối)`\n"
+            f"- **Tổng số Liên kết (Links):** `N/A (Controller Mất kết nối)`\n"
+            f"- **Thời điểm kiểm tra:** `{ts}`\n\n"
+            f"⚠️ **Cảnh báo:** Không thể truy xuất thông tin topo từ Bộ điều khiển ONOS. "
+            f"Vui lòng kiểm tra cổng dịch vụ ONOS REST API (Port 8181)."
+        )
 
     device_details = []
     for d in devices:
@@ -643,7 +678,10 @@ def _handle_fallback(user_question: str, is_en: bool = False) -> str:
 
             openai.api_key = api_key
             ctrl = _get_live_controller_info()
-            topo = get_topology_data()
+            try:
+                topo = get_topology_data()
+            except Exception:
+                topo = {"devices": [], "hosts": [], "links": []}
             settings = AppSettings.from_env()
 
             lang_instr = "in English" if is_en else "in Vietnamese"
